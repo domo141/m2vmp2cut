@@ -1,0 +1,79 @@
+
+First example is my usual case: dvb(-t) recorder file in .ts (transport stream)
+format is demuxed, "edited", cut and finally written to dvd:
+
+1) Demux recording using ProjectX (ProjectX can be used to demux other types
+                                   of mpeg[12] files too).
+
+$ /path/to/java -jar /path/to/ProjectX.jar rec.ts
+
+2) Run lve and find suitable cutpoints:
+
+$ /usr/local/lve/bin/lve
+
+3) Do testrun:
+
+$ m2vmp2cut --test=200 +
+
+$ mplayer ,,,/out.mpg  (now use numpad + and numpad - to check sync, and
+                        rerun mplayer with -delay option to do final check).
+
+4) Do "final" cut, have same value (same sign (+/-)) for --sync as above
+   if needed.
+
+$ m2vmp2cut [--sync=nms] +
+
+5) dvdauthor material:
+
+$ cat >! rec.xml <<EOF
+<dvdauthor>
+    <vmgm />
+    <titleset>
+        <titles>
+            <video aspect="16:9" />
+            <pgc>
+                <vob file=",,,/out.mpg" />
+            </pgc>
+        </titles>
+    </titleset>
+</dvdauthor>
+EOF
+
+$ rm -rf dvdvideo && dvdauthor -o dvdvideo -x rec.xml
+
+6) Burn it (replace /dev/hdc with your dvd burner device):
+
+# growisofs -dvd-compat -Z /dev/hdc -dvd-video -udf dvdvideo
+
+--
+
+Next some old examples:
+
+ m2vmp2cut +
+	- Just do it after editing with lve.
+
+ m2vmp2cut --sync=200 +
+	- When testing original (undemuxed) file with mplayer, 
+	  using --delay=0.2 gave good a/v sync.
+
+--
+
+Now something slightly off-topic -- test your dvd player xsvcd playing
+capabilities:
+
+$ wget http://www.starwreck.com/media/itp/star_wreck_itp_trailer_mpeg2.mpg
+$ tcextract -i star_wreck_itp_trailer_mpeg2.mpg -x mp2 > swr.mp2
+$ tcextract -i star_wreck_itp_trailer_mpeg2.mpg -x mpeg2 > swr.m2v
+$ mplex -f 5 -o swr.mpg swr.m2v swr.mp2
+$ vcdimager -t svcd --iso-volume-label="Star_Wreck_Trailer" swr.mpg
+
+... Put blank cd-r/cd-rw to your cd/dvd burning device ...
+
+$ cdrdao blank --device /dev/hdc --speed 4    # No need to blank cd-r.
+$ su
+# cdrdao write --device /dev/hdc --speed 4 videocd.cue
+# exit
+
+My player succeeded to play this without hiccups, but all other (consumer dvd)
+players I've tried have had some cd reading speed problems (no smooth playing).
+

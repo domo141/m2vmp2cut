@@ -1,0 +1,111 @@
+
+This file contains information about subversion setup this project has:
+
+1) How did I setup subversion for this project (and everything else I had 
+	in my personal CVS repository).
+
+2) Ever-growing list of subversion commands used related toi this project...
+	... and Useful subversion commands I've been using so far.
+
+
+--8<----8<----8<----8<----8<----8<--
+
+1) How did I setup subversion for this project (and everything else I had 
+	in my personal CVS repository).
+
+At 2004/09/08 (Wed) I converted my personal CVS repository to subversion.
+By then I'd been using subversion for 5 months and I were quite 
+comfortable with it -- in fact I am not at all confortable with CVS anymore
+(I can use it, and hack the server side to get some things done, but ...).
+
+The conversion was done the following way:
+
+repository-host $ cd ~
+repository-host $ mkdir .repos
+repository-host $ svnadmin create .repos/mySVN
+repository-host $ svn co file://$HOME/.repos/mySVN
+Checked out revision 0.
+repository-host $ mkdir mySVN/main
+repository-host $ svn add mySVN/main
+A         mySVN/main
+repository-host $ svn commit -m 'Created main...' mySVN
+Adding         mySVN/main
+
+Committed revision 1.
+
+(Repository created, main dir created -- now I just copy my old CVS rep there)
+
+repository-host $ cd myCVS
+repository-host $ cvs up
+repository-host $ cvs up 2>/dev/null
+repository-host $ ### removed junk files ###
+repository-host $ cd ..
+repository-host $ cp -a myCVS/* mySVN/main # note linux syntax: alternative -pR
+repository-host $ cd mySVN/main
+repository-host $ rm -rf **/CVS # note: zsh syntax...
+repository-host $ rm -rf CVSROOT
+repository-host $ find . -type d  # kreit, no extra dirs there...
+repository-host $ svn add *
+... many lines of output ...
+repository-host $ svn commit -m 'Initial fill of subversion repository.'
+... many lines of output ...
+Committed revision 2.
+
+(There is some cvs2svn scripts if one wants to have old commit messages...)
+
+other-host $ svn co svn+ssh://repository-host/<home>/.repos/mySVN
+too@repository-host's password:
+A  mySVN/main
+... many other lines of output ...
+Checked out revision 2.
+
+third-host: $ svn co svn+fsh://repository-host/<home>/.repos/mySVN
+svn: Undefined tunnel scheme 'fsh'
+zsh: exit 1     svn co svn+fsh://repository-host/<home>/.repos/mySVN
+
+(AUTS !... another thing I would like is that ~ (home) could be used there...
+... OK, [tunnel] info can be added for fsh, and SVN_SSH=fsh works also)
+
+other-host $ cd mySVN/main/projects
+other-host $ mkdir m2vmp2cut
+other-host $ cp -a ~/projects/m2vmp2cut/* m2vmp2cut
+other-host $ svn add m2vmp2cut
+other-host $ svn revert -R m2vmp2cut
+other-host $ cd m2vmp2cut
+other-host $ ### deleted junk ###
+other-host $ cd ..
+other-host $ svn add m2vmp2cut
+other-host $ svn commit -m 'Added m2vmp2cut to projects.'
+too@repository-host's password:
+Adding projects/m2vmp2cut
+... many other lines of output ...
+Transmitting file data ................
+Committed revision 3.
+
+(Good, it looks it always asks me for password, anyway, it is good to
+ uncomment line `# store-auth-creds = no' in ~/.subversion/config
+ in order to avoid caching your password (in cleartext) when accessing
+ some subversion (http:// accessed only?) repositories.)
+
+--8<----8<----8<----8<----8<----8<--
+
+2) Ever-growing list of subversion commands used related toi this project...
+	... and Useful subversion commands I've been using so far.
+
+( annotated any year now )
+
+svn add ...
+svn commit [-m ...] ...
+svn st | fgrep -v ?
+svn revert [-R] ... # !!! DANGEROUS
+svn log [-v]
+svn st --no-ignore | tee /dev/tty | sed s/.// | xargs rm -rf # !!! DANGEROUS
+svn st | sed -n 's/^[MA]//p' | xargs tar zcvf changed.tar.gz
+SVN_SSH=fsh svn ...
+svn propset svn:keywords 'Id Rev' <file>
+svnversion .
+svnadmin recover
+
+--8<----8<----8<----8<----8<----8<--
+
+#EOF

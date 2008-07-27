@@ -1,0 +1,33 @@
+
+ Options are as follows:
+
+    -  Just print lve framelist from (m2vmp2cut builtin lvev6frames.pl)
+
+    --stop  Scans video and audio files and creates work script to
+            do the actual cutting, but does not execute it.
+
+    --nomux  Do not mux to out.mpg, leave as out.mp2 and out.m2v.
+
+    --aonly  Cut audio only. Video can be re-encoded and mplexed later.
+
+    --asr=n  sets aspect ratio to the whole output. Values are:
+             0) Don't change, 1) 1:1, 2) 4:3, 3) 16:9, 4) 2.21:1
+             by default the aspect ratio most seen is used.
+
+    --sync=n  milliseconds to delay audio, with negative value 
+              "delays" video.
+
+    --evbr=n  encoding video bit rate. This overrides the average bitrate
+              from input file -- useful for further re-encoding...
+
+    --mplexopts="..."  use given options instead of default `-M -f 8'.
+
+    --test=n  test mode, n is amount of frames around each cutpoint.
+
+    --last=n  last frame in output; useful for testing
+              may be used with --test, in which case used before that.
+
+    --requant=n.n  requantize by given (float) value. This reduces video
+                   size (and quality). Accepted range 1.0 - 5.9.
+                   Value 1.0 gives 5-10% size reduction. 
+

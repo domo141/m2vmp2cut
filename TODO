@@ -1,0 +1,26 @@
+
+Well, all other stuff than this has been used since first version (2004-09),
+Probability that these will be addressed is pretty low...
+
+Better docs (in rst format).
+
+Better name.
+
+Handling of spumux-xml -formatted subtitle files.
+
+---
+
+AC3 audio.
+
+NTSC support (Low in my priority, but patches welcome).
+
+Going into Gops to see whether less frames needs to be encoded -- like
+scene endpoints with P-frames and scene startpoint with I-frames.
+But I don't see it a big problem to encode a few frames even not
+absolutely necessary.
+
+
+Cleaning up the code.
+
+
+Probably many others.

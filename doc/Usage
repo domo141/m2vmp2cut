@@ -1,0 +1,24 @@
+
+ Usage: $0 [options] directory \
+	[-v videofile] [-a audiofile] [-s subtitlefile] [-c cutspec]
+
+      directory: directory where previous steps have laid out content
+
+      (currently -v, -a, -s and -c options unsupported)     
+
+      videofile: in m2v format (i.e. demultiplexed mpeg2 video file)
+
+      audiofile: in mp2 format (i.e. demultiplexed (standard) mp2 audio file)
+
+      subtitlefile: optionally dvdauthor (spumux) xml file...
+        (subtitles currently unsupported, though)
+
+      cutspec: frame ranges in format: s-e[,s-e[,s-e...]]
+	start frame inclusive, end frame exclusive	
+
+      Summary of options:   --options      --examples    -
+                            --stop         --nomux       --aonly
+                            --sync=n       --test=n      --last=n       
+        --mplexopts="..."   --requant=n.n  --evbr=n      --asr=n
+
+ Example: $0 --test=400 --stop .

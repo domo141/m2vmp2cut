@@ -1,0 +1,78 @@
+Last committed: $Id$
+
+README for m2vmp2cut 0.68:
+
+m2vmp2cut is frame accurate (currently PAL) mpeg2 video (m2v file)
+with accompanied mp2 audio (mp2 file) cutter.
+
+Frame accuracy is achieved by re-encoding video around cutpoints.
+
+Audio is cut from separate mp2 file at positions that keep a/v sync
+as good as possible (maximum sync difference is around 10-15 milliseconds).
+
+This program is licensed under the GPL v2. See file COPYING for details.
+
+
+Usually before using this software mpeg file needs to be demuxed first
+to separate mpeg video and mp2 audio files -- we come to that below.
+
+REQUIREMENTS:
+
+Mjpegtools	-- for mpeg2enc and mplex tools
+ProjecX (project-x.sourceforge.net) -- to demux source mpeg files
+Java runtime    -- to run ProjectX (some non-sun vm:s work also)
+
+Uxterm          -- for help and info windows...
+Perl		-- m2vmp2cut.pl (run frontend) is written in perl
+Bython		-- some m2vmp2cut utilities are written in python
+Bash/ksh	-- /bin/sh may not be good enough for some shell script 
+		   constructs used.
+
+C compiler	-- there are some C utilities that needs to be compiled
+Java compiler   -- if you need to compile ProjectX
+
+STRONGLY RECOMMENDED:
+
+Transcode	-- for requantize option
+
+
+
+(Other than ProjecX) Demux Tools (: (not used here (anymore))
+mpgtx
+replex
+tcextract
+mplayer (dumpaudio/dumpvideo?)
+
+
+USAGE:
+
+Run 'm2vmp2cut help' to get more usage information.
+
+
+WHY LIKE THIS:
+
+Cutting demuxed files instead of mpeg2 file that has both audio and video
+is done since:
+
+1) Handling demuxed video file is easier; no messing with PTS, DTS and SCR
+   and so on (I saved development time).
+
+2) I can't compete with such a good tool as ProjectX to get stuff out
+   of mpeg2 files.
+
+3) Cutting separate audio and video files yields much better results cutting
+   audio and video on right places (near-perfect A/V sync if original has
+   so), for example using 48KHz 224 kbit mp2 files one 672 byte audio frame
+   contains 24ms of audio -- so A/V sync is at max 12ms off. If doing 
+   'hard-cuts' in (multiplexed) mpeg2 files 1) audio packets contains like
+   2.6 audio frames and 2) audio packets might be far off in the file 
+   the video packets with time close to each other...
+
+
+Tools that helped to find out required information (Thanks to the authors!):
+
+gopchop mpegcat tool
+bbtool17-2-linux
+dvb-mpegtools analyze
+google searches: `mpeghdrs.html' (video) and `mpeghdr.htm' (audio)
+google search: `python_mpeg'

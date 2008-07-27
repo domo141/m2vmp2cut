@@ -1,0 +1,32 @@
+
+Näppäimet:
+
+Vasen nuoli: 1 kuva taaksepäin
+Oikea nuoli: 1 kuva eteenpäin
+
+Ylänuoli: 1 gop (yleensä puoli sekuntia) eteenpäin
+Alanuoli: 1 gop (yleensä puoli sekuntia) taaksepäin
+
+Page Up:    5 goppia eteenpäin, 20 hypyn jälkeen 25 goppia eteenpäin (*)
+Page Down:  5 goppia taaksepäin, 20 hypyn jälkeen 25 goppia taaksepäin (*)
+
+(*) Vaihtaessa Page Up/Down -suuntaa, ensimmäisellä kerralla jatka 25
+    gopin hyppyjä; toisen suunnan vaihdon jälkeen palaa 5 gopin hyppyihin.
+
+1, 2 ... 9, 0: Hyppää kohtaan 5%, 15% ... 85%, 95%.
+
+TAB:       Merkitse leikkauspiste tämänhetkiseen kohtaan.
+BackSpace: Poista leikkauspiste mikäli ollaan leikkauspisteen "päällä".
+
+, (pilkku): Siirry edelliseen leikkauspisteeseen nykypaikasta.
+. (piste):  Siirry seuraavaan leikkauspisteeseen nykypaikasta.
+
+qq: Lopeta, tallentaen leikkauspisteet tiedostoon.
+
+t: Testaa tulos lähimmän leikkauspisteen kohdalta.
+
+a: Näytä äänigraafi nykyisen sijainnin ympärillä.
+
+i: tietoa (lopullisesta tiedostokoosta).
+
+Paina ENTERiä sulkeaksesi tämän ikkunan  

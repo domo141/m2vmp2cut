@@ -1,0 +1,34 @@
+
+Keybindings:
+
+
+Left Arrow:  1 frame backward.
+Right Arrow: 1 frame forward.
+
+Up Arrow:   1 gop (usually 1/2 sec) forward.
+Down Arrow: 1 gop (usually 1/2 sec) backward.
+
+Page Up:   5 gops forward, after 20 jumps, 25 gops forward (*)
+Page Down: 5 gops backward, after 20 jumps, 25 gops forward (*)
+
+(*) Changing Page Up/Down "direction", first time continue 25 gop.
+    jumps; after second change, go back to 5 gop jumps.
+
+1, 2 ... 9, 0: Jump to position 5%, 15% ... 85%, 95%.
+
+TAB:       Mark cutpoint to current position.
+BackSpace: Delete cutpoint under current position (if any).
+
+, (comma):  Go to previous cutpoint from current location.
+. (period): Go to next cutpoint from current location.
+
+
+qq: Quit, Saving cutpoints to file.
+
+t: Test output around current/closest cutpoint.
+
+a: Show audio graph around current position.
+
+i: information (about estimated final file size).
+
+Press ENTER to close this window  

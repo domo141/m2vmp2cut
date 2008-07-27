@@ -1,0 +1,1055 @@
+r658 | too | 2005-10-23 12:03:01 +0300 (Sun, 23 Oct 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/ANNOUNCE
+   M /main/projects/m2vmp2cut/README
+   M /main/projects/m2vmp2cut/VERSION
+
+Committing release 0.58 (Wrecking Stars).
+------------------------------------------------------------------------
+r657 | too | 2005-10-23 11:42:41 +0300 (Sun, 23 Oct 2005) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/src/fileparts.c
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   M /main/projects/m2vmp2cut/src/m2vscan.c
+   M /main/projects/m2vmp2cut/src/mp2cutpoints.c
+   M /main/projects/m2vmp2cut/src/x.c
+   M /main/projects/m2vmp2cut/src/x.h
+
+m2vmp2cut: mp2cutpoints shows audio bit/samplerate changes
+   (and fails if change occurs in output data).
+   Other minor changes.
+------------------------------------------------------------------------
+r656 | too | 2005-10-23 08:55:12 +0300 (Sun, 23 Oct 2005) | 2 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/src/Makefile
+   M /main/projects/m2vmp2cut/src/embeds.c
+
+m2vmp2cut: Fixes to compile.
+  video.scan.tmp created during scan, renamed to video.scan later.
+------------------------------------------------------------------------
+r655 | too | 2005-10-22 14:25:03 +0300 (Sat, 22 Oct 2005) | 1 line
+Changed paths:
+   D /main/projects/m2vmp2cut/mp2cutpoints.py
+   M /main/projects/m2vmp2cut/src/Makefile
+   M /main/projects/m2vmp2cut/src/embeds.h
+   M /main/projects/m2vmp2cut/src/mp2cutpoints.c
+   A /main/projects/m2vmp2cut/unused/mp2cutpoints.py (from /main/projects/m2vmp2cut/mp2cutpoints.py:654)
+
+m2vmp2cut: mp2cutpoints c implementation may work in m2vmp2cut now.
+------------------------------------------------------------------------
+r654 | too | 2005-10-22 09:52:48 +0300 (Sat, 22 Oct 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/mp2cutpoints.py
+   M /main/projects/m2vmp2cut/src/mp2cutpoints.c
+   M /main/projects/m2vmp2cut/src/x.c
+
+Saving m2vmp2cut mp2cutpoints.c work.
+------------------------------------------------------------------------
+r653 | too | 2005-10-21 17:48:38 +0300 (Fri, 21 Oct 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/mp2cutpoints.c
+   M /main/projects/m2vmp2cut/src/x.c
+   M /main/projects/m2vmp2cut/src/x.h
+
+m2vmp2cut devel updates...
+------------------------------------------------------------------------
+r650 | too | 2005-10-20 20:59:09 +0300 (Thu, 20 Oct 2005) | 1 line
+Changed paths:
+   A /main/projects/m2vmp2cut/src/mp2cutpoints.c
+
+Added half-made mp2cutpoints.c.
+------------------------------------------------------------------------
+r648 | too | 2005-10-19 19:42:28 +0300 (Wed, 19 Oct 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+
+m2vmp2cut mpgfilter: Implemented "gop_fixup" (25 FPS...).
+------------------------------------------------------------------------
+r638 | too | 2005-10-16 17:44:34 +0300 (Sun, 16 Oct 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+
+m2vmp2cut: log alse when expected frame count was achieved.
+------------------------------------------------------------------------
+r465 | too | 2005-07-18 11:51:04 +0300 (Mon, 18 Jul 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/VERSION
+
+Bumped VERSION to 0.57-dev (Rue de Kuusmies).
+------------------------------------------------------------------------
+r464 | too | 2005-07-18 11:50:12 +0300 (Mon, 18 Jul 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/mpg_somehdrinfo.py
+
+m2vmp2cut: give source intra_dc_precision to encoder.
+------------------------------------------------------------------------
+r463 | too | 2005-07-18 10:28:48 +0300 (Mon, 18 Jul 2005) | 2 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+
+m2vmp2cut mpgfilter.c: Copy video format value of
+first sequence display extension header to all rest such headers.
+------------------------------------------------------------------------
+r315 | too | 2005-03-28 16:45:18 +0300 (Mon, 28 Mar 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/misc/pxdemux.sh
+
+pxdemux.sh bug fix (+ multible file feature).
+------------------------------------------------------------------------
+r300 | too | 2005-03-13 08:38:25 +0200 (Sun, 13 Mar 2005) | 1 line
+Changed paths:
+   A /main/projects/m2vmp2cut/lve_compiling_tips
+
+Added a tip file to help with lve compilation(s).
+------------------------------------------------------------------------
+r290 | too | 2005-03-04 22:14:57 +0200 (Fri, 04 Mar 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/ANNOUNCE
+   M /main/projects/m2vmp2cut/README
+   M /main/projects/m2vmp2cut/VERSION
+
+Made release 0.56 (Fifty-Sixty) -- We are halfway there!
+------------------------------------------------------------------------
+r289 | too | 2005-03-04 22:12:54 +0200 (Fri, 04 Mar 2005) | 1 line
+Changed paths:
+   D /main/projects/m2vmp2cut/src/mpgdata.c
+   D /main/projects/m2vmp2cut/src/mpgdata.h
+   A /main/projects/m2vmp2cut/unused/mpgdata.c (from /main/projects/m2vmp2cut/src/mpgdata.c:288)
+   A /main/projects/m2vmp2cut/unused/mpgdata.h (from /main/projects/m2vmp2cut/src/mpgdata.h:288)
+
+Moved ./src/mpgdata.[c] to ./unused.
+------------------------------------------------------------------------
+r288 | too | 2005-03-04 21:55:29 +0200 (Fri, 04 Mar 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+   M /main/projects/m2vmp2cut/src/m2vscan.c
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+   A /main/projects/m2vmp2cut/src/zzob.c
+   A /main/projects/m2vmp2cut/src/zzob.h
+
+m2vmp2cut: replaced mpginfo with (better) zzob implementation.
+------------------------------------------------------------------------
+r285 | too | 2005-03-04 21:04:34 +0200 (Fri, 04 Mar 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Options
+   M /main/projects/m2vmp2cut/Usage
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+Added option --aonly to m2vmp2cut.
+------------------------------------------------------------------------
+r284 | too | 2005-03-04 20:36:07 +0200 (Fri, 04 Mar 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/misc/lve_040322_display.c-patch
+
+New, better lve_040322_display.c-patch to m2vmp2cut dist.
+------------------------------------------------------------------------
+r271 | too | 2005-03-01 21:05:51 +0200 (Tue, 01 Mar 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/mpg_somehdrinfo.py
+
+m2vmp2cut:mpg_somehdrinfo.py printed matrixes only when intra 0, inter 1.
+------------------------------------------------------------------------
+r247 | too | 2005-02-15 21:43:18 +0200 (Tue, 15 Feb 2005) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+
+"Makefile perlcode" change: ' -> ", to make \n output newline.
+------------------------------------------------------------------------
+r168 | too | 2004-12-11 09:16:46 +0200 (Sat, 11 Dec 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/mpg_catfiltered.py
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+
+Added more encoded frame count checks. (+ bug fixes, works again).
+------------------------------------------------------------------------
+r167 | too | 2004-12-11 08:38:56 +0200 (Sat, 11 Dec 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/lvev6frames.pl
+
+lvev6frames.pl: Outcommented debug code, removed old code. select STDERR;.
+------------------------------------------------------------------------
+r166 | too | 2004-12-11 00:16:33 +0200 (Sat, 11 Dec 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+
+m2vmp2cut (builtin mpgfilter) now complains if frame count does not match.
+------------------------------------------------------------------------
+r165 | too | 2004-12-11 00:15:38 +0200 (Sat, 11 Dec 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Options
+   M /main/projects/m2vmp2cut/Usage
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+Added --evbr (encoding video bit rate) option to m2vmp2cut.
+------------------------------------------------------------------------
+r164 | too | 2004-12-11 00:00:40 +0200 (Sat, 11 Dec 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/lvev6frames.pl
+
+m2vmp2cut lvev6frames.pl tries to use media list value for range endpoint.
+------------------------------------------------------------------------
+r159 | too | 2004-11-24 21:40:55 +0200 (Wed, 24 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Examples
+
+Some Examples file corrections.
+------------------------------------------------------------------------
+r158 | too | 2004-11-24 18:42:21 +0200 (Wed, 24 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Examples
+
+Added some material to "Examples".
+------------------------------------------------------------------------
+r157 | too | 2004-11-23 22:21:52 +0200 (Tue, 23 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+m2vmp2cut.pl argument handling tuning.
+------------------------------------------------------------------------
+r151 | too | 2004-11-06 14:52:56 +0200 (Sat, 06 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+m2vmp2cut/Makefile tunes/fixes after [150].
+------------------------------------------------------------------------
+r150 | too | 2004-11-06 14:44:20 +0200 (Sat, 06 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+m2vmp2cut/Makefile dependency changes to allow easier testing of snapshots.
+------------------------------------------------------------------------
+r149 | too | 2004-11-06 14:34:59 +0200 (Sat, 06 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+   A /main/projects/m2vmp2cut/misc/README
+   M /main/projects/m2vmp2cut/misc/pxdemux.sh
+
+Added misc dir to distribution archives...
+------------------------------------------------------------------------
+r148 | too | 2004-11-06 14:23:45 +0200 (Sat, 06 Nov 2004) | 1 line
+Changed paths:
+   A /main/projects/m2vmp2cut/misc/lve_040322_display.c-patch
+   A /main/projects/m2vmp2cut/misc/lve_040322_lve_gui.c-patch
+
+Added 2 lve 040322 patches to m2vmp2cut/misc/.
+------------------------------------------------------------------------
+r147 | too | 2004-11-06 14:19:55 +0200 (Sat, 06 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/lvev6frames.pl
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+lve edit list error handling tuning.
+------------------------------------------------------------------------
+r145 | too | 2004-11-04 00:34:38 +0200 (Thu, 04 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/VERSION
+
+Re-versioned as 0.55-dev, now dubbed "Midnight Crichton (or Sun)".
+------------------------------------------------------------------------
+r144 | too | 2004-11-03 18:18:46 +0200 (Wed, 03 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/ANNOUNCE
+   M /main/projects/m2vmp2cut/README
+   M /main/projects/m2vmp2cut/VERSION
+
+Made 0.54 (stable) release.
+------------------------------------------------------------------------
+r142 | too | 2004-11-03 06:43:59 +0200 (Wed, 03 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+m2mvp2cut tmprepo target changes.
+------------------------------------------------------------------------
+r141 | too | 2004-11-03 06:22:25 +0200 (Wed, 03 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+   M /main/projects/m2vmp2cut/VERSION
+
+Bumped revision to 0.55-dev (+Makefile bugfixes).
+------------------------------------------------------------------------
+r140 | too | 2004-11-02 19:14:40 +0200 (Tue, 02 Nov 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/VERSION
+
+Snapshot devel release (0.53-dev). Bugfix "release" after 0.42.
+------------------------------------------------------------------------
+r139 | too | 2004-11-02 19:12:55 +0200 (Tue, 02 Nov 2004) | 5 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/Options
+   M /main/projects/m2vmp2cut/Usage
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/src/bufwrite.c
+   M /main/projects/m2vmp2cut/src/fileparts.c
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+   M /main/projects/m2vmp2cut/src/subprog.c
+   M /main/projects/m2vmp2cut/src/x.c
+   M /main/projects/m2vmp2cut/src/x.h
+
+m2vmp2cut: Made internal writefully() function print how many bytes written
+   instead of true/false. Fileparts builtin now prints the count of
+   bytes written (unless -q option given). New option `-' to m2vmp2cut.pl;
+   shortcut of m2vmp2cut builtin lvev6frames.pl. Internal ver(match) now 2.
+------------------------------------------------------------------------
+r133 | too | 2004-10-30 13:41:00 +0300 (Sat, 30 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/misc/pxdemux.sh
+
+Tuned "remux" option to m2vmp2cut/misc/pxdemux.sh.-
+------------------------------------------------------------------------
+r131 | too | 2004-10-30 08:32:15 +0300 (Sat, 30 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+
+Added internal version check to m2vmp2cut.
+------------------------------------------------------------------------
+r127 | too | 2004-10-26 23:44:27 +0300 (Tue, 26 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+Unused files now listed properly in m2vmp2cut Makefile.
+------------------------------------------------------------------------
+r126 | too | 2004-10-26 23:37:30 +0300 (Tue, 26 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/lvev6frames.pl
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/mp2cutpoints.py
+   M /main/projects/m2vmp2cut/mpg_catfiltered.py
+   M /main/projects/m2vmp2cut/mpg_somehdrinfo.py
+
+Made embedded perl/python programs wait for their initial child to terminate.
+------------------------------------------------------------------------
+r125 | too | 2004-10-26 23:35:51 +0300 (Tue, 26 Oct 2004) | 1 line
+Changed paths:
+   D /main/projects/m2vmp2cut/m2vmp2cut-x.sh
+   D /main/projects/m2vmp2cut/m2vscan.py
+   D /main/projects/m2vmp2cut/mpg_setasrfilter.py
+   A /main/projects/m2vmp2cut/unused
+   A /main/projects/m2vmp2cut/unused/m2vmp2cut-x.sh (from /main/projects/m2vmp2cut/m2vmp2cut-x.sh:123)
+   A /main/projects/m2vmp2cut/unused/m2vscan.py (from /main/projects/m2vmp2cut/m2vscan.py:123)
+   A /main/projects/m2vmp2cut/unused/mpg_setasrfilter.py (from /main/projects/m2vmp2cut/mpg_setasrfilter.py:123)
+
+Moved some files to directory unused.
+------------------------------------------------------------------------
+r124 | too | 2004-10-26 23:34:47 +0300 (Tue, 26 Oct 2004) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/src/embeds.c
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   M /main/projects/m2vmp2cut/src/showdoc.c
+   M /main/projects/m2vmp2cut/src/subprog.c
+   M /main/projects/m2vmp2cut/src/subprog.h
+
+Changed how m2vmp2cut feeds data to embedded commands (now execs parent and
+child writes data). At the same time combined duplicate code to one function.
+------------------------------------------------------------------------
+r123 | too | 2004-10-26 22:00:24 +0300 (Tue, 26 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+Added options --last and --requant to m2vmp2cut.pl.
+------------------------------------------------------------------------
+r122 | too | 2004-10-26 22:00:01 +0300 (Tue, 26 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Examples
+   M /main/projects/m2vmp2cut/Options
+   M /main/projects/m2vmp2cut/Usage
+
+Tuned embedded documentation.
+------------------------------------------------------------------------
+r121 | too | 2004-10-26 21:59:35 +0300 (Tue, 26 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+
+Added missing obj_m/showdoc.o dependencies to m2vmp2cut/src/Makefile.
+------------------------------------------------------------------------
+r120 | too | 2004-10-26 09:55:57 +0300 (Tue, 26 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+m2vmp2cut make tmprepo changes -- needed to test elsewhere.
+------------------------------------------------------------------------
+r119 | too | 2004-10-25 22:27:21 +0300 (Mon, 25 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Examples
+   M /main/projects/m2vmp2cut/Options
+   M /main/projects/m2vmp2cut/src/Makefile
+
+Newlines at the end of m2vmp2cut docfiles, and filename fix in src/Makefile.
+------------------------------------------------------------------------
+r118 | too | 2004-10-25 22:16:07 +0300 (Mon, 25 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+m2vmp2cut.pl showdoc() fd redirection fixes.
+------------------------------------------------------------------------
+r117 | too | 2004-10-25 22:10:54 +0300 (Mon, 25 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/src/showdoc.c
+   M /main/projects/m2vmp2cut/src/subprog.c
+
+m2vmp2cut usage and such changed using embedded text files.
+------------------------------------------------------------------------
+r116 | too | 2004-10-25 21:39:27 +0300 (Mon, 25 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+   M /main/projects/m2vmp2cut/src/embeds.c
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   A /main/projects/m2vmp2cut/src/showdoc.c
+   A /main/projects/m2vmp2cut/src/showdoc.h
+   A /main/projects/m2vmp2cut/src/subprog.c
+   A /main/projects/m2vmp2cut/src/subprog.h
+
+Added embedded documentation support.
+------------------------------------------------------------------------
+r115 | too | 2004-10-24 15:11:18 +0300 (Sun, 24 Oct 2004) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+-    $sync = $1, shift @ARGV, next if ($ARGV[0] =~ /^--sync=-?(\d+)\b/);
++    $sync = $1, shift @ARGV, next if ($ARGV[0] =~ /^--sync=(-?\d+)\b/);
+------------------------------------------------------------------------
+r114 | too | 2004-10-23 17:02:23 +0300 (Sat, 23 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+make distclean no longer removes HISTORY and SvnVersion files.
+------------------------------------------------------------------------
+r113 | too | 2004-10-23 16:53:54 +0300 (Sat, 23 Oct 2004) | 1 line
+Changed paths:
+   A /main/projects/m2vmp2cut/Examples
+   A /main/projects/m2vmp2cut/Options
+   A /main/projects/m2vmp2cut/Usage
+
+Added  Usage, Options and Exampes  files to m2vmp2cut.
+------------------------------------------------------------------------
+r112 | too | 2004-10-22 20:26:04 +0300 (Fri, 22 Oct 2004) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+m2vmp2cut --test=n option is no-op in 0.42 ($framelist changing line went
+away with debug code removal). Now it is back.
+------------------------------------------------------------------------
+r110 | too | 2004-10-22 00:29:31 +0300 (Fri, 22 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/VERSION
+
+Development version name better without '.
+------------------------------------------------------------------------
+r109 | too | 2004-10-22 00:08:04 +0300 (Fri, 22 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+m2vmp2cut filelist make target fixed for release use; 0.42 archive was hand-fixed.
+------------------------------------------------------------------------
+r108 | too | 2004-10-22 00:01:52 +0300 (Fri, 22 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/VERSION
+
+Started m2vmp2cut 0.51-dev "Const'it on monet" development.
+------------------------------------------------------------------------
+r107 | too | 2004-10-21 23:48:23 +0300 (Thu, 21 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/ANNOUNCE
+   M /main/projects/m2vmp2cut/INSTALL
+   M /main/projects/m2vmp2cut/README
+   M /main/projects/m2vmp2cut/SVN
+   M /main/projects/m2vmp2cut/TODO
+   M /main/projects/m2vmp2cut/VERSION
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   A /main/projects/m2vmp2cut/misc
+   A /main/projects/m2vmp2cut/misc/pxdemux.sh
+
+m2vmp2cut version 0.42 "Infinite Improbabilities" release commit.
+------------------------------------------------------------------------
+r106 | too | 2004-10-21 22:49:54 +0300 (Thu, 21 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+Added --mplexopts command line option to m2vmp2cut.pl.
+------------------------------------------------------------------------
+r105 | too | 2004-10-21 00:46:28 +0300 (Thu, 21 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+Utilizing filerotate in m2vmp2cut.pl.
+------------------------------------------------------------------------
+r104 | too | 2004-10-21 00:07:27 +0300 (Thu, 21 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+   A /main/projects/m2vmp2cut/src/filerotate.c
+   A /main/projects/m2vmp2cut/src/filerotate.h
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+
+Added `m2vmp2cut builtin filerotate'.
+------------------------------------------------------------------------
+r103 | too | 2004-10-20 20:58:37 +0300 (Wed, 20 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+
+s/Video frame/Picture/ in m2vmp2cut/src/mpgfilter.c
+------------------------------------------------------------------------
+r102 | too | 2004-10-20 20:56:57 +0300 (Wed, 20 Oct 2004) | 4 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/src/m2vscan.c
+
+Added aspect ratio output information to m2vmp2cut/src/m2vscan.c.
+Added working options --nomux, --sync=n and --test=n to m2vmp2cut.pl.
+Now default aspect ratio is set as most used asr in input file.
+------------------------------------------------------------------------
+r101 | too | 2004-10-19 17:03:11 +0300 (Tue, 19 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+Tiny m2vmp2cut/Makefile patch that has been laying on one machine.
+------------------------------------------------------------------------
+r100 | too | 2004-10-18 20:59:59 +0300 (Mon, 18 Oct 2004) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+Added 'develbuild' target to m2vmp2cut/Makefile 
+(effectively `make distclean SvnVersion m2vmp2cut.bin')
+------------------------------------------------------------------------
+r99 | too | 2004-10-18 20:57:08 +0300 (Mon, 18 Oct 2004) | 4 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+
+Hmm. m2vmp2cut/src/Makefile did not create *_priv.h:s on demand
+-- starting to forgot how dependencies are working there ...
+... which is not suprising, most of those are figured out by trial & error.
+------------------------------------------------------------------------
+r98 | too | 2004-10-18 20:51:50 +0300 (Mon, 18 Oct 2004) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/mp2cutpoints.py
+
+m2vmp2cut/mp2cutpoints.py used variable 'c' for 2 purposes at the same time.
+also one error message in same file was printed to stdout (now to stderr).
+------------------------------------------------------------------------
+r94 | too | 2004-10-07 23:38:21 +0300 (Thu, 07 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vscan.py
+
+Some quick cleanup to m2vscan.py even though it is (currently) obsolete.
+------------------------------------------------------------------------
+r93 | too | 2004-10-07 23:22:14 +0300 (Thu, 07 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+
+m2vmp2cut/src/Makefile: Removed test @echo from target all:.
+------------------------------------------------------------------------
+r92 | too | 2004-10-07 23:20:59 +0300 (Thu, 07 Oct 2004) | 4 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/src/Makefile
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+
+m2vmp2cut.pl: Added a bit better help and option parsing + added option --stop
+src/m2vmp2cut.c: Print shorter message when run without arguments.
+src/Makefile: tuned again dependencies (too easy to make mistakes there).
+------------------------------------------------------------------------
+r90 | too | 2004-10-07 01:09:50 +0300 (Thu, 07 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+
+m2vmp2cut/src/Makefile: version.h creation tuning.
+------------------------------------------------------------------------
+r89 | too | 2004-10-07 01:03:58 +0300 (Thu, 07 Oct 2004) | 2 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+   M /main/projects/m2vmp2cut/VERSION
+   M /main/projects/m2vmp2cut/lvev6frames.pl
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/mp2cutpoints.py
+   M /main/projects/m2vmp2cut/mpg_catfiltered.py
+   M /main/projects/m2vmp2cut/mpg_setasrfilter.py
+   M /main/projects/m2vmp2cut/mpg_somehdrinfo.py
+   M /main/projects/m2vmp2cut/src/Makefile
+   M /main/projects/m2vmp2cut/src/embeds.c
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   M /main/projects/m2vmp2cut/src/m2vscan.c
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+   M /main/projects/m2vmp2cut/src/x.h
+
+Bug fixes, feature enchancements, development improvements...
+------------------------------------------------------------------------
+r88 | too | 2004-10-06 09:09:31 +0300 (Wed, 06 Oct 2004) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+
+Now m2vmp2cut/src/Makefile has probably the neatest working way to
+create required object/generated header files directories on demand.
+------------------------------------------------------------------------
+r87 | too | 2004-10-06 08:35:23 +0300 (Wed, 06 Oct 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/mp2cutpoints.py
+
+mp2cutpoints.py now has first version of progress indicator.
+------------------------------------------------------------------------
+r84 | too | 2004-10-01 15:48:34 +0300 (Fri, 01 Oct 2004) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/src/bufwrite.c
+   M /main/projects/m2vmp2cut/src/embeds.c
+   M /main/projects/m2vmp2cut/src/embeds.h
+   M /main/projects/m2vmp2cut/src/fileparts.c
+   M /main/projects/m2vmp2cut/src/fileparts.h
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   M /main/projects/m2vmp2cut/src/m2vscan.c
+   M /main/projects/m2vmp2cut/src/m2vscan.h
+   M /main/projects/m2vmp2cut/src/mpgdata.c
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+   M /main/projects/m2vmp2cut/src/mpgfilter.h
+   M /main/projects/m2vmp2cut/src/x.c
+   M /main/projects/m2vmp2cut/src/x.h
+
+m2vmp2cut.pl: changed link +++ to ,,, and slight ARGV checking modification.
+m2vmp2cut/src: More failure messages in addition to changed prg exit system.
+------------------------------------------------------------------------
+r83 | too | 2004-09-30 19:00:05 +0300 (Thu, 30 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+
+Fixed the dependency problem in [82].
+------------------------------------------------------------------------
+r82 | too | 2004-09-30 18:53:36 +0300 (Thu, 30 Sep 2004) | 4 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+   M /main/projects/m2vmp2cut/src/bufwrite.c
+   M /main/projects/m2vmp2cut/src/bufwrite.h
+   M /main/projects/m2vmp2cut/src/embeds.c
+   M /main/projects/m2vmp2cut/src/embeds.h
+   M /main/projects/m2vmp2cut/src/fileparts.c
+   M /main/projects/m2vmp2cut/src/fileparts.h
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   M /main/projects/m2vmp2cut/src/m2vscan.c
+   M /main/projects/m2vmp2cut/src/m2vscan.h
+   M /main/projects/m2vmp2cut/src/mpgdata.c
+   M /main/projects/m2vmp2cut/src/mpgdata.h
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+   M /main/projects/m2vmp2cut/src/mpgfilter.h
+   M /main/projects/m2vmp2cut/src/x.c
+
+Added GPL notice and Local variables to every .[ch] file.
+Tuned Makefile to distinguish more m2vmp2cut.(mini|bin), which it
+does but currently there is some depency problems (compiles always).
+------------------------------------------------------------------------
+r81 | too | 2004-09-30 00:43:46 +0300 (Thu, 30 Sep 2004) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+
+Added embeds.h to src Makefile HDRS variable.
+BTW: Did I mention already that svnxxdiff.sh is GREAT.
+------------------------------------------------------------------------
+r80 | too | 2004-09-30 00:40:10 +0300 (Thu, 30 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/mp2cutpoints.py
+   M /main/projects/m2vmp2cut/src/Makefile
+   M /main/projects/m2vmp2cut/src/embeds.c
+   M /main/projects/m2vmp2cut/src/embeds.h
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+
+Many changes mostly making embeds actually work.
+------------------------------------------------------------------------
+r79 | too | 2004-09-29 18:57:45 +0300 (Wed, 29 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/src/embeds.c
+
+First fixed after first embeds testing.
+------------------------------------------------------------------------
+r78 | too | 2004-09-29 18:50:18 +0300 (Wed, 29 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+   A /main/projects/m2vmp2cut/src/embeds.c
+   A /main/projects/m2vmp2cut/src/embeds.h
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   M /main/projects/m2vmp2cut/src/x.c
+   M /main/projects/m2vmp2cut/src/x.h
+
+Added script embedding support.
+------------------------------------------------------------------------
+r77 | too | 2004-09-28 18:58:18 +0300 (Tue, 28 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+m2vmp2cut.pl generated script now cd:s to it's working dir.
+------------------------------------------------------------------------
+r76 | too | 2004-09-27 18:42:36 +0300 (Mon, 27 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+   M /main/projects/m2vmp2cut/src/Makefile
+
+m2vmp2cut: Added src files to `filelist' target'
+------------------------------------------------------------------------
+r75 | too | 2004-09-27 18:29:45 +0300 (Mon, 27 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/VERSION
+
+So many improvements it is time to bump version-minor to 0.33.
+------------------------------------------------------------------------
+r74 | too | 2004-09-27 18:25:05 +0300 (Mon, 27 Sep 2004) | 6 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/src/Makefile
+
+m2vmp2cut.pl: Added end-of-sequence markest to files to be re-encoded as
+	mpeg2dec seems to require such when last frame of file is decoded.
+	Added SIGQUIT handling (and added trap 'kill -QUIT' ... to do.sh).
+	Added making of m2vmp2cut.mini.
+src/Makefile: Added target m2vmp2cut.mini.
+------------------------------------------------------------------------
+r73 | too | 2004-09-26 16:05:22 +0300 (Sun, 26 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/mpg_catfiltered.py
+
+m2vmpcut: hax in mpg_catfiltered.py -- buggy fillbufs beeds to be fixed.
+------------------------------------------------------------------------
+r72 | too | 2004-09-26 15:56:40 +0300 (Sun, 26 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+m2vmp2cut Makefile: make m2vmp2cut.bin ALWAYS.
+------------------------------------------------------------------------
+r71 | too | 2004-09-26 15:53:56 +0300 (Sun, 26 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/m2vscan.c
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+
+m2vmp2cut: Changed progress output cursor positions.
+------------------------------------------------------------------------
+r70 | too | 2004-09-26 15:47:24 +0300 (Sun, 26 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+m2vmp2cut.pl now uses some m2vmp2cut.bin builtin routines.
+------------------------------------------------------------------------
+r69 | too | 2004-09-26 15:46:43 +0300 (Sun, 26 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+m2vmp2cut: Changed makefile default target...
+------------------------------------------------------------------------
+r68 | too | 2004-09-26 14:24:45 +0300 (Sun, 26 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+   M /main/projects/m2vmp2cut/src/fileparts.c
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   A /main/projects/m2vmp2cut/src/m2vscan.c
+   A /main/projects/m2vmp2cut/src/m2vscan.h
+   M /main/projects/m2vmp2cut/src/mpgdata.c
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+
+m2vmp2cut: added m2vscan.[ch] + some changes around.
+------------------------------------------------------------------------
+r67 | too | 2004-09-26 09:34:05 +0300 (Sun, 26 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+   M /main/projects/m2vmp2cut/src/bufwrite.c
+   A /main/projects/m2vmp2cut/src/fileparts.c
+   A /main/projects/m2vmp2cut/src/fileparts.h
+   M /main/projects/m2vmp2cut/src/mpgdata.c
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+   A /main/projects/m2vmp2cut/src/x.c
+   M /main/projects/m2vmp2cut/src/x.h
+
+m2vmp2cut: Added fileparts.[ch] and x.c; fileparts support.
+------------------------------------------------------------------------
+r66 | too | 2004-09-25 17:11:07 +0300 (Sat, 25 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/src/mpgfilter.c
+
+some mpgfilter development (progress output).
+------------------------------------------------------------------------
+r65 | too | 2004-09-25 16:54:38 +0300 (Sat, 25 Sep 2004) | 5 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/src/Makefile
+   A /main/projects/m2vmp2cut/src/bufwrite.c
+   A /main/projects/m2vmp2cut/src/bufwrite.h
+   M /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   M /main/projects/m2vmp2cut/src/mpgdata.c
+   M /main/projects/m2vmp2cut/src/mpgdata.h
+   A /main/projects/m2vmp2cut/src/mpgfilter.c
+   A /main/projects/m2vmp2cut/src/mpgfilter.h
+   M /main/projects/m2vmp2cut/src/x.h
+
+m2vmp2cut (/src):
+	Added bufwrite and mpgfilter C modules.	
+	Added framework material to x.h
+	Added python compilation target to Makefile
+------------------------------------------------------------------------
+r64 | too | 2004-09-25 10:00:20 +0300 (Sat, 25 Sep 2004) | 1 line
+Changed paths:
+   A /main/projects/m2vmp2cut/src/Makefile
+   A /main/projects/m2vmp2cut/src/m2vmp2cut.c
+   M /main/projects/m2vmp2cut/src/mpgdata.c
+   A /main/projects/m2vmp2cut/src/mpgdata.h
+   A /main/projects/m2vmp2cut/src/x.h
+
+Added more framework to m2vmp2cut C development.
+------------------------------------------------------------------------
+r62 | too | 2004-09-23 23:03:13 +0300 (Thu, 23 Sep 2004) | 1 line
+Changed paths:
+   A /main/projects/m2vmp2cut/src
+   A /main/projects/m2vmp2cut/src/mpgdata.c
+
+Added src directory and mpgdata.c "library" there.
+------------------------------------------------------------------------
+r52 | too | 2004-09-19 16:07:30 +0300 (Sun, 19 Sep 2004) | 1 line
+Changed paths:
+   A /main/projects/m2vmp2cut/ANNOUNCE
+   M /main/projects/m2vmp2cut/Makefile
+   M /main/projects/m2vmp2cut/TODO
+
+Added ANNOUNCE, minor-tuned TODO.
+------------------------------------------------------------------------
+r51 | too | 2004-09-19 11:30:51 +0300 (Sun, 19 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+script(1) do.sh output to do.sh-out.
+------------------------------------------------------------------------
+r50 | too | 2004-09-19 11:10:05 +0300 (Sun, 19 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/TODO
+
+TODO update.
+------------------------------------------------------------------------
+r49 | too | 2004-09-19 09:56:42 +0300 (Sun, 19 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/VERSION
+
+Bumped version to 0.25-dev after "significant" changes.
+------------------------------------------------------------------------
+r48 | too | 2004-09-19 09:13:52 +0300 (Sun, 19 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+Added mpg_catfiltered.py to Makefile.
+------------------------------------------------------------------------
+r47 | too | 2004-09-19 09:12:48 +0300 (Sun, 19 Sep 2004) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/mpg_catfiltered.py
+
+Added mpg_catfiltered usage to m2vmp2cut.pl 
+(Also outcommented one debug-print in mpg_catfiltered.py).
+------------------------------------------------------------------------
+r46 | too | 2004-09-19 09:07:23 +0300 (Sun, 19 Sep 2004) | 1 line
+Changed paths:
+   A /main/projects/m2vmp2cut/mpg_catfiltered.py
+
+Added mpg_catfiltered.py.
+------------------------------------------------------------------------
+r45 | too | 2004-09-18 16:37:43 +0300 (Sat, 18 Sep 2004) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/mpg_somehdrinfo.py
+
+mpg_somehdrinfo.py changes to support future filtering.
+m2vmp2cut.pl modified to support new output.
+------------------------------------------------------------------------
+r44 | too | 2004-09-17 23:32:03 +0300 (Fri, 17 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+Just noticed that mplex can be made to ignore "seqend markers".
+------------------------------------------------------------------------
+r43 | too | 2004-09-17 23:13:21 +0300 (Fri, 17 Sep 2004) | 3 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+   M /main/projects/m2vmp2cut/VERSION
+
+Makefile: made HISTORY file creation omit empty line just before /^--*$/ line
+VERSION: Now!!!11!!??++??
+------------------------------------------------------------------------
+r42 | too | 2004-09-16 22:33:12 +0300 (Thu, 16 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/VERSION
+
+Hopefully the last VERSION file change - version changes are not counted.
+------------------------------------------------------------------------
+r41 | too | 2004-09-16 18:25:55 +0300 (Thu, 16 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+Only allow [2468] as last in release number...
+------------------------------------------------------------------------
+r40 | too | 2004-09-16 18:17:37 +0300 (Thu, 16 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/VERSION
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+Changed VERSION and m2vmpcut.pl for 0.23-dev.
+------------------------------------------------------------------------
+r39 | too | 2004-09-16 18:13:58 +0300 (Thu, 16 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/VERSION
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+Changed VERSION and m2vmpcut.pl for 0.22 release.
+------------------------------------------------------------------------
+r38 | too | 2004-09-16 18:11:49 +0300 (Thu, 16 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+Added release target and mpg_somehrdinfo.py to Makefile.
+------------------------------------------------------------------------
+r37 | too | 2004-09-16 18:11:01 +0300 (Thu, 16 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+m2vmp2cut.pl now uses mpg_somehdrinfo.py to check for progressive video.
+------------------------------------------------------------------------
+r36 | too | 2004-09-16 18:09:42 +0300 (Thu, 16 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/README
+   M /main/projects/m2vmp2cut/TODO
+
+Some README and TODO changes.
+------------------------------------------------------------------------
+r35 | too | 2004-09-16 18:03:43 +0300 (Thu, 16 Sep 2004) | 1 line
+Changed paths:
+   A /main/projects/m2vmp2cut/mpg_somehdrinfo.py
+
+Added mpg_somehdrinfo.py.
+------------------------------------------------------------------------
+r34 | too | 2004-09-15 17:56:58 +0300 (Wed, 15 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+`M-x replace-string RET release RET snapshot RET' in Makefile.
+------------------------------------------------------------------------
+r33 | too | 2004-09-15 17:54:47 +0300 (Wed, 15 Sep 2004) | 4 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/TODO
+
+TODO changes:
+    Added progressive/non-progressive video and quantization matrix issues.
+    Removed aspect ratio issue.
+------------------------------------------------------------------------
+r32 | too | 2004-09-15 17:51:21 +0300 (Wed, 15 Sep 2004) | 6 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+Now mpeg2enc is used to encode the material; as mpeg2enc
+writes sequence end header it is now removed before feeding
+video to mplex. Encoding options were also changed to generate
+non-progressive video (picture_structure still 3) and there now
+may be 2 B-frames between reference (I or P) frames.
+------------------------------------------------------------------------
+r31 | too | 2004-09-14 14:05:19 +0300 (Tue, 14 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+Added mpg_setasrfilter.py to Makefile so it appears also in releases.
+------------------------------------------------------------------------
+r30 | too | 2004-09-13 22:20:46 +0300 (Mon, 13 Sep 2004) | 6 lines
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+m2vmp2cut.pl (the driver program) changes: 
+  Check that frame ranges are "OK" (e > s and no overlaps to be sure).
+  Added option --asr=n to set aspect ratio to whole output file.
+  (Now, the generated shell script is no longer independent of perl/python)
+A small Makefile tune (forgotten from previous commit) also came in.
+------------------------------------------------------------------------
+r29 | too | 2004-09-13 21:57:38 +0300 (Mon, 13 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/Makefile
+
+Tuned Makefile to ease making releases.
+------------------------------------------------------------------------
+r28 | too | 2004-09-13 21:56:06 +0300 (Mon, 13 Sep 2004) | 1 line
+Changed paths:
+   A /main/projects/m2vmp2cut/mpg_setasrfilter.py
+
+Added mpg_setasrfilter.py.
+------------------------------------------------------------------------
+r26 | too | 2004-09-11 11:42:21 +0300 (Sat, 11 Sep 2004) | 2 lines
+Changed paths:
+   D /main/projects/m2vmp2cut/CVS
+
+Removed CVS directory.
+------------------------------------------------------------------------
+r25 | too | 2004-09-11 11:29:44 +0300 (Sat, 11 Sep 2004) | 5 lines
+Changed paths:
+   D /main/projects/m2vmp2cut/HISTORY+SVN
+   D /main/projects/m2vmp2cut/MANIFEST
+   M /main/projects/m2vmp2cut/Makefile
+   A /main/projects/m2vmp2cut/SVN (from /main/projects/m2vmp2cut/HISTORY+SVN:24)
+   M /main/projects/m2vmp2cut/VERSION
+
+Some Makefile/document tuning:
+	Removed MANIFEST and moved contents of it to Makefile.
+	Renamed HISTORY+SVN to SVN and removed history entries.
+	-- now HISTORY file is autogenerated for release in Makefile.
+------------------------------------------------------------------------
+r24 | too | 2004-09-09 23:24:54 +0300 (Thu, 09 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/HISTORY+SVN
+   M /main/projects/m2vmp2cut/MANIFEST
+   M /main/projects/m2vmp2cut/README
+   M /main/projects/m2vmp2cut/TODO
+   M /main/projects/m2vmp2cut/VERSION
+   M /main/projects/m2vmp2cut/lvev6frames.pl
+   M /main/projects/m2vmp2cut/m2vmp2cut-x.sh
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+   M /main/projects/m2vmp2cut/m2vscan.py
+   M /main/projects/m2vmp2cut/mp2cutpoints.py
+
+Development release 0.21-dev (Changes suppressed).
+------------------------------------------------------------------------
+r14 | too | 2004-09-09 01:51:08 +0300 (Thu, 09 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/MANIFEST
+   M /main/projects/m2vmp2cut/lvev6frames.pl
+   M /main/projects/m2vmp2cut/m2vmp2cut.pl
+
+m2vmp2cut devel tuning.
+------------------------------------------------------------------------
+r13 | too | 2004-09-09 00:57:05 +0300 (Thu, 09 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/HISTORY+SVN
+
+Yesterday's project m2vmp2cut HISTORY+SVN additions.
+------------------------------------------------------------------------
+r4 | too | 2004-09-08 19:02:39 +0300 (Wed, 08 Sep 2004) | 1 line
+Changed paths:
+   M /main/projects/m2vmp2cut/HISTORY+SVN
+
+Added more information to HISTORY+SVN.
+------------------------------------------------------------------------
+r3 | too | 2004-09-08 18:41:51 +0300 (Wed, 08 Sep 2004) | 1 line
+Changed paths:
+   A /main/projects
+   A /main/projects/m2vmp2cut
+   A /main/projects/m2vmp2cut/COPYING
+   A /main/projects/m2vmp2cut/CVS
+   A /main/projects/m2vmp2cut/CVS/Entries
+   A /main/projects/m2vmp2cut/CVS/Repository
+   A /main/projects/m2vmp2cut/CVS/Root
+   A /main/projects/m2vmp2cut/HISTORY+SVN
+   A /main/projects/m2vmp2cut/INSTALL
+   A /main/projects/m2vmp2cut/MANIFEST
+   A /main/projects/m2vmp2cut/Makefile
+   A /main/projects/m2vmp2cut/README
+   A /main/projects/m2vmp2cut/TODO
+   A /main/projects/m2vmp2cut/VERSION
+   A /main/projects/m2vmp2cut/lvev6frames.pl
+   A /main/projects/m2vmp2cut/m2vmp2cut-x.sh
+   A /main/projects/m2vmp2cut/m2vmp2cut.pl
+   A /main/projects/m2vmp2cut/m2vscan.py
+   A /main/projects/m2vmp2cut/mp2cutpoints.py
+
+Added projects dir and m2vmp2cut there.
+------------------------------------------------------------------------

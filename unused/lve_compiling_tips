@@ -1,0 +1,28 @@
+So far notes from my latest compilation:
+
+Created one empty directory in arbitrary place; for me it was 
+/p/Source/lve/new, downloaded  lve and ffmpeg from their sourceforge 
+download pages. 
+ 
+$ pwd 
+/p/Source/lve/new 
+$ ls -l 
+total 2308 
+-rw-r--r--  1 too too 1611332 Mar  7 18:43 ffmpeg-0.4.9-pre1.tar.gz 
+-rw-r--r--  1 too too  738751 Mar  7 18:42 lve-050112.src.tar.bz2 
+ 
+$ tar zxvf ffmpeg-0.4.9-pre1.tar.gz 
+$ tar jxvf lve-050112.src.tar.bz2 
+ 
+$ cd lve 
+$ pwd  
+/p/Source/lve/new/lve 
+$ rm ffmpeg 
+$ ln -s ../ffmpeg-0.4.9-pre1 ffmpeg 
+$ make 
+ 
+$ su 
+# rm /usr/local/lve 
+# mv /usr/local/lve /usr/local/lve.old.`date '+%Y%m%d+%H%M%S'` 
+ 
+# ln -s `pwd` /usr/local/lve 
