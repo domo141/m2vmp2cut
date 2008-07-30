@@ -1,8 +1,8 @@
 Last committed: $Id$
 
-ANNOUNCE for m2vmp2cut 0.68 (Not even far!):
+ANNOUNCE for m2vmp2cut 0.72
 
-This is development release of m2vmp2cut -- frame accurate (currently PAL)
+This is stable release of m2vmp2cut -- frame accurate (currently PAL)
 mpeg2 video (m2v file) with accompanied mp2 audio (mp2 file) cutter.
 
 Some frames around cutpoints are re-encoded using mpeg2enc;
@@ -14,6 +14,11 @@ as good as possible (maximum sync difference is around 10-15 milliseconds).
 This software is available currently at http://www.iki.fi/too/sw/m2vmp2cut/
 and is licensed under GNU Public License (GPL).
 
+Changes since 0.68 (r2174) (Not even far!):
+	ANNOUNCE informs this is stable version.
+	buildlibmpeg-051.sh accepts libmpeg-0.5.1.tar.gz with absolute path.
+	Minor tunes, simplification etc.
+
 Changes since 0.67 (r2169, Success is not an option):
 	Binaries wavgraph and warpxpointer are installed.
 	Audio sync fixed in cutpoint test functionality.
@@ -22,8 +27,8 @@ Changes since 0.67 (r2169, Success is not an option):
 Changes since 0.65 (r2101, Faux pas):
 	Audio visualizer around current position in m2vcut-gui, to find
 	(silent) spot for cutpoint.
-	Test speedups, now audio is pre-scanned too,
-	Some usage tunes, fixes and enchangements,
+	Test speedups, now audio is pre-scanned too.
+	Some usage tunes, fixes and enchangements.
 	Bug fixes in almost every area.
 
 Changes since 0.63 (r2069, Epic Fail):

@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Sun Jul 20 18:15:19 EEST 2008 too
-# Last modified: Fri Jul 25 11:56:34 EEST 2008 too
+# Last modified: Mon Jul 28 15:00:54 EEST 2008 too
 
 die () { echo; echo "$@"; echo; exit 1; } >&2;
 
@@ -27,13 +27,12 @@ case $1 in '') die Usage: $0 "<path/to/$libmpegtgz>" ;; esac
 
 libmpegtgz=$1
 
-
 chkfile () { test -f "$1" || die "File '$1' missing"; }
 chkdir () { test -d "$1" || die "Directory '$1' missing"; }
 
-chkfile $libmpegtgz
+chkfile "$libmpegtgz"
 
-case `md5sum $libmpegtgz` in
+case `md5sum "$libmpegtgz"` in
     ${libmpegsum}' '*) ;;
     *) die File "'"$libmpegtgz"'" checksum mismatch '(wrong or broken file?)'
 esac
@@ -46,14 +45,15 @@ prefix=`pwd`/$libmpeg-bin
 trap "rm -rf $libmpeg-work" 0
 (
   cd $libmpeg-work || die "Could not chdir to '$libmpeg-work'"
-  x tar zxf ../$libmpegtgz
+  case $libmpegtgz in
+	/*) x tar zxf "$libmpegtgz" ;;
+	 *) x tar zxf ../"$libmpegtgz" ;;
+  esac
   x cd $libmpeg || die "Could not chdir to '$libmpeg-work/$libmpeg'"
 
   x ./configure --prefix=$prefix --disable-shared || die Configure failed
-  x make install
+  x make install || die Make install failed
   echo
   echo Now you need to rerun "'make'"
   echo
 )
-
-

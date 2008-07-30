@@ -1,25 +1,5 @@
-0.68 (2008-07-27) "Not even far!"
+0.72 (2008-07-27) ""
 
 $Id$
 
 -- use sed -n '1s/ .*//p' VERSION to read version number from this file --
-
-Version numbers are used like:
-
-Devel releases have odd-numbered decimals.
-
-'Stable' releases have even-numbered decimals.
-
-Releases 0.30, 0.40, ... (i.e. last number is zero are skipped,
-also 0.29, 0.39 and so on -- 0.28-release -> 0.31-dev ...)
-
-The reason for this is that I don't like some people referring
-like version 0.3 and other 0.30. 
-
-The version numbers also always increments so, that sorted 
-numerically or stringwise and thought as major.minor 
-brings new versions in order.
-
-So. release numbers may go like: 0.22, 0.28, 0.32,
-0.98, 1.0 (!), 1.12, 1.14, 1.92 1.912, 1.914, 1.913002, ...
-(probably not, using this sequence, though)

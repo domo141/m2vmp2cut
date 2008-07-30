@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Sun Jul 20 19:41:17 EEST 2008 too
-# Last modified: Wed Jul 23 12:17:06 EEST 2008 too
+# Last modified: Mon Jul 28 14:57:44 EEST 2008 too
 
 die () { echo "$@" >&2; exit 1; }
 
@@ -30,7 +30,7 @@ chkfile ()
 	: version is not good enough.
 	:
 	: Please download libmpeg2-0.5.1.tar.gz (unless already done so)
-	: (from libmpeg2.sourceforge.net/files/libmpeg2-0.5.1.tar.gz ...).
+	: (http://libmpeg2.sourceforge.net/files/libmpeg2-0.5.1.tar.gz ...).
 	:
 	: Then enter the path of libmpeg2-0.5.1.tar.gz as an argument for
 	: './tools/buildlibmpeg-051.sh' to build and install internal copy
