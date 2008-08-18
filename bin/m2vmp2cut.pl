@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Sun Sep 05 11:12:24 EEST 2004 too
-# Last modified: Sun Jul 27 00:33:40 EEST 2008 too
+# Last modified: Mon Aug 18 20:44:11 EEST 2008 too
 #
 # This program is licensed under the GPL v2. See file COPYING for details.
 
@@ -290,7 +290,7 @@ done
 mainpid=\$\$
 trap 'kill -USR1 0' 0
 
-'$m2vmp2cut_sh' vermatch 5 \\\n\t|| die 'Tool version mismatch. Rerun!';
+'$m2vmp2cut_sh' vermatch 6 \\\n\t|| die 'Tool version mismatch. Rerun!';
 
 EOF
 
@@ -593,6 +593,7 @@ print STDERR "Running work script '$wd/do.sh'...\n";
 #$SIG{'INT'} = 'sleep 1; exit 1';
 
 #system 'script', '-c', "$wd/do.sh", "$wd/do.sh-out";
+$SIG{'USR1'} = 'IGNORE';
 if (system("$wd/do.sh") != 0)
 {
     print "\n$wd/do.sh was partly unsuccessful. exiting.\n";

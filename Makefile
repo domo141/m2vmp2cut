@@ -29,12 +29,12 @@ chkpjxjar: ALWAYS
 TRG_BINS = m2vcut-gui m2vfilter m2vscan m2vtoyuv mp2cutpoints \
 	fileparts filerotate wavgraph warpxpointer \
 	m2vmp2cut.pl m2vmp2cut.sh m2v_catfiltered.py m2v_somehdrinfo.py \
-	wrapper.sh lvev6frames.pl
+	wrapper.sh lvev6frames.pl getyuv.pl getmp2.sh m2vmp2cut.pm
 
 #TRG_DOCS = Examples m2vcut_help-default m2vcut_help-fi_FI Options Usage
 TRG_DOCS = m2vcut_help-default m2vcut_help-fi_FI Options Usage
 
-chkfiles:
+chkfiles: all
 	@for i in $(TRG_BINS:%=bin/%) $(TRG_DOCS:%=doc/%); \
 		do test -f "$$i" || { echo "'$$i' missing"; exit 1; }; done
 	@test -f m2vmp2cut
@@ -44,9 +44,11 @@ install: chkfiles chkprefix chkpjxjar
 	@chkdir() { [ -d "$$1" ] || mkdir -m 755 -p "$$1"; }; \
 	chkdir $(PREFIX)/lib/m2vmp2cut-$(VER); chkdir $(PREFIX)/bin;  \
 	chkdir $(PREFIX)/lib/m2vmp2cut-$(VER)/bin; \
-	chkdir $(PREFIX)/lib/m2vmp2cut-$(VER)/doc
+	chkdir $(PREFIX)/lib/m2vmp2cut-$(VER)/doc; \
+	chkdir $(PREFIX)/lib/m2vmp2cut-$(VER)/contrib
 	cp $(TRG_BINS:%=bin/%) $(PREFIX)/lib/m2vmp2cut-$(VER)/bin
 	cp $(TRG_DOCS:%=doc/%) $(PREFIX)/lib/m2vmp2cut-$(VER)/doc
+	cp contrib/* $(PREFIX)/lib/m2vmp2cut-$(VER)/contrib
 	cp m2vmp2cut $(PREFIX)/bin/m2vmp2cut
 	ln -s $(PJXJAR) $(PREFIX)/lib/m2vmp2cut-$(VER)/bin/ProjectX.jar
 #	v=$(VER); sed "s/=devel/=$$v/" m2vmp2cut > $(PREFIX)/bin/m2vmp2cut
@@ -136,12 +138,18 @@ distclean: ALWAYS
 #,# VERSION
 
 #,# bin
+#,# bin/getmp2.sh x
+#,# bin/getyuv.pl x
 #,# bin/lvev6frames.pl x
 #,# bin/m2v_catfiltered.py x
 #,# bin/m2vmp2cut.pl x
+#,# bin/m2vmp2cut.pm
 #,# bin/m2vmp2cut.sh x
 #,# bin/m2v_somehdrinfo.py x
 #,# bin/wrapper.sh x
+
+#,# contrib
+#,# contrib/mpeg2.sh x
 
 #,# doc
 #,# doc/Examples

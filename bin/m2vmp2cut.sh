@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Mon Aug 11 22:22:14 EEST 2008 too
+# Last modified: Mon Aug 18 19:25:06 EEST 2008 too
 
 e2 () { echo "$@" >&2; }
 die () { e2 "$@"; exit 1; }
@@ -103,7 +103,7 @@ cmd_select () # Select parts from video with a graphical tool
 cmd_cut () # Cut using m2vmp2cut.pl for the work...
 {
 	filedir "$1" && shift
-	x $M2VMP2CUT_CMD_PATH/m2vmp2cut.pl --dir="$dir" "$@"
+	x $M2VMP2CUT_CMD_PATH/m2vmp2cut.pl --dir="$dir" ${1:+"$@"}
 }
 
 cmd_play () # Play resulting file with mplayer
@@ -111,7 +111,7 @@ cmd_play () # Play resulting file with mplayer
 	filedir "$1" && shift
 	f="$dir"/m2vmp2cut-work/out.mpg
 	test -f "$f" || die "'$f' does not exist"
-	x mplayer "$@" "$f"
+	x mplayer ${1:+"$@"} "$f"
 }
 
 cmd_move () # Move final file to a new location (and name)
@@ -139,12 +139,13 @@ cmd_getmp2 () # get selected parts of mp2 audio
 
 cmd_contrib () # contrib material, encoding scripts etc...
 {
+	M2VMP2CUT_CMD_DIRNAME=`dirname "$M2VMP2CUT_CMD_PATH"`
 	case $1 in '')
 		echo
 		echo Append one of these to your command line to continue.
 		echo Unambiquous prefix will do...
 		echo
-		cd $M2VMP2CUT_CMD_PATH/../contrib
+		cd $M2VMP2CUT_CMD_DIRNAME/contrib
 		ls -1 | while read line
 		do
 			sed -n '2 { s/./ '"$line"'                    /
@@ -152,6 +153,18 @@ cmd_contrib () # contrib material, encoding scripts etc...
 		done
 		echo; exit 0
 	esac
+	for f in `ls -1 $M2VMP2CUT_CMD_DIRNAME/contrib`
+	do
+		case $f in
+		    $1) fp= ff=$1 fm=$1 break ;;
+		    $1*) fp=$ff; ff="$f $ff"; fm=$f ;;
+		esac
+	done
+	case $ff in '') die "'$1': not found." ;; esac
+	case $fp in '') ;; *) die "contrib: ambiquous match: $ff" ;; esac
+	shift
+	export M2VMP2CUT_CMD_DIRNAME
+	$M2VMP2CUT_CMD_DIRNAME/contrib/$fm ${1:+"$@"}
 }
 
 cmd_help () # Help of all or some of the commands above
@@ -203,7 +216,7 @@ case $1 in '')
         echo
         echo m2vmp2cut commands available:
         echo
-        sed -n '/^cmd_/ { s/cmd_/ /; s/ () [ -#]*/                            /
+        sed -n '/^cmd_[a-z]/ { s/cmd_/ /; s/ () [ -#]*/                       /
 			  s/\(.\{15\}\) */\1/p; }' $0
         echo
         echo Commands may be abbreviated down to no ambiguity
@@ -237,7 +250,7 @@ shift
 unset cc2 cp2 cm2 cc cp
 
 cmd=$cm
-cmd_$cm "$@"
+cmd_$cm ${1:+"$@"}
 exit $?
 
 # fixme: move these to separate doc file (w/ locale extension)
