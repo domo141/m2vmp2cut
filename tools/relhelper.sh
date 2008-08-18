@@ -9,5 +9,8 @@ case $1 in '') cat <<.
 Files to edit for release: ANNOUNCE INSTALL README VERSION
 	Makefile when switching between -dev and nodev versions.
 
+checklist:
+	vermatch running...
+
 .
 exit 0 ;; esac

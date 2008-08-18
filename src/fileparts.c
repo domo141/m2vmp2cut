@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Sun Sep 26 08:51:22 EEST 2004 too
- * Last modified: Fri May 09 20:01:20 EEST 2008 too
+ * Last modified: 2008-08-17 20:03:32.000000000 +0200 (patch from Göran)
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
 
 #if 1
       if (closegop) {
-	int olen = len;
+	off_t olen = len;
         len = s__closegop(fd, 1, len);
 	if (len < 0)
 	  xerrf("Data copy failure:");
@@ -104,7 +104,7 @@ static bool s__chkpartstring(const char * partstring)
   const char * p = partstring;
   char c;
   int state;
-  int start, end; /* unavoidable warnings here -- but don't suppress those !!*/
+  off_t start, end; /* unavoidable warnings here -- but don't suppress those !!*/
 
   /* using regexp /^(\d+-\d+)(,\d+-\d+)*$/) would have been easier. */
 
@@ -112,7 +112,7 @@ static bool s__chkpartstring(const char * partstring)
     switch (state)
       {
       case 0: /* [0-9] */
-	if (isdigit(c)) { start = atoi(p); state = 1; }
+	if (isdigit(c)) { start = atoll(p); state = 1; }
 	else		return false;
 	break;
 
@@ -123,7 +123,7 @@ static bool s__chkpartstring(const char * partstring)
 	break;
 
       case 2: /* [0-9] */
-	if (isdigit(c)) { end = atoi(p); state = 3; }
+	if (isdigit(c)) { end = atoll(p); state = 3; }
 	else		return false;
 	break;
 
