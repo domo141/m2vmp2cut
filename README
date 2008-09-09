@@ -1,6 +1,6 @@
 Last committed: $Id$
 
-README for m2vmp2cut 0.74:
+README for m2vmp2cut 0.76:
 
 m2vmp2cut is frame accurate (currently PAL) mpeg2 video (m2v file)
 with accompanied mp2 audio (mp2 file) cutter.

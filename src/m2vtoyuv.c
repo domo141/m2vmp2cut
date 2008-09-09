@@ -20,7 +20,7 @@ set -e; TRG=`basename $0 .c`; rm -f "$TRG"
  *	    All rights reserved
  *
  * Created: Fri Feb 08 17:16:45 EET 2008 too
- * Last modified: Sun May 04 20:04:02 EEST 2008 too
+ * Last modified: Tue Sep 09 20:26:49 EEST 2008 too
  */
 
 /* this program is originally based on:
@@ -390,8 +390,9 @@ static int args_next(Args * args)
 	    arg = (++args->argv)[0];
 	    if (arg == null)
 		die("Arg #%d, for '-sb' missing", _args_argno(args));
-	    if ( (args->o.offset = atoll(arg)) <= 0)
-		die("Arg #%d (%s) for '-sb' not  good...", /* XXX */
+	    if ( (args->o.offset = strtoll(arg, &p, 10)) < 0 ||
+		 ( args->o.offset >= 0 && *p != '\0') )
+		die("Arg #%d (%s) for '-sb' not good...", /* XXX */
 		    _args_argno(args), arg);
 	    args->state = 2;
 	    return ARG_SEEK;
@@ -401,7 +402,7 @@ static int args_next(Args * args)
 	    if (arg == null)
 		die("Arg #%d, for '-s' missing", _args_argno(args));
 	    if (sscanf(arg, "%f", &args->o.sleep) != 1)
-		die("Arg #%d (%s) for '-s' not  good...", /* XXX */
+		die("Arg #%d (%s) for '-s' not good...", /* XXX */
 		    _args_argno(args), arg);
 	    args->state = 2;
 	    return ARG_SLEEP;
