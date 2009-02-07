@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Sun Sep 05 11:12:24 EEST 2004 too
-# Last modified: Tue Sep 09 20:05:29 EEST 2008 too
+# Last modified: Sat Feb 07 22:54:24 EET 2009 too
 #
 # This program is licensed under the GPL v2. See file COPYING for details.
 
@@ -376,7 +376,7 @@ sub enccmdblk($$$)
  [ x\$5 = x1 -o x\$7 = x1 ] && fa='file=$wd/enctmp.matrix.$efc' || fa=default
  [ x\${11} = x0 ] && dc= || dc="-D \${11}"
 
- { echo; echo $efc $I $range $frames $evbr; echo; } >> "$wd/mpeg2enc.out"
+ { echo; echo $efc \$I $range $frames $evbr; echo; } >> "$wd/mpeg2enc.out"
 
  _m2vtoyuv -q \$I $range "$vfile" \\
 	| mpeg2enc -f 3 -b $evbr $met -R 2 -K "\$fa" \$dc -s \\
