@@ -1,5 +1,0 @@
-0.76 (2008-09-09) ""
-
-$Id$
-
--- use sed -n '1s/ .*//p' VERSION to read version number from this file --

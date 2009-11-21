@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Sep 15 22:06:57 EEST 2004 too
-# Last modified: Fri May 09 17:12:44 EEST 2008 too
+# Last modified: Mon Feb 09 20:52:10 EET 2009 too
 #
 # This program is released under GNU GPL. Check
 # http://www.fsf.org/licenses/licenses.html
@@ -18,7 +18,7 @@ import sys
 import struct
 
 class m2vbuf:
-    SIZE = 65535
+    SIZE = 65536
 
     def __init__(self, filename, seek):
         self.file = open(filename, 'rb')
@@ -72,7 +72,7 @@ class m2vbuf:
             try:
                 self.fillbuf(self.len - self.offset)
             except EOFError:
-                if self.len == self.offset:
+                if self.len <= self.offset + 4:
                     raise EOFError
                 self.len = self.offset
                 return self.buf[self.offset:]

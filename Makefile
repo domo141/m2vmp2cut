@@ -1,12 +1,15 @@
 
 # This program is licensed under the GPL v2. See file COPYING for details.
 
+VERSION=0.79-dev
+
 .PHONY:	ALWAYS
 
 install chkprefix: VER=`sed -n 's/ver=//p' m2vmp2cut`
 #release:  VER=`sed -n '1s/ .*/-dev/p' VERSION`
-release: VER=`sed -n '1s/ .*//p' VERSION`
-snapshot: VER=`sed -n '1s/ .*//p' VERSION`+r`svnversion . | tr : =`
+release: VER=$(VERSION)
+snapshot: VER=$(VERSION)+`git log -1 --pretty=format:%ai \
+	| tr -d :- | sed 's/ /-/; s/+.*//; s/ //g'`
 
 all: ALWAYS
 	cd src && make all
@@ -19,11 +22,12 @@ chkprefix: ALWAYS
 	esac
 
 chkpjxjar: ALWAYS
-	@case "$(PJXJAR)" in \
+	@case `env which projectx 2>/dev/null` in /*) exit 0 ;; esac; \
+	 case "$(PJXJAR)" in \
 		'') sed -n 's/^#msg2: \?//p;' Makefile; exit 1 ;; /*) ;; \
 		*) echo "'$(PJXJAR)' does not start with '/'"; exit 1 ;; \
-	esac
-	@test -f "$(PJXJAR)" || { echo "'$(PJXJAR)': no such file"; exit 1; }
+	 esac; \
+	 test -f "$(PJXJAR)" || { echo "'$(PJXJAR)': no such file"; exit 1; }
 
 
 TRG_BINS = m2vcut-gui m2vfilter m2vscan m2vtoyuv mp2cutpoints \
@@ -50,29 +54,28 @@ install: chkfiles chkprefix chkpjxjar
 	cp $(TRG_DOCS:%=doc/%) $(PREFIX)/lib/m2vmp2cut-$(VER)/doc
 	cp contrib/* $(PREFIX)/lib/m2vmp2cut-$(VER)/contrib
 	cp m2vmp2cut $(PREFIX)/bin/m2vmp2cut
-	ln -s $(PJXJAR) $(PREFIX)/lib/m2vmp2cut-$(VER)/bin/ProjectX.jar
+	@test x'$(PJXJAR)' = x || \
+	  ln -s $(PJXJAR) $(PREFIX)/lib/m2vmp2cut-$(VER)/bin/ProjectX.jar
 #	v=$(VER); sed "s/=devel/=$$v/" m2vmp2cut > $(PREFIX)/bin/m2vmp2cut
 #	chmod 755 $(PREFIX)/bin/m2vmp2cut
 
 HISTORY: ALWAYS #SvnVersion_unmodified #ALWAYS #$(FILES)
-	( echo "# Created using svn -v log" | tr '\012' ' ';\
-	  echo "| sed -n -e '\$${x;p;x;p;q};/^--*\$$/{x;/./p;d};x;p'" ;\
+	( echo '# Created using "git log --name-status"' ;\
+	  echo '# with logs of lost subversion repository' ;\
 	  echo '# This file is not version controlled' ;\
-	  echo ;\
-	  LC_ALL=C svn -v log -r HEAD:700 \
-		| sed -n -e '$${x;p;x;p;q};/^--*$$/{x;/./p;d};x;p' ;\
+	  git log -1 --pretty='tformat:%nHead date: %ai%n' ; \
+	  git log --name-status ;\
+	  echo -----------------------------------------------------------;\
 	  cat HISTORY.crash ) > $@
 
-SvnVersion_unmodified: SvnVersion
-	@[ x"`sed 's/[0-9]*//' SvnVersion`" = x ] || \
-	  {  echo Version number `cat SvnVersion` not single, unmodified.; \
-	     exit 1; } # exit 0 when testing
+ALL_IN:
+	#git status | : awk ' \
+	git  status | awk ' \
+		/# Changes to be committed/ { print; exit 1 } \
+		/# Changed but not updated/ { print; exit 1 } \
+		/# Your branch is ahead of/ { print; exit 1 }'
 
-SvnVersion: ALWAYS
-	svnversion . > $@
-
-chkrelease: SvnVersion_unmodified HISTORY
-	rm -f SvnVersion
+chkrelease: ALL_IN HISTORY
 	@case $(VER) in \
 		*-dev) ;; *[2468]) ;; \
 		*) echo Version $(VER) not suitable for release.; exit 1 ;; \
@@ -83,19 +86,19 @@ chkrelease: SvnVersion_unmodified HISTORY
 
 release: chkrelease _dist
 
-snapshot: SvnVersion HISTORY _dist
+snapshot: HISTORY _dist
 
-tools/tarlisted:
-	cd tools && sh tarlisted.c
+tools/tarlisted22:
+	cd tools && sh tarlisted22.c
 
-_dist: tools/tarlisted
+_dist: tools/tarlisted22
 	v=$(VER); sed "s/=devel/=$$v/" m2vmp2cut > m2vmp2cut.mod
 	version=m2vmp2cut-$(VER); { echo 755 root root . $$version /; \
 	grep '^#,#' Makefile | while read _ f x; do p=755; d=$$f; \
 		test -d $$f && d=/ || { test -f $$d.mod && d=$$d.mod; \
 					case $$x in '') p=644;; esac; }; \
 		echo $$p root root . $$version/$$f $$d; done; } \
-	| tools/tarlisted -Vz -o $$version.tar.gz
+	| tools/tarlisted22 -Vz -o $$version.tar.gz
 	rm m2vmp2cut.mod
 	@echo Created m2vmp2cut-$(VER).tar.gz
 
@@ -104,9 +107,9 @@ clean: ALWAYS
 	rm -f *~
 	cd src; make $@
 
-distclean: ALWAYS 
+distclean: ALWAYS
 	rm -f *~
-	rm -f HISTORY SvnVersion tools/tarlisted
+	rm -f HISTORY tools/tarlisted22
 	cd src; make $@
 
 # Embedded messages follow...
@@ -114,7 +117,7 @@ distclean: ALWAYS
 #msg1:
 #msg1:  Can not install: PREFIX missing.
 #msg1:
-#msg1:  Try something like `make install PREFIX=/usr/local PJXJAR=...'
+#msg1:  Try something like `make install PREFIX=/usr/local [PJXJAR=...]'
 #msg1:
 
 #msg2:
@@ -135,7 +138,6 @@ distclean: ALWAYS
 #,# Makefile
 #,# README
 #,# TODO
-#,# VERSION
 
 #,# bin
 #,# bin/getmp2.sh x
@@ -180,6 +182,6 @@ distclean: ALWAYS
 #,# tools/buildlibmpeg-051.sh x
 #,# tools/chksyslibmpeg.sh x
 #,# tools/chklibmpeg-051.sh x
-#,# tools/tarlisted.c x
+#,# tools/tarlisted22.c x
 
 #EOF

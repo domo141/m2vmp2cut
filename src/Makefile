@@ -45,12 +45,11 @@ OBJS= $(SRCS:%.c=obj_b/%.o)
 # Any of the headers change, let's compile all objs, for sure.
 $(MOBJS) $(OBJS):  $(HDRS) ghdrs/version.h Makefile
 
-ghdrs/version.h: ../VERSION
+ghdrs/version.h: ../Makefile
 	echo 'const unsigned char version[] = "m2vmp2cut ' | tr -d '\012' > $@
-	sed -n '1 {s/"/\\"/g;p}' ../VERSION | tr -d '\012' >> $@
-	[ ! -f ../SvnVersion ] \
-		|| echo ' (r'`cat ../SvnVersion`')' | tr -d '\012' >> $@
-	echo '.";' >>  $@
+	sed -n 's/VERSION=//; T; p; q' ../Makefile | tr -d '\012' >> $@
+	awk '/Head date/ { printf " (%s)", $$3; exit 0 }' ../HISTORY >> $@
+	echo '";' >>  $@
 
 # Touching file to required directories which modification time does
 # not change unlike the directory itself.

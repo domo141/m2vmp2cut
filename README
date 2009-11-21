@@ -1,6 +1,6 @@
 Last committed: $Id$
 
-README for m2vmp2cut 0.76:
+README for m2vmp2cut 0.78:
 
 m2vmp2cut is frame accurate (currently PAL) mpeg2 video (m2v file)
 with accompanied mp2 audio (mp2 file) cutter.
@@ -25,7 +25,7 @@ Java runtime    -- to run ProjectX (some non-sun vm:s work also)
 Uxterm          -- for help and info windows...
 Perl		-- m2vmp2cut.pl (run frontend) is written in perl
 Bython		-- some m2vmp2cut utilities are written in python
-Bash/ksh	-- /bin/sh may not be good enough for some shell script 
+Bash/ksh	-- /bin/sh may not be good enough for some shell script
 		   constructs used.
 
 C compiler	-- there are some C utilities that needs to be compiled
@@ -63,9 +63,9 @@ is done since:
 3) Cutting separate audio and video files yields much better results cutting
    audio and video on right places (near-perfect A/V sync if original has
    so), for example using 48KHz 224 kbit mp2 files one 672 byte audio frame
-   contains 24ms of audio -- so A/V sync is at max 12ms off. If doing 
+   contains 24ms of audio -- so A/V sync is at max 12ms off. If doing
    'hard-cuts' in (multiplexed) mpeg2 files 1) audio packets contains like
-   2.6 audio frames and 2) audio packets might be far off in the file 
+   2.6 audio frames and 2) audio packets might be far off in the file
    the video packets with time close to each other...
 
 

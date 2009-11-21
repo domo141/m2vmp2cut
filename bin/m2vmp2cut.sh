@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Mon Aug 18 19:25:06 EEST 2008 too
+# Last modified: Fri 20 Nov 2009 19:44:05 EET too
 
 e2 () { echo "$@" >&2; }
 die () { e2 "$@"; exit 1; }
@@ -66,9 +66,9 @@ chkindexes ()
 			--scan "$1/audio.mp2" "$1/audio.scan"
 }
 
-cmd_demux () # Demux mpeg2 file with ProjectX for further editing...
+chkpjx ()
 {
-	filedir "$1" && shift
+	case `env which projectx 2>/dev/null` in /*) pjx=projectx; return;; esac
 
 	test -h $M2VMP2CUT_CMD_PATH/ProjectX.jar || { \
 	  e2 Symbolic link \'$M2VMP2CUT_CMD_PATH/ProjectX.jar\' does not exist
@@ -76,13 +76,22 @@ cmd_demux () # Demux mpeg2 file with ProjectX for further editing...
 	}
 	pjxjar=`LC_ALL=C ls -l $M2VMP2CUT_CMD_PATH/ProjectX.jar | sed 's/.* //'`
 	test -f $pjxjar || {
-	  e2 ProjectX jar file \'$pjxjar\' does not exist
-	  die Fix this or it\'s symbolic link reference \'$M2VMP2CUT_CMD_PATH/ProjectX.jar\'
+		e2 ProjectX jar file \'$pjxjar\' does not exist
+		die Fix this or it\'s symbolic link reference \'$M2VMP2CUT_CMD_PATH/ProjectX.jar\'
 	}
+	pjx="java -jar $pjxjar"
+}
+
+
+cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
+{
+	filedir "$1" && shift
+	for file; do test -f "$file" || die "'$file': not a file"; done
+	chkpjx
+
 	test -d "$dir" && die "Directory '$dir' is on the way (demuxed already)?"
 	mkdir "$dir"
-	ln -s "../$basename" "$dir/$basename"
-	x java -jar "$pjxjar" -ini /dev/null "$dir/$basename"
+	x $pjx -ini /dev/null -out "$dir" $basename ${1+"$@"}
 	cd "$dir"
 	ln -s *.m2v video.m2v
 	ln -s *.mp2 audio.mp2
@@ -191,16 +200,16 @@ cmd_example () # simple example commands
 	: (<file> is for user convenience...).
 	: The <file>/<dir> option can also be given after command name...
 	:
-	: m2vmp2cut <file> demux
-	: m2vmp2cut <file> select
-	: m2vmp2cut <file> cut
-	: m2vmp2cut <file> play
+	: m2vmp2cut <file[s]> demux
+	: m2vmp2cut <directory> select
+	: m2vmp2cut <directory> cut
+	: m2vmp2cut <directory> play
 	:
 	: In above, there was basic workflow. 'select' gui provides a test
 	: option -- but if you want to re-test, run these.
 	:
-	: m2vmp2cut <file> cut --test=200
-	: m2vmp2cut <file> play
+	: m2vmp2cut <directory> cut --test=200
+	: m2vmp2cut <directory> play
 	:
 	: getyuv and getmp2 has their own examples. Enter 'example' to their
 	: command lines to see those.
@@ -262,7 +271,7 @@ exit $?
 #h lvev6frames: these old edits can be used with this m2vmp2cut version
 #h lvev6frames:
 
-#h demux: demux <filename>
+#h demux: demux <file[s]>
 #h demux:
 #h demux: m2vmp2cut reguires mpeg files to be demuxed to elementary streams
 #h demux: before cutting. This command uses ProjectX to do the demuxing.
