@@ -17,8 +17,9 @@
 	start frame inclusive, end frame exclusive	
 
       Summary of options:   --options      --examples    -
-                            --stop         --nomux       --aonly
-                            --sync=n       --test=n      --last=n       
-        --mplexopts="..."   --requant=n.n  --evbr=n      --asr=n
+                            --stop         --nomux       --author
+                            --aonly
+                            --asr=n        --sync=n      --evbr=n       
+        --mplexopts="..."   --test=n       --last=n      --requant=n.n
 
  Example: $0 --test=400 --stop .

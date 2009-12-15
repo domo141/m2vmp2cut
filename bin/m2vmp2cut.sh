@@ -82,6 +82,17 @@ chkpjx ()
 	pjx="java -jar $pjxjar"
 }
 
+findlargestaudio ()
+{
+	largestsize=0 ;
+	largestaudio=nothing
+	for i in ${@} ; do
+		currentsize=$(stat -c%s ${i})
+		if [ ${currentsize} -gt ${largestsize} ] ; then
+			largestaudio=${i} ; largestsize=${currentsize}
+		fi
+	done
+}
 
 cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 {
@@ -93,8 +104,22 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 	mkdir "$dir"
 	x $pjx -ini /dev/null -out "$dir" $basename ${1+"$@"}
 	cd "$dir"
-	ln -s *.m2v video.m2v
-	ln -s *.mp2 audio.mp2
+
+#	ac3=$(ls *.ac3 2>/dev/null)
+	mp2=$(ls *.mp2 2>/dev/null)
+#	if [ -n "${ac3}" ] ; then
+#		findlargestaudio ${ac3}
+#		ln -s ${largestaudio} audio.ac3
+#	elif [ -n "${mp2}" ] ; then
+	if [ -n "${mp2}" ] ; then
+		findlargestaudio ${mp2}
+		ln -s ${largestaudio} audio.mp2
+	else
+		die "No audio files to process"
+	fi
+	video=`echo $basename | sed 's/\.[^.]*$//'`
+	ln -s ${video}.m2v video.m2v
+
 	chkindexes .
 }
 

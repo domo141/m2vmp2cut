@@ -52,6 +52,7 @@ sub showdoc($$)
 
 my $asr = -1;
 my $nomux = 0;
+my $author = 0;
 my $aonly = 0;
 my $stop = 0;
 my $sync = 0;
@@ -69,6 +70,7 @@ while (defined $ARGV[0] && $ARGV[0] =~ /^--/)
     $asr = $1 + 0, shift @ARGV, next if (/^--asr=(\d)\b/);
     $stop = 1, shift @ARGV, next if (/^--stop\b/);
     $nomux = 1, shift @ARGV, next if (/^--nomux\b/);
+    $author = 1, shift @ARGV, next if (/^--author\b/);
     $aonly = 1, shift @ARGV, next if (/^--aonly\b/);
     $sync = $1 + 0, shift @ARGV, next if (/^--sync=(-?\d+)\b/);
     $test = $1 + 0, shift @ARGV, next if (/^--test=(\d+)\b/);
@@ -87,6 +89,8 @@ while (defined $ARGV[0] && $ARGV[0] =~ /^--/)
 }
 
 $nomux = 1 if ($aonly);
+$nomux = 1 if ($author);
+$aonly = 0 if ($author);
 
 unless (defined $dir) {
     showdoc 1, 'Usage' if (@ARGV < 1);
@@ -294,7 +298,7 @@ trap 'kill -USR1 0' 0
 
 EOF
 
-unless ($nomux)
+if (! $nomux || $author)
 {
     print SH "rm -f \"$wd/fifo-video\" \"$wd/fifo-audio\"\n",
       "mkfifo \"$wd/fifo-video\" \"$wd/fifo-audio\"\n";
@@ -306,7 +310,7 @@ exec 0>&1
 _filerotate "$wd" mpeg2enc.out mplex.out
 rm -f "$wd"/out.*
 
-set -x; : '***' `date`
+#set -x; : '***' `date`
 
 EOF
 
@@ -527,7 +531,7 @@ unless ($aonly)
     $reqq = "tcrequant -d 2 -f $requant |" if ($requant);
 
     print SH ") | $reqq \"$m2vfilter\" $asr $frames ",
-      $nomux? "\"$wd/incomplete.m2v\"": "\"$wd/fifo-video\" &", "\n";
+      $author? "\"$wd/fifo-video\" &": $nomux? "\"$wd/incomplete.m2v\"": "\"$wd/fifo-video\" &", "\n";
 
     undef $reqq;
 }
@@ -542,7 +546,7 @@ print SH "\n\n";
 print SH "# audio timecodes: @timecodes,\n#\tcutfilepos: $audiocutfilepos\n";
 
 print SH "\n_fileparts $audiocutfilepos";
-print SH " \"\$afile\" > ", $nomux? "\"$wd/incomplete.mp2\"": "\"$wd/fifo-audio\" &", "\n";
+print SH " \"\$afile\" > ", $author? "\"$wd/fifo-audio\" &": $nomux? "\"$wd/incomplete.mp2\"": "\"$wd/fifo-audio\" &", "\n";
 
 
 unless ($nomux)
@@ -550,21 +554,49 @@ unless ($nomux)
     print SH "\nmplex $mplexopts -o \"$wd/incomplete.mpg\" ",
 	"\"$wd/fifo-video\" \"$wd/fifo-audio\" > \"$wd/mplex.out\" 2>&1\n";
 }
+
+if ($author)
+{
+    my $abs_path = `cd $wd && pwd`;
+    chomp($abs_path);
+
+    open XML, '>', "$wd/dvdauthor.xml" || die "Can not create dvdauthor xml control file: $!\n";
+    chmod 0644, "$wd/dvdauthor.xml";
+
+    print XML  <<"EOF";
+    <dvdauthor dest=\"$wd/dvd\">
+      <vmgm />
+        <titleset>
+          <titles>
+            <pgc>
+              <vob file=\"mplex $mplexopts -o /dev/stdout $abs_path/fifo-video $abs_path/fifo-audio |\"/>
+            </pgc>
+          </titles>
+        </titleset>
+    </dvdauthor>
+EOF
+
+    print SH "\ndvdauthor -x \"$wd/dvdauthor.xml\" > \"$wd/dvdauthor.out\" 2>&1\n";
+}
+
 #
 # Final lines.
 #
 
 print SH "\n", "wait\n", "trap - 0\n";
 
-if ($nomux) { print SH "mv -f \"$wd/incomplete.m2v\" \"$wd/out.m2v\"\n",
-		"mv -f \"$wd/incomplete.mp2\" \"$wd/out.mp2\"\n"; }
-else { print SH "mv -f \"$wd/incomplete.mpg\" \"$wd/out.mpg\"\n"; }
+unless ($author)
+{
+	if ($nomux) { print SH "mv -f \"$wd/incomplete.m2v\" \"$wd/out.m2v\"\n",
+			"mv -f \"$wd/incomplete.mp2\" \"$wd/out.mp2\"\n"; }
+	else { print SH "mv -f \"$wd/incomplete.mpg\" \"$wd/out.mpg\"\n"; }
+}
 
-print SH <<"EOF";
-set +x
-ls -lrtac "$wd"
-date
-EOF
+#print SH <<"EOF";
+#set +x
+#ls -lrtac "$wd"
+#echo "***" `date`
+#EOF
 if (! $nomux && $test < 0) {
     print SH "\n", 'numtune () { ', "\n";
     print SH q(    echo $1 | sed 's/\\(...\\)$/ \\1/; s/\\(...\\) / \\1 /; s/\\(...\\) / \\1 /'; }), "\n\n";
@@ -573,8 +605,8 @@ if (! $nomux && $test < 0) {
     print SH "echo target \"'$wd/out.mpg'\" size: `numtune \$size` bytes\n";
     print SH "difference=`expr $estimate - \$size | tr -d -`\n";
     print SH "echo difference: `numtune \$difference` bytes\n";
-} else {
-    print SH "ls -l \"$wd\"/out.*\n";
+} elsif (! $author) {
+#    print SH "ls -l \"$wd\"/out.*\n";
 }
 
 print SH "echo pictures: ", $frames, ", time: ", palframe2timecode($frames, 0),
@@ -602,4 +634,4 @@ if (system("$wd/do.sh") != 0)
 }
 
 print "\nDone, Result (if any) in '$wd/",
-  $nomux? "out.(m2v|mp2)": "out.mpg", "'\n\n";
+  $author? "dvd": $nomux? "out.(m2v|mp2)": "out.mpg", "'\n\n";

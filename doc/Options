@@ -8,6 +8,8 @@
 
     --nomux  Do not mux to out.mpg, leave as out.mp2 and out.m2v.
 
+    --author Direct creation of DVD structure without intermediate files
+
     --aonly  Cut audio only. Video can be re-encoded and mplexed later.
 
     --asr=n  sets aspect ratio to the whole output. Values are:
