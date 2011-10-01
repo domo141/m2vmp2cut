@@ -7,12 +7,15 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Fri 20 Nov 2009 19:44:05 EET too
+# Last modified: Sat 01 Oct 2011 11:51:57 EEST too
 
-e2 () { echo "$@" >&2; }
-die () { e2 "$@"; exit 1; }
-usage () { e2; e2 Usage: m2vmp2cut '[(file|dir)]' $cc '[(file|dir)]' "$@"; die; }
-needvar () { [ x"$1" = x ] && { shift 1; "$@"; }; }
+warn () { echo "$@" >&2; }
+die () { warn "$@"; exit 1; }
+needvar () { case $1 in '') shift 1; "$@"; esac; }
+
+usage () {
+    warn; warn Usage: m2vmp2cut '[(file|dir)]' $cc '[(file|dir)]' "$@"; die;
+}
 
 x () { echo + "$@"; "$@"; }
 
@@ -71,26 +74,25 @@ chkpjx ()
 	case `env which projectx 2>/dev/null` in /*) pjx=projectx; return;; esac
 
 	test -h $M2VMP2CUT_CMD_PATH/ProjectX.jar || { \
-	  e2 Symbolic link \'$M2VMP2CUT_CMD_PATH/ProjectX.jar\' does not exist
-	  die Please provide link and try again
+	  warn "Symbolic link '$M2VMP2CUT_CMD_PATH/ProjectX.jar' does not exist"
+	  die 'Please provide link and try again'
 	}
 	pjxjar=`LC_ALL=C ls -l $M2VMP2CUT_CMD_PATH/ProjectX.jar | sed 's/.* //'`
 	test -f $pjxjar || {
-		e2 ProjectX jar file \'$pjxjar\' does not exist
-		die Fix this or it\'s symbolic link reference \'$M2VMP2CUT_CMD_PATH/ProjectX.jar\'
+		warn "ProjectX jar file '$pjxjar' does not exist"
+		die "Fix this or it's symbolic link reference '$M2VMP2CUT_CMD_PATH/ProjectX.jar'"
 	}
 	pjx="java -jar $pjxjar"
 }
 
 findlargestaudio ()
 {
-	largestsize=0 ;
-	largestaudio=nothing
-	for i in ${@} ; do
-		currentsize=$(stat -c%s ${i})
-		if [ ${currentsize} -gt ${largestsize} ] ; then
-			largestaudio=${i} ; largestsize=${currentsize}
-		fi
+	largestaudio=nothing largestsize=0
+	for i; do
+		currentsize=`stat -c%s "$i"`
+		test $currentsize -le $largestsize || {
+			largestaudio=$i	largestsize=$currentsize
+		}
 	done
 }
 
@@ -102,23 +104,23 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 
 	test -d "$dir" && die "Directory '$dir' is on the way (demuxed already)?"
 	mkdir "$dir"
-	x $pjx -ini /dev/null -out "$dir" $basename ${1+"$@"}
+	x $pjx -ini /dev/null -out "$dir" "$dn/$basename" ${1+"$@"}
 	cd "$dir"
 
-#	ac3=$(ls *.ac3 2>/dev/null)
-	mp2=$(ls *.mp2 2>/dev/null)
-#	if [ -n "${ac3}" ] ; then
-#		findlargestaudio ${ac3}
-#		ln -s ${largestaudio} audio.ac3
-#	elif [ -n "${mp2}" ] ; then
-	if [ -n "${mp2}" ] ; then
-		findlargestaudio ${mp2}
-		ln -s ${largestaudio} audio.mp2
+#	ac3=`ls *.ac3 2>/dev/null`
+	mp2=`ls *.mp2 2>/dev/null`
+#	if [ -n "$ac3" ] ; then
+#		findlargestaudio $ac3
+#		ln -s $largestaudio audio.ac3
+#	elif [ -n "$mp2" ] ; then
+	if test -n "$mp2"
+	then	findlargestaudio $mp2
+		ln -s $largestaudio audio.mp2
 	else
 		die "No audio files to process"
 	fi
 	video=`echo $basename | sed 's/\.[^.]*$//'`
-	ln -s ${video}.m2v video.m2v
+	ln -s $video.m2v video.m2v
 
 	chkindexes .
 }
@@ -137,7 +139,7 @@ cmd_select () # Select parts from video with a graphical tool
 cmd_cut () # Cut using m2vmp2cut.pl for the work...
 {
 	filedir "$1" && shift
-	x $M2VMP2CUT_CMD_PATH/m2vmp2cut.pl --dir="$dir" ${1:+"$@"}
+	x $M2VMP2CUT_CMD_PATH/m2vmp2cut.pl --dir="$dir" ${1+"$@"}
 }
 
 cmd_play () # Play resulting file with mplayer
@@ -145,7 +147,7 @@ cmd_play () # Play resulting file with mplayer
 	filedir "$1" && shift
 	f="$dir"/m2vmp2cut-work/out.mpg
 	test -f "$f" || die "'$f' does not exist"
-	x mplayer ${1:+"$@"} "$f"
+	x mplayer ${1+"$@"} "$f"
 }
 
 cmd_move () # Move final file to a new location (and name)
@@ -245,46 +247,46 @@ cmd_example () # simple example commands
 # ---
 
 case $1 in '')
+	bn=`basename "$0"`
         echo
-        echo Usage: m2vmp2cut '[-batch] [(file|dir)] <command> [(file|dir)] [args]'
+        echo Usage: $bn '[-batch] [(file|dir)] <command> [(file|dir)] [args]'
         echo
-        echo m2vmp2cut commands available:
+        echo $bn commands available:
         echo
         sed -n '/^cmd_[a-z]/ { s/cmd_/ /; s/ () [ -#]*/                       /
-			  s/\(.\{15\}\) */\1/p; }' $0
+			  s/\(.\{15\}\) */\1/p; }' "$0"
         echo
-        echo Commands may be abbreviated down to no ambiguity
+        echo Commands may be abbreviated until ambiguous.
         echo
-        exit 0 ;;
+        exit 0
 esac
 
-cmd=$1 cmd2=${2:-none}
+cm=$1 cm2=${2:-none}
 
-#case $cmd in
-#        c) cmd=colorset ;;
+#case $cm in
+#        c) cm=colorset ;;
 #esac
 
-cc= cp= cm= cc2= cp2= cm2=
-for m in `LC_ALL=C sed -n 's/^cmd_\([a-z0-9_]*\) (.*/\1/p' $0`
+cc= cp= cc2= cp2=
+for m in `LC_ALL=C exec sed -n 's/^cmd_\([a-z0-9_]*\) (.*/\1/p' $0`
 do
         case $m in
-                $cmd) cp= cc=$cmd  cm=$cmd;  break ;;
-                $cmd*) cp=$cc; cc="$m $cc"; cm=$m ;;
-                $cmd2*) cp2=$cc2; cc2="$m $cc2"; cm2=$m ;;
+                $cm) cp= cc=set  cmd=$cm;  break ;;
+                $cm*) cp=$cc; cc="$m $cc"; cmd=$m ;;
+                $cm2*) cp2=$cc2; cc2="$m $cc2"; cmd2=$m ;;
         esac
 done
 
-case "$cc$cc2" in '') die $0: $cmd or $cmd2 -- command not found;; esac
+case "$cc$cc2" in '') die $0: $cm or $cm2 -- command not found.
+esac
+case $cp in  '') ;; *) die $0: $cm: -- ambiquous commands: matches $cc ;; esac
+case $cp2 in '') ;; *) die $0: $cm2: -- ambiquous commands: matches $cc2;; esac
 
-case $cp in  '') ;; *) die $0: $cmd: -- ambiquous commands: matches $cc ;; esac
-case $cp2 in '') ;; *) die $0: $cmd2: -- ambiquous commands: matches $cc2;; esac
-
-case $cc in '') cm=$cm2; filedir "$1"; shift ;; esac
+case $cc in '') cmd=$cmd2; filedir "$1"; shift ;; esac
 shift
-unset cc2 cp2 cm2 cc cp
+unset cc2 cp2 cmd2 cc cp
 
-cmd=$cm
-cmd_$cm ${1:+"$@"}
+cmd_$cmd ${1:+"$@"}
 exit $?
 
 # fixme: move these to separate doc file (w/ locale extension)

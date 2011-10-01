@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Tue Apr 22 19:10:35 EEST 2008 too
-# Last modified: Sat Jul 26 17:35:56 EEST 2008 too
+# Last modified: Tue 27 Sep 2011 17:05:44 EEST too
 
 eae () { echo; echo Press ENTER to close this window '' | tr -d \\012
 	read _; exit $1; }
@@ -151,7 +151,7 @@ case $1 in
 	mkdir "$dd" || die Can not create directory "$dd"
 	set -x
 	"$cwd"/fileparts $byterange "$vd"/audio.mp2 > "$dd"/audio.mp2
-	mplayer -vo null -vc null -ao pcm:file="$dd"/audio.wav "$dd"/audio.mp2
+	mplayer -vo null -vc null -af format=s32le -ao pcm:file="$dd"/audio.wav "$dd"/audio.mp2
 	"$cwd"/wavgraph "$dd"/audio.wav "$dd"/audio.xpm $w $h $m 25 1
 	test -f "$dd"/audio.xpm \
 		|| { set +x; die Creating graph failed. See above.; }

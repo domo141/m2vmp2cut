@@ -4,7 +4,7 @@
 
       directory: directory where previous steps have laid out content
 
-      (currently -v, -a, -s and -c options unsupported)     
+      (currently -v, -a, -s and -c options unsupported)
 
       videofile: in m2v format (i.e. demultiplexed mpeg2 video file)
 
@@ -14,12 +14,12 @@
         (subtitles currently unsupported, though)
 
       cutspec: frame ranges in format: s-e[,s-e[,s-e...]]
-	start frame inclusive, end frame exclusive	
+	start frame inclusive, end frame exclusive
 
       Summary of options:   --options      --examples    -
                             --stop         --nomux       --author
                             --aonly
-                            --asr=n        --sync=n      --evbr=n       
+                            --asr=n        --sync=n      --evbr=n
         --mplexopts="..."   --test=n       --last=n      --requant=n.n
 
  Example: $0 --test=400 --stop .

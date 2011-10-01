@@ -11,7 +11,7 @@ release: VER=$(VERSION)
 snapshot: VER=$(VERSION)+`git log -1 --pretty=format:%ai \
 	| tr -d :- | sed 's/ /-/; s/+.*//; s/ //g'`
 
-all: ALWAYS
+all: ALWAYS HISTORY
 	cd src && make all
 	@echo; echo Build done.; echo
 
