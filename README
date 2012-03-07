@@ -1,6 +1,6 @@
 Last committed: $Id$
 
-README for m2vmp2cut 0.78:
+README for m2vmp2cut
 
 m2vmp2cut is frame accurate (currently PAL) mpeg2 video (m2v file)
 with accompanied mp2 audio (mp2 file) cutter.
@@ -20,18 +20,18 @@ REQUIREMENTS:
 
 Mjpegtools	-- for mpeg2enc and mplex tools
 ProjecX (project-x.sourceforge.net) -- to demux source mpeg files
-Java runtime    -- to run ProjectX (some non-sun vm:s work also)
+Java runtime    -- to run ProjectX (many non-sun vm:s work also)
 
-Uxterm          -- for help and info windows...
+Xterm           -- for help and info windows...
 Perl		-- m2vmp2cut.pl (run frontend) is written in perl
-Bython		-- some m2vmp2cut utilities are written in python
-Bash/ksh	-- /bin/sh may not be good enough for some shell script
-		   constructs used.
+Python		-- some m2vmp2cut utilities are written in python
+Posix Shell     -- /bin/sh which has posix shell capabilities
+                   (not just Bourne) (this is usually the case).
 
 C compiler	-- there are some C utilities that needs to be compiled
 Java compiler   -- if you need to compile ProjectX
 
-STRONGLY RECOMMENDED:
+RECOMMENDED:
 
 Transcode	-- for requantize option
 

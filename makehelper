@@ -1,0 +1,232 @@
+#!/bin/sh
+# -*- mode: shell-script; sh-basic-offset: 8; tab-width: 8 -*-
+
+set -eu
+#set -x
+
+warn () { echo "$@" >&2; }
+disable_die () { die () { return 1; }; }
+enable_die () { die () { echo "$@" >&2; exit 1; }; }
+enable_die
+
+x () { echo "$@"; "$@"; }
+
+# Robust, fast (string) comparisons for all Bourne-derived shells.
+eq () { case $1 in $2) return 0; esac; return 1; }
+ne () { case $1 in $2) return 1; esac; return 0; }
+
+needvar ()
+{
+	eval v=\${$1-}
+	case $v in '') return 1
+	;;	*' '*)	die "'$1' value '$v' contains space[s]!"
+	esac
+	return 0
+}
+
+mkmissingdirs ()
+{
+	for d
+	do	test -d "$d" || x mkdir -m 755 "$d"
+	done
+}
+
+getcmds ()
+{
+	cmds=`env which projectx java mplex 2>/dev/null | tr '\012' :`
+}
+needcmd ()
+{
+	case $cmds in */$1:*) return 0; esac
+	c=$1; shift
+	die "Command '$c' missing ($*)"
+}
+
+getversion ()
+{
+	VERSION=`sed 's/^m2vmp2cut *//; s/ .*//; q' NEWS`
+	case $VERSION in wip | [0-9][0-9.][0-9] | [0-9][0-9.][0-9.][0-9]) ;;
+		[0-9][0-9.][0-9.][0-9.][0-9]) ;;
+		[0-9][0-9.][0-9.][0-9.][0-9.][0-9]) ;;
+		*) die "Strange VERSION '$VERSION' string"
+	esac
+}
+
+cmd_install ()
+{
+	getversion
+	needvar PREFIX || {
+		sed -n 's/^#msg1: \?//p;' "$0"
+		exit 1
+	}
+
+	getcmds
+	needcmd mplex needed for remuxing after cut.
+	if needvar PJXVAR
+	then
+		case $PJXJAR in /*) ;;
+			*) die "'$PJXJAR' does not start with '/'"
+		esac
+		test -f $PJXJAR || die "'$PJXJAR': no such file"
+		needcmd java
+	else
+		disable_die
+		needcmd projectx || {
+			sed -n 's/^#msg2: \?//p;' "$0"
+			exit 1
+		}
+		enable_die
+	fi
+
+	for f in $1 $2 m2vmp2cut
+	do	test -f $f || die "'$f' missing"
+	done
+
+	echo; echo Begin installation.; echo
+	rm -rf $PREFIX/lib/m2vmp2cut-$VERSION
+	x mkdir -m 755 -p $PREFIX
+
+	mkmissingdirs $PREFIX/lib $PREFIX/lib/m2vmp2cut-$VERSION
+	mkmissingdirs $PREFIX/lib/m2vmp2cut-$VERSION/bin
+	mkmissingdirs $PREFIX/lib/m2vmp2cut-$VERSION/doc
+	mkmissingdirs $PREFIX/lib/m2vmp2cut-$VERSION/contrib
+	mkmissingdirs $PREFIX/bin
+
+	x cp $1 $PREFIX/lib/m2vmp2cut-$VERSION/bin
+	x cp $2 $PREFIX/lib/m2vmp2cut-$VERSION/doc
+	x cp contrib/* $PREFIX/lib/m2vmp2cut-$VERSION/contrib
+	exec 3> $PREFIX/bin/m2vmp2cut.wip
+	echo '#!/bin/sh' >&3
+	echo 'case ${1-} in'" '') echo; echo m2vmp2cut version $VERSION" >&3
+	echo 'esac' >&3
+	echo "exec $PREFIX/lib/m2vmp2cut-$VERSION/bin/m2vmp2cut.sh"' "$@"' >&3
+	exec 3>&-
+	chmod 755 $PREFIX/bin/m2vmp2cut.wip
+	mv $PREFIX/bin/m2vmp2cut.wip $PREFIX/bin/m2vmp2cut
+	echo wrote $PREFIX/bin/m2vmp2cut
+
+	if ne "${PJXJAR-}" ''
+	then
+		x ln -s $PJXJAR $PREFIX/lib/m2vmp2cut-$VERSION/bin/ProjectX.jar
+	fi
+	echo; echo Installation done.; echo
+}
+
+makedist ()
+{
+	version=m2vmp2cut-$VERSION
+	{ echo 755 root root . $version /
+	  grep '^#,#' "$0" | while read _ f x; do p=755; d=$f
+		test -d $f && d=/ || {	test -f $d.mod && d=$d.mod
+					ne "$x" '' || p=644; }
+		echo $p root root . $version/$f $d; done
+	} | tools/tarlisted31 -Vz -o $version.tar.gz
+
+	echo Created $version.tar.gz
+
+}
+
+cmd_snapshot ()
+{
+	VERSION=`date +'snap-%Y%m%d-%H'`
+	makedist
+}
+
+cmd_release ()
+{
+	git status | awk ' \
+		/# Changes to be committed/ { print; exit 1 }
+		/# Changed but not updated/ { print; exit 1 }
+		/# Your branch is ahead of/ { print; exit 1 }'
+
+	getversion
+	ne "$VERSION" wip || die "Version 'wip'. Please update"
+	makedist
+}
+
+cmd_ ()
+{
+	warn Usage: $0 command [args...]
+	warn Commands available:
+	sed -n 's/^cmd_\([^ ][^ ]*\) (.*/  \1/p' "$0"
+}
+
+cmd=${1-}; shift || :
+cmd_"$cmd" "$@"
+exit
+
+
+# Embedded messages follow...
+
+#msg1:
+#msg1:  Can not install: PREFIX missing.
+#msg1:
+#msg1:  Try something like `make install PREFIX=/usr/local [PJXJAR=...]'
+#msg1:
+
+#msg2:
+#msg2:  Can not install: PJXJAR missing.
+#msg2:
+#msg2:  Try `make install PREFIX=... PJXJAR=/path/to/ProjectX.jar'
+#msg2:
+
+
+
+# Dist files:
+
+#,# ANNOUNCE
+#,# COPYING
+#,# NEWS
+#,# INSTALL
+#,# m2vmp2cut x
+#,# Makefile
+#,# makehelper
+#,# README
+#,# TODO
+
+#,# bin
+#,# bin/getmp2.sh x
+#,# bin/getyuv.pl x
+#,# bin/lvev6frames.pl x
+#,# bin/m2v_catfiltered.py x
+#,# bin/m2vmp2cut.pl x
+#,# bin/m2vmp2cut.pm
+#,# bin/m2vmp2cut.sh x
+#,# bin/m2v_somehdrinfo.py x
+#,# bin/wrapper.sh x
+
+#,# contrib
+#,# contrib/mpeg2.sh x
+
+#,# doc
+#,# doc/Examples
+#,# doc/m2vcut_help-default
+#,# doc/m2vcut_help-fi_FI
+#,# doc/Options
+#,# doc/Usage
+
+#,# src
+#,# src/bufwrite.c
+#,# src/bufwrite.h
+#,# src/fileparts.c
+#,# src/filerotate.c
+#,# src/m2vcut-gui.c
+#,# src/m2vfilter.c
+#,# src/m2vscan.c
+#,# src/m2vtoyuv.c
+#,# src/Makefile
+#,# src/mp2cutpoints.c
+#,# src/warpxpointer.c
+#,# src/wavgraph.c
+#,# src/x.c
+#,# src/x.h
+#,# src/zzob.c
+#,# src/zzob.h
+
+#,# tools
+#,# tools/buildlibmpeg-051.sh x
+#,# tools/chksyslibmpeg.sh x
+#,# tools/chklibmpeg-051.sh x
+#,# tools/tarlisted31.c x
+
+#EOF

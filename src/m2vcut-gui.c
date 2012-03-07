@@ -7,8 +7,8 @@
  xo="`pkg-config --cflags --libs gtk+-2.0` -lutil $mpeg2_both"
  xo="$xo -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE"
  date=`date`; set -x
-${CC:-gcc} -ggdb -std=gnu99 $WARN "$@" -o "$TRG" "$0" $xo -DCDATE="\"$date\""
-# ${CC:-gcc} -O2 -std=c99 $WARN "$@" -o "$TRG" "$0" $xo -DCDATE="\"$date\""
+#${CC:-gcc} -ggdb -std=gnu99 $WARN "$@" -o "$TRG" "$0" $xo -DCDATE="\"$date\""
+${CC:-gcc} -O2 -std=gnu99 $WARN "$@" -o "$TRG" "$0" $xo -DCDATE="\"$date\""
  exit 0
  */
 #endif
@@ -21,7 +21,7 @@ ${CC:-gcc} -ggdb -std=gnu99 $WARN "$@" -o "$TRG" "$0" $xo -DCDATE="\"$date\""
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Fri Jun 13 21:49:32 EEST 2008 too
+ * Last modified: Mon 05 Mar 2012 10:21:38 EET too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
@@ -46,6 +46,9 @@ ${CC:-gcc} -ggdb -std=gnu99 $WARN "$@" -o "$TRG" "$0" $xo -DCDATE="\"$date\""
 
 #include <signal.h>
 #include <sys/wait.h>
+
+#include <sys/stat.h>
+#include <sys/mman.h>
 
 //#define __GTK_ITEM_FACTORY_H__ // XXX
 #include <gtk/gtk.h>
@@ -202,6 +205,7 @@ static inline void xRemNode(int line, Node * node) {
 
 /* ----------------- end of amiga list code ------------------ */
 
+#define AUDIOVIEW_HEIGHT 31
 
 typedef struct
 {
@@ -231,6 +235,7 @@ typedef struct
     int32_t frameno;
     int32_t index;
 } Cutpoint;
+
 
 struct /* (most generic) globals packaged ... */
 {
@@ -276,6 +281,14 @@ struct
     const char * mpeg2filename;
     int fd;
 } M;
+
+/* Audio info */
+struct {
+    char * leveldata;
+    int levelsize;
+    uint8_t * rgb;
+} A;
+
 
 /* ---------------- */
 
@@ -353,7 +366,7 @@ char * get_tmp_buffer(void) // ## increase mpeg input buffer for this...
     Frame * f;
 
     if (G.rgbmem == null) {
-	/* just before program exit */
+	/* just before program exit -- test outofmem */
 	void * mem = malloc(2 * FILENAME_MAX); // XXX define...
 	if (mem == null) {
 	    WriteCS(2, "Out of Memory!");
@@ -398,6 +411,7 @@ void die(const char * fmt, ...)
     int l = sizeof M.buffer;
     int i;
 
+    // clear *some* memory buffers in case tight memory situation //
     zfree(&G.framemem);
     zfree(&G.rgbmem);
     zfree(&G.framecache);
@@ -447,6 +461,15 @@ static void init_M(const char * filename)
     M.info = mpeg2_info(M.decoder);
 }
 
+static void * _alloc_avis_buffer(void)
+{
+    int siz = (G.maxwidth * AUDIOVIEW_HEIGHT * 3 + 3) & ~3;
+    void * ptr = malloc( siz );
+    if (ptr == null)
+	die("Out of Memory (audio visualization buffer allocation)!");
+    memset(ptr, 0, siz);
+    return ptr;
+}
 
 static Frame * get_frame(void)
 {
@@ -911,7 +934,7 @@ void parse_cutpoint_input(CutO * cuto, FILE * fh)
 {
     int state = 0;
     int c;
-    int fval, eval;
+    int fval = 0, eval = 0; // silence compiler
 
     while ((c = fgetc(fh)) >= 0)
     {
@@ -1150,6 +1173,70 @@ struct {
 } W;
 
 /* ----------- */
+
+static inline void _put_apixel(unsigned int x, unsigned int y,
+			       uint8_t r, uint8_t g, uint8_t b)
+{
+    if (x >= (unsigned int)G.maxwidth || y >= AUDIOVIEW_HEIGHT)
+	return;
+    unsigned int pos = (y * G.maxwidth + x) * 3;
+    A.rgb[ pos + 0 ] = r;
+    A.rgb[ pos + 1 ] = g;
+    A.rgb[ pos + 2 ] = b;
+}
+
+#if AUDIOVIEW_HEIGHT != 31
+#error AUDIOVIEW_HEIGHT != 31
+#endif
+void update_alevels(void)
+{
+    int pos = G.currentframe * 4;
+    int middle = G.maxwidth / 2;
+    int midp8 = G.maxwidth / 8;
+    int i;
+
+    if (A.leveldata == null)
+	return;
+
+    for (i =- midp8; i < midp8; i++) {
+	int j;
+	uint8_t c;
+	j = pos + i;
+	if (j < 0 || j >= A.levelsize)
+	    c = 0x12;
+	else
+	    c = A.leveldata[j];
+
+	uint8_t y1 = 30 - (c & 15) * 2;
+	uint8_t y2 = 30 - (c >> 4) * 2;
+	int x0 = middle + i * 4;
+	int x1 = x0 + 1;
+	int x2 = x0 + 2;
+	int x3 = x0 + 3;
+#if 0
+	if (abs (i) < 16)
+	    printf("%3d %02x %3d %3d\n", i, c, y1, y2);
+#endif
+	for (int h = 0; h < 30; h++) {
+	    _put_apixel (x0, h, 0, 0, h > y1? 255:0);
+	    _put_apixel (x1, h, 0, 0, h > y1? 255:0);
+	    _put_apixel (x2, h, 0, 0, h > y2? 255:0);
+	    _put_apixel (x3, h, 0, 0, h > y2? 255:0);
+	}
+	_put_apixel (x0, 30, 0, 128, 192);
+	_put_apixel (x1, 30, 0, 128, 192);
+	_put_apixel (x2, 30, 0, 128, 192);
+	_put_apixel (x3, 30, 0, 128, 192);
+
+    }
+    for (i = 0; i < 31; i += 3)
+	_put_apixel(middle, i, 160,160,255);
+
+    for (i = 16; i < middle; i += 16) {
+	_put_apixel(middle - i, 15, 160,160,255);
+	_put_apixel(middle + i, 15, 160,160,255);
+    }
+}
 
 void draw_triangle(void)
 {
@@ -1450,6 +1537,7 @@ void merge_here(void)
 void update_window(void)
 {
     update_label();
+    update_alevels();
     W.drawing = true;
     gtk_widget_queue_draw(W.da);
 }
@@ -1789,6 +1877,19 @@ gboolean main_window_delete_event(void * w, void * e, void * d)
     return false;
 }
 
+#if 0
+gboolean on_key_release(GtkWidget * w, GdkEventKey * k,
+			gpointer user_data)
+{
+    (void)w; (void)k; (void)user_data;
+
+    if (A.drawstate <= 0) {
+	A.drawstate = 2;
+	update_window();
+    }
+    return true;
+}
+#endif
 
 gboolean on_key_press(GtkWidget * w, GdkEventKey * k,
 		      gpointer user_data)
@@ -1884,13 +1985,20 @@ gboolean on_darea_expose(GtkWidget * w, GdkEventExpose * e, gpointer user_data)
     (void)e; (void)user_data;
 
     d1(("expose: frame %d,  trn %d", f->frameno, f->trn));
+
+    if (A.leveldata)
+	gdk_draw_rgb_image(w->window, w->style->fg_gc[GTK_STATE_NORMAL],
+			   0, 0, G.maxwidth, AUDIOVIEW_HEIGHT,
+			   GDK_RGB_DITHER_MAX, A.rgb, G.maxwidth * 3);
+
     //f->width = 640;
     //f->height = 480;
     gdk_draw_rgb_image(w->window, w->style->fg_gc[GTK_STATE_NORMAL],
 		       (G.maxwidth - f->width) / 2,
-		       (G.maxheight - f->height) / 2,
+		       (G.maxheight - f->height) / 2 + AUDIOVIEW_HEIGHT,
 		       f->width, f->height,
 		       GDK_RGB_DITHER_MAX, f->rgb[0], f->width * 3);
+
 #if 0
     gdk_pango_renderer_set_drawable(GDK_PANGO_RENDERER(W.renderer), w->window);
     gdk_pango_renderer_set_gc(GDK_PANGO_RENDERER(W.renderer), W.gcs);
@@ -1931,6 +2039,7 @@ gboolean on_darea_expose(GtkWidget * w, GdkEventExpose * e, gpointer user_data)
 #endif
     draw_triangle();
 
+//done:
     //usleep(100 * 1000);
     W.drawing = false;
     return true;
@@ -2008,7 +2117,8 @@ int init_W(void)
 	   "00:00:00.00      0 / 00:00:00.00      0 | -   0    0 |  000x000  0.00");
     label_frametime(W.labeltext + 21, G.lastframe);
 
-    gtk_widget_show(W.da = aDrawingArea(G.maxwidth, G.maxheight));
+    gtk_widget_show(W.da = aDrawingArea(G.maxwidth,
+					G.maxheight + AUDIOVIEW_HEIGHT));
     gtk_signal_connect(GTK_OBJECT(W.da), "expose-event",
 		       GTK_SIGNAL_FUNC(on_darea_expose), null);
 
@@ -2047,10 +2157,45 @@ int init_W(void)
     //gtk_widget_add_events(w, GDK_KEY_PRESS_MASK);
     gtk_signal_connect(GTK_OBJECT(W.w), "key-press-event",
 		       GTK_SIGNAL_FUNC(on_key_press), null);
-
+#if 0
+    gtk_signal_connect(GTK_OBJECT(W.w), "key-release-event",
+		       GTK_SIGNAL_FUNC(on_key_release), null);
+#endif
 /* printf("%x\n", GDK_WINDOW_XID(da->window)); */
     return 0;
 }
+
+static void init_A(const char * filename)
+{
+    int fd;
+    struct stat st;
+
+    memset(&A, 0, sizeof A);
+    fd = open(filename, O_RDONLY);
+    if (fd < 0) {
+	// warn("Cannot open '%s':", filename);
+	return;
+    }
+    if (fstat(fd, &st) < 0)
+	die("fstat on file '%s' failed:", filename);
+    // XXX check type...
+    if (st.st_size == 0) {
+	// warn...
+	close(fd);
+	return;
+    }
+    A.levelsize = st.st_size;
+    A.leveldata = mmap(null, A.levelsize, PROT_READ, MAP_SHARED, fd, 0);
+    if (A.leveldata == MAP_FAILED)
+	die("mmap on file '%s' failed:", filename);
+    close(fd);
+
+    A.rgb = _alloc_avis_buffer(); // active
+    update_alevels();
+
+    d1(("init_A(): A.levelsize: %d\n", A.levelsize));
+}
+
 
 void init(int argc, char * argv[])
 {
@@ -2061,6 +2206,7 @@ void init(int argc, char * argv[])
     init_M(argv[2]);
     read_indexfile(fh);
     (void)load_cutpoints(argv[3], 0);
+    init_A(argv[4]);
     update_image();
     alloc_frames();
     G.frame = G.framecache[0];
@@ -2069,8 +2215,9 @@ void init(int argc, char * argv[])
 
 int main(int argc, char * argv[])
 {
-    if (argc != 4) {
-	WriteCS(2, "Usage: m2cut-gui indexfile videofile cutpointfile\n");
+    if (argc != 5) {
+	WriteCS(2, "Usage: m2cut-gui indexfile videofile "
+		/**/ "cutpointfile audiolevelfilename\n");
 	return 1;
     }
     dx(printf(" --- debugging output enabled ---\n"));

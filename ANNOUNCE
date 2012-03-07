@@ -1,6 +1,5 @@
-Last committed: $Id$
 
-ANNOUNCE for m2vmp2cut 0.78  (2009-11-20)
+ANNOUNCE for m2vmp2cut
 
 This is stable release of m2vmp2cut -- frame accurate (currently PAL)
 mpeg2 video (m2v file) with accompanied mp2 audio (mp2 file) cutter.
@@ -12,84 +11,9 @@ Audio is cut from separate mp2 file at positions that keep a/v sync
 as good as possible (maximum sync difference is around 10-15 milliseconds).
 
 This software is available currently at http://www.iki.fi/too/sw/m2vmp2cut/
-and is licensed under GNU Public License (GPL).
+and is licensed under GNU Public License version 2 (GPLv2).
 
-Changes since 0.76 (2008-09-09)
-	If 'projectx' command is found (in PATH), that is used.
-	Debux can demux multiple files.
-	Bug fix when last chars in file were \000\000\001.
-
-Changes since 0.74 (r2192)
-	Fixed seeking to offset zero (-sb 0) in m2vtoyuv command.
-
-Changes since 0.72 (r2177)
-	Fixed largefile support in fileparts command.
-	Added getyuv.pl and getmp2.sh -- and related commands to m2vmp2cut;
-	these outputs selected video and audio parts from the source.
-	Added "contrib" interface.
-	Added first "contrib" script, mpeg2 re-encoding.
-	Tuned file/directory argument position on m2vmp2cut command (again).
-
-Changes since 0.68 (r2174) (Not even far!):
-	ANNOUNCE informs this is stable version.
-	buildlibmpeg-051.sh accepts libmpeg-0.5.1.tar.gz with absolute path.
-	Minor tunes, simplification etc.
-
-Changes since 0.67 (r2169, Success is not an option):
-	Binaries wavgraph and warpxpointer are installed.
-	Audio sync fixed in cutpoint test functionality.
-	ProjectX is linked for use during 'make install'.
-
-Changes since 0.65 (r2101, Faux pas):
-	Audio visualizer around current position in m2vcut-gui, to find
-	(silent) spot for cutpoint.
-	Test speedups, now audio is pre-scanned too.
-	Some usage tunes, fixes and enchangements.
-	Bug fixes in almost every area.
-
-Changes since 0.63 (r2069, Epic Fail):
-	Target size estimation.
-	Keyboard control adjustments in gui.
-	Bug fixes.
-
-Changes since 0.62 (r1256, Gender-neutral pronouns):
-	Added graphical gui client for cutpoint selection.
-	Added m2vtoyuv for frame decoding -- in place of transcode(1)
-	Now gops are closed just after encoded frames.
-	Added (cli) frontend to do run demuxer, cutter and m2vmp2cut.pl
-	Lots of other tunes
-
-Changes since 0.58 (r658, Wrecking Stars):
-	Makefile tail commands fixed to have -n before +<num>
-
-Changes since 0.56 (r290, Fifty-Sixty):
-	Timecodes in GOP's "fixed".
-	Audio scanning implemented in C for speed...
-	... and if audio bit/samplerates change in output that will be an
-		error.
-	Source video format and intra_dc_precision value are used in video
-		encoder (Still some settings that cannot be defined in
-		encoder left, though).
-	Some (a little less significant) improvements
-
-Changes since 0.54 (r144, Constit on monet):
-	New option: --aonly (cut audio only (video to be re-encoded or so)).
-	New option: --evbr (other way to prepare video for re-encoding...).
-	Added "encoded frame count" checks.
-	Uses lvemedia.lst in addition to lveedit.lst for finding cutpoints
-		(to go around (IMHO) lve bug when dragging frame 0).
-	Examples tuning/fixing.
-	Added some lve patches to ./misc
-	Internal workings changes.
-	Bug fixes.
-
-Changes since 0.42 (r104, Infinite Improbabilities):
-	--sync option bugfix: negative numbers were taken as positive.
-	--test option bugfix: was no-op in 0.42
-	New options, --last, --requant, -. And --options, --examples.
-	More embedded documentation.
-	Added `misc' dir containing external stuff.
-	Internal workings changes.
+Check NEWS for change log.
 
 Enjoy
 

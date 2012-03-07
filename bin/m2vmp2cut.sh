@@ -7,52 +7,32 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Sat 01 Oct 2011 11:51:57 EEST too
+# Last modified: Mon 05 Mar 2012 14:50:52 EET too
+
+set -eu
+case ${1-} in -x) set -x; shift; esac # debug help, passed thru wrapper.
 
 warn () { echo "$@" >&2; }
-die () { warn "$@"; exit 1; }
-needvar () { case $1 in '') shift 1; "$@"; esac; }
+die () { warn "$@"; warn; exit 1; }
+needvar () { case ${1-} in '') shift 1; "$@"; esac; }
 
 usage () {
-    warn; warn Usage: m2vmp2cut '[(file|dir)]' $cc '[(file|dir)]' "$@"; die;
+	warn; die Usage: m2vmp2cut '(file|directory)' $cmd "$@"
 }
 
 x () { echo + "$@"; "$@"; }
 
 M2VMP2CUT_CMD_PATH=`cd \`dirname "$0"\`; pwd`
 case $M2VMP2CUT_CMD_PATH in
-    *' '*) die Too lazy to support Spaces in \'$M2VMP2CUT_CMD_PATH\' ;; esac
+    *' '*) die "Too lazy to support Spaces in '$M2VMP2CUT_CMD_PATH'."; esac
 export M2VMP2CUT_CMD_PATH
 
 #echo $M2VMP2CUT_CMD_PATH
 
-# no interactive behaviour in batch mode...
-case $1 in --batch) batch=1; shift ;; *) batch= ;; esac
-
-file= dir=
-filedir () {
-	case $dir in '') ;; *) return 1 ;; esac
-	case "$1" in '') die m2vmp2cut $cm: file/directory arg missing ;; esac
-	if test -f "$1"
- 	then
- 		dn=`dirname "$1"`; basename=`basename "$1"`
- 		od=`echo $basename | sed 's/\.[^.]*$//'`.d
- 		file=$1	dir=$dn/$od
- 	elif test -d "$1"
- 	then
- 		file= dir=$1
- 	else
- 		die "'$1': not a file or directory"
- 	fi
-	return 0
-}
-
-#case $1 in '') ;; *) test -f "$1" -o -d "$1" && { filedir "$1";shift; } ;; esac
-
 # do not show this in command list
 cmd_vermatch ()
 {
-	case $1 in 6) exit 0;; *) exit 1 ;; esac
+	case $1 in 6) exit 0 ;; *) exit 1 ;; esac
 }
 
 cmd_lvev6frames () # Legacy m2vmp2cut support; dig cutpoints from ~/.lve/* file
@@ -62,25 +42,39 @@ cmd_lvev6frames () # Legacy m2vmp2cut support; dig cutpoints from ~/.lve/* file
 
 chkindexes ()
 {
-	test -f "$1/video.index" \
-		|| $M2VMP2CUT_CMD_PATH/m2vscan "$1/video.m2v" "$1/video.index"
-	test -f "$1/audio.scan" \
-		|| $M2VMP2CUT_CMD_PATH/mp2cutpoints \
-			--scan "$1/audio.mp2" "$1/audio.scan"
+	test -s "$1/video.index" ||
+		$M2VMP2CUT_CMD_PATH/m2vscan "$1/video.m2v" "$1/video.index"
+
+	test -s "$1/audio.scan" -a -s "$1/audio.levels" ||
+		$M2VMP2CUT_CMD_PATH/mp2cutpoints \
+			--scan "$1/audio.mp2" "$1/audio.scan" "$1/audio.levels"
 }
 
-chkpjx ()
+getcmds ()
 {
-	case `env which projectx 2>/dev/null` in /*) pjx=projectx; return;; esac
+	cmds=`env which projectx java mplex 2>/dev/null | tr '\012' :`
+}
+needcmd ()
+{
+	case $cmds in */$1:) ;; *)
+		c=$1; shift
+		die "Command '$c' missing ($*)"
+	esac
+}
 
-	test -h $M2VMP2CUT_CMD_PATH/ProjectX.jar || { \
+
+chkpjx () # getcmds run before
+{
+	case $cmds in */projectx:*) pjx=projectx; return; esac
+
+	test -h $M2VMP2CUT_CMD_PATH/ProjectX.jar || {
 	  warn "Symbolic link '$M2VMP2CUT_CMD_PATH/ProjectX.jar' does not exist"
 	  die 'Please provide link and try again'
 	}
 	pjxjar=`LC_ALL=C ls -l $M2VMP2CUT_CMD_PATH/ProjectX.jar | sed 's/.* //'`
 	test -f $pjxjar || {
-		warn "ProjectX jar file '$pjxjar' does not exist"
-		die "Fix this or it's symbolic link reference '$M2VMP2CUT_CMD_PATH/ProjectX.jar'"
+		warn "ProjectX jar file '$pjxjar' does not exist."
+		die "Fix this or it's symbolic link reference '$M2VMP2CUT_CMD_PATH/ProjectX.jar'."
 	}
 	pjx="java -jar $pjxjar"
 }
@@ -88,23 +82,33 @@ chkpjx ()
 findlargestaudio ()
 {
 	largestaudio=nothing largestsize=0
-	for i; do
-		currentsize=`stat -c%s "$i"`
-		test $currentsize -le $largestsize || {
-			largestaudio=$i	largestsize=$currentsize
-		}
+	for f
+	do	currentsize=`stat -c%s "$f"`
+		test $currentsize -gt $largestsize || continue
+		largestaudio=$f
+		largestsize=$currentsize
 	done
+}
+
+cmd_tmp ()
+{
+	cd "$dir"
+	rm audio.scan
+	chkindexes .
 }
 
 cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 {
-	filedir "$1" && shift
-	for file; do test -f "$file" || die "'$file': not a file"; done
+	case $file in '') die "demux reguires 'file' argument."; esac
+	getcmds
 	chkpjx
+	needcmd mplex needed after cutting when multiplexing final image
 
-	test -d "$dir" && die "Directory '$dir' is on the way (demuxed already)?"
+	if test -d "$dir"
+	then	die "Directory '$dir' is on the way (demuxed already)?"
+	fi
 	mkdir "$dir"
-	x $pjx -ini /dev/null -out "$dir" "$dn/$basename" ${1+"$@"}
+	x $pjx -ini /dev/null -out "$dir" -name in "$file" "$@"
 	cd "$dir"
 
 #	ac3=`ls *.ac3 2>/dev/null`
@@ -113,70 +117,69 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 #		findlargestaudio $ac3
 #		ln -s $largestaudio audio.ac3
 #	elif [ -n "$mp2" ] ; then
-	if test -n "$mp2"
-	then	findlargestaudio $mp2
-		ln -s $largestaudio audio.mp2
-	else
+	case $mp2 in '')
 		die "No audio files to process"
-	fi
-	video=`echo $basename | sed 's/\.[^.]*$//'`
-	ln -s $video.m2v video.m2v
+	;; *)
+		findlargestaudio $mp2
+		ln -s $largestaudio audio.mp2
+	esac
+	ln -s in.m2v video.m2v
 
 	chkindexes .
+	echo
+	echo "Files demuxed in '$dir'"
 }
 
 cmd_select () # Select parts from video with a graphical tool
 {
-	filedir "$1" && shift
 	test -f "$dir/video.m2v" || die "'$dir/video.m2v' does not exist"
 	chkindexes "$dir"
-	x $M2VMP2CUT_CMD_PATH/m2vcut-gui \
-		"$dir/video.index" "$dir/video.m2v" "$dir/cutpoints"
-	test -f "$dir/cutpoints.1" && { case `wc "$dir/cutpoints"` in
-		*' '1' '*) cat "$dir/cutpoints.1" >> "$dir/cutpoints";; esac; }
+	x $M2VMP2CUT_CMD_PATH/m2vcut-gui "$dir/video.index" "$dir/video.m2v" \
+		"$dir/cutpoints" "$dir/audio.levels"
+	# append cutpoint history from backup file made by m2vcut-gui
+	if test -f "$dir/cutpoints.1"
+	then	case `wc "$dir/cutpoints"` in
+			*' '1' '*) cat "$dir/cutpoints.1" >> "$dir/cutpoints"
+		esac
+	fi
 }
 
 cmd_cut () # Cut using m2vmp2cut.pl for the work...
 {
-	filedir "$1" && shift
-	x $M2VMP2CUT_CMD_PATH/m2vmp2cut.pl --dir="$dir" ${1+"$@"}
+	x exec $M2VMP2CUT_CMD_PATH/m2vmp2cut.pl --dir="$dir" "$@"
 }
 
 cmd_play () # Play resulting file with mplayer
 {
-	filedir "$1" && shift
 	f="$dir"/m2vmp2cut-work/out.mpg
 	test -f "$f" || die "'$f' does not exist"
-	x mplayer ${1+"$@"} "$f"
+	x exec mplayer "$@" "$f"
 }
 
 cmd_move () # Move final file to a new location (and name)
 {
-	filedir "$1" && shift
-	needvar "$1" usage '<destfile>'
+	needvar "${1-}" usage '<destfile>'
 	f="$dir"/m2vmp2cut-work/out.mpg
 	test -f "$f" || die "'$f' does not exist"
 	x mv "$f" "$1"
 }
 
-cmd_getyuv () # get selected parts of mpeg2 video as yuv(4mpeg) frames
+cmd_getyuv () # Get selected parts of mpeg2 video as yuv(4mpeg) frames
 {
-	case $1 in examp*) exec $M2VMP2CUT_CMD_PATH/getyuv.pl examples ;; esac
-	filedir "$1" && shift
-	x $M2VMP2CUT_CMD_PATH/getyuv.pl "$dir"
+	case "${1-}" in examp*) dir=examples; esac
+	x exec $M2VMP2CUT_CMD_PATH/getyuv.pl "$dir"
 }
 
-cmd_getmp2 () # get selected parts of mp2 audio
+cmd_getmp2 () # Get selected parts of mp2 audio
 {
-	case $1 in examp*) exec $M2VMP2CUT_CMD_PATH/getmp2.sh examples ;; esac
-	filedir "$1" && shift
-	x $M2VMP2CUT_CMD_PATH/getmp2.sh "$dir"
+	case "${1-}" in examp*) dir=examples; esac
+	x exec $M2VMP2CUT_CMD_PATH/getmp2.sh "$dir"
 }
 
-cmd_contrib () # contrib material, encoding scripts etc...
+cmd_contrib () # Contrib material, encoding scripts etc...
 {
 	M2VMP2CUT_CMD_DIRNAME=`dirname "$M2VMP2CUT_CMD_PATH"`
-	case $1 in '')
+	case ${1-} in '')
 		echo
 		echo Append one of these to your command line to continue.
 		echo Unambiquous prefix will do...
@@ -197,15 +200,15 @@ cmd_contrib () # contrib material, encoding scripts etc...
 		esac
 	done
 	case $ff in '') die "'$1': not found." ;; esac
-	case $fp in '') ;; *) die "contrib: ambiquous match: $ff" ;; esac
+	case $fp in '') ;; *) die "contrib: ambiquous match: $ff." ;; esac
 	shift
 	export M2VMP2CUT_CMD_DIRNAME
-	$M2VMP2CUT_CMD_DIRNAME/contrib/$fm ${1:+"$@"}
+	x exec $M2VMP2CUT_CMD_DIRNAME/contrib/$fm "$@"
 }
 
 cmd_help () # Help of all or some of the commands above
 {
-	case $1 in '') 	cut -d: -f 2- <<.
+	case ${1-} in '') cut -d: -f 2- <<.
 	:
 	: Enter help <command-name> or '.' to see help of all commands at once.
 	:
@@ -219,7 +222,7 @@ cmd_help () # Help of all or some of the commands above
 	sed -n "s|^#h $1[^:]*:||p" "$0"
 }
 
-cmd_example () # simple example commands
+cmd_example () # Simple example commands
 {
 	cut -d: -f 2- >&2 <<.
 	:
@@ -227,7 +230,7 @@ cmd_example () # simple example commands
 	: (<file> is for user convenience...).
 	: The <file>/<dir> option can also be given after command name...
 	:
-	: m2vmp2cut <file[s]> demux
+	: m2vmp2cut <file> demux
 	: m2vmp2cut <directory> select
 	: m2vmp2cut <directory> cut
 	: m2vmp2cut <directory> play
@@ -246,48 +249,77 @@ cmd_example () # simple example commands
 
 # ---
 
-case $1 in '')
-	bn=`basename "$0"`
-        echo
-        echo Usage: $bn '[-batch] [(file|dir)] <command> [(file|dir)] [args]'
-        echo
-        echo $bn commands available:
-        echo
-        sed -n '/^cmd_[a-z]/ { s/cmd_/ /; s/ () [ -#]*/                       /
-			  s/\(.\{15\}\) */\1/p; }' "$0"
-        echo
-        echo Commands may be abbreviated until ambiguous.
-        echo
-        exit 0
+# no interactive behaviour in batch mode... (if ever implemented).
+case ${1-} in --batch) batch=1; shift ;; *) batch= ;; esac
+
+case $# in 0)
+;; 1)	set x '' one; shift
+;; *)
+	case $1 in *' '*) warn
+		die "Support for spaces in '$1' may not have been implemented."
+	esac
+	if test -f "$1"
+	then
+ 		file=$1
+ 		dir=`basename "$file" | sed 's/\.[^.]*$//'`.d
+		shift
+	elif test -d "$1"
+	then
+		file=
+		dir=$1
+		shift
+	else
+		warn; die "'$1': no such file or directory."
+	fi
 esac
 
-cm=$1 cm2=${2:-none}
+# ---
 
-#case $cm in
-#        c) cm=colorset ;;
-#esac
+case ${1-} in '')
+	bn=`basename "$0" .sh`
+	echo
+	echo Usage: $bn '[-batch] (file|directory) <command> [args]'
+	echo
+	echo $bn commands available:
+	echo
+	sed -n '/^cmd_[a-z0-9_]/ { s/cmd_/ /; s/ () [ -#]*/                   /
+		s/$0/'"`exec basename "$0"`"'/; s/\(.\{14\}\) */\1/p; }' "$0"
+	echo
+	echo Commands may be abbreviated until ambiguous.
+	echo
+	case ${2-} in one)
+	 warn "$bn requires 2 arguments, 'file/directory' and 'command'."
+	 warn "Enter '.' as file/directory argument in case it is irrelevant."
+	 warn "For example: $bn . help"
+	esac
+	exit 0
+esac
 
-cc= cp= cc2= cp2=
-for m in `LC_ALL=C exec sed -n 's/^cmd_\([a-z0-9_]*\) (.*/\1/p' $0`
+cm=$1; shift
+
+# case $cm in
+# 	d) cm=diff ;;
+# esac
+
+cc= cp=
+for m in `LC_ALL=C exec sed -n 's/^cmd_\([a-z0-9_]*\) (.*/\1/p' "$0"`
 do
-        case $m in
-                $cm) cp= cc=set  cmd=$cm;  break ;;
-                $cm*) cp=$cc; cc="$m $cc"; cmd=$m ;;
-                $cm2*) cp2=$cc2; cc2="$m $cc2"; cmd2=$m ;;
-        esac
+	case $m in
+		$cm) cp= cc=1 cmd=$cm; break ;;
+		$cm*) cp=$cc; cc="$m $cc"; cmd=$m ;;
+	esac
 done
 
-case "$cc$cc2" in '') die $0: $cm or $cm2 -- command not found.
+case $cc in '') echo $0: $cm -- command not found.; exit 1
 esac
-case $cp in  '') ;; *) die $0: $cm: -- ambiquous commands: matches $cc ;; esac
-case $cp2 in '') ;; *) die $0: $cm2: -- ambiquous commands: matches $cc2;; esac
+case $cp in '') ;; *) echo $0: $cm -- ambiguous command: matches $cc; exit 1
+esac
+unset cc cp cm
+#set -x
+cmd_$cmd "$@"
+exit
 
-case $cc in '') cmd=$cmd2; filedir "$1"; shift ;; esac
-shift
-unset cc2 cp2 cmd2 cc cp
-
-cmd_$cmd ${1:+"$@"}
-exit $?
+# xxxx
 
 # fixme: move these to separate doc file (w/ locale extension)
 
@@ -298,22 +330,23 @@ exit $?
 #h lvev6frames: these old edits can be used with this m2vmp2cut version
 #h lvev6frames:
 
-#h demux: demux <file[s]>
+#h demux: demux
 #h demux:
 #h demux: m2vmp2cut reguires mpeg files to be demuxed to elementary streams
 #h demux: before cutting. This command uses ProjectX to do the demuxing.
 #h demux: A separate directory (based on source filename) is created for
 #h demux: output files. Note that this doubles the disk usage of a particular
 #h demux: source file.
+#h demux: (Not yet counting the space needed for the final output file.)
 #h demux:
 
-#h select: select <directory>
+#h select: select
 #h select:
 #h select: This command uses new m2vcut-gui graphical utility for searching
 #h select: cutpoints. This work is done frame-accurately.
 #h select:
 
-#h cut: cut <directory> [options] ...
+#h cut: cut [options] ...
 #h cut:
 #h cut: This command is wrapper to m2vmp2cut.pl (which used to be the frontend
 #h cut: of m2vmp2cut in old versions). This command has extensive help of
@@ -321,26 +354,28 @@ exit $?
 #h cut: when this creates final output file.
 #h cut:
 
-#h play: play <directory> [options]
+#h play: play [options]
 #h play:
 #h play: This command runs mplayer for the file created with cut command
 #h play:
 
-#h move: move <directory> <destfile>
+#h move: move <destfile>
 #h move:
 #h move: Moves final output file to a new destination.
 #h move:
 
-#h getyuv: getyuv [<directory>|examples]
+#h getyuv: getyuv [examples]
 #h getyuv:
 #h getyuv: Decodes selected mpeg2 frames as a stream of yuv4mpeg pictures.
 #h getyuv: useful for further encoding.
+#h getyuv: If examples argument is given this command provides example output.
 #h getyuv:
 
-#h getmp2: getmp2 [<directory>|examples]
+#h getmp2: getmp2 [examples]
 #h getmp2:
 #h getmp2: Extracts selected mp2 audio data, to be muxed with (re-encoded)
 #h getmp2: video. Mp2 data can be used as is, or as encoded to mp3 or vorbis...
+#h getmp2: If examples argument is given this command provides example output.
 #h getmp2:
 
 #h contrib: contrib

@@ -45,11 +45,8 @@ OBJS= $(SRCS:%.c=obj_b/%.o)
 # Any of the headers change, let's compile all objs, for sure.
 $(MOBJS) $(OBJS):  $(HDRS) ghdrs/version.h Makefile
 
-ghdrs/version.h: ../Makefile
-	echo 'const unsigned char version[] = "m2vmp2cut ' | tr -d '\012' > $@
-	sed -n 's/VERSION=//; T; p; q' ../Makefile | tr -d '\012' >> $@
-	awk '/Head date/ { printf " (%s)", $$3; exit 0 }' ../HISTORY >> $@
-	echo '";' >>  $@
+ghdrs/version.h: Makefile
+	sed 's/^/const unsigned char version[] = "/; s/$$/";/; q' ../NEWS > $@
 
 # Touching file to required directories which modification time does
 # not change unlike the directory itself.
@@ -66,7 +63,8 @@ CC=gcc
 LF_OPTS= -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 #CFLAGS= -ggdb $(LF_OPTS) $(WOPTS) $(INCLS)
-CFLAGS=	-s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
+#CFLAGS=	-s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
+CFLAGS=	-std=gnu99 -s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
 
 ../bin/m2vmp2cut.bin: $(OBJS)
 	$(CC) -o $@ $(OBJS)
@@ -78,7 +76,7 @@ CFLAGS=	-s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
 	$(CC) -o $@ obj_b/m2vfilter.o obj_b/zzob.o obj_b/x.o obj_b/bufwrite.o
 
 ../bin/mp2cutpoints: $(OBJS)
-	$(CC) -o $@ obj_b/mp2cutpoints.o obj_b/x.o
+	$(CC) -o $@ obj_b/mp2cutpoints.o obj_b/x.o -lm
 
 ../bin/fileparts: $(OBJS)
 	$(CC) -o $@ obj_b/fileparts.o obj_b/zzob.o obj_b/x.o

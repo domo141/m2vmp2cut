@@ -1,29 +1,7 @@
 #!/bin/sh
-# $Id; m2vmp2cut.sh $
-#
-# Author: Tomi Ollila -- too ät iki piste fi
-#
-#	Copyright (c) 2008 Tomi Ollila
-#	    All rights reserved
-#
-# Created: Wed Apr 23 19:56:14 EEST 2008 too
-# Last modified: Mon Jul 21 15:43:46 EEST 2008 too
 
-ver=devel
+# Inplace test wrapper for m2vmp2cut. Make install generates for dist versions.
 
-case $1 in '') echo; echo m2vmp2cut version $ver ;; esac
-
-dn=`dirname "$0"`
-
-trap 'echo Neither did \"$c1\" >&2' 0
-
-case $dn in
-    *bin)
-	c1="$dn/../lib/m2vmp2cut-$ver/bin/m2vmp2cut.sh"
-	test -x "$c1" && exec "$c1" "$@" \
-		|| exec "$dn/bin/m2vmp2cut.sh" "$@" ;;
-    *)
-    	c1="$dn/bin/m2vmp2cut.sh"
-	test -x "$c1" && exec "$c1" "$@" \
-		|| exec "$dn/../lib/m2vmp2cut-$ver/bin/m2vmp2cut.sh" "$@" ;;
+case ${1-} in '') echo; echo m2vmp2cut inplace wrapper:
 esac
+exec ./bin/m2vmp2cut.sh "$@"

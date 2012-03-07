@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Sun Sep 26 13:23:29 EEST 2004 too
- * Last modified: Fri May 09 20:01:42 EEST 2008 too
+ * Last modified: Wed 22 Feb 2012 14:26:41 EET too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -40,13 +40,13 @@ int main(int argc, char ** argv)
   ofile = argv[2];
 
   if ((ifd = open(ifile, O_RDONLY)) < 0)
-    xerrf("open O_DRONLY failed:");
+    xerrf("open '%s' as O_RDONLY failed:", ifile);
 
   if (fstat(ifd, &st) < 0)
-    xerrf("fstat failed:");
+    xerrf("fstat '%s' failed:", ifile);
 
   if ((ofd = open(ofile, O_WRONLY|O_CREAT|O_TRUNC, 0644)) < 0)
-    xerrf("open (for write) failed:");
+    xerrf("open '%s', (for write) failed:", ofile);
 
   s__scan(ifd, ofd, st.st_size);
   return 0;

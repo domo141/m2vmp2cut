@@ -18,7 +18,7 @@
  *	    All rights reserved
  *
  * Created: Fri Jun 06 17:45:42 EEST 2008 too
- * Last modified: Sat Jun 14 08:06:22 EEST 2008 too
+ * Last modified: Tue 14 Feb 2012 16:37:14 EET too
  */
 
 #include <stdio.h>
@@ -136,25 +136,30 @@ static void dograph(struct AState * astate, int height, int centerpos,
     height /= 2;
     int middleleft = height * width;
 
+    int div0 = astate->maxval[0] / height;
+    int div1 = astate->maxval[1] / height;
+
     for (i = 0; i < width; i++)
     {
-        int v, c;
+        int c;
 
-	if (astate->maxval[0] > 0)
+	if (div0 > 0)
 	{
-	    v = astate->graphdata[0][i];
+	    int v = astate->graphdata[0][i];
 	    if (v < 0) { c = '|'; v = -v; } else c = '!';
-	    //printf("%d %d\n", v, height * v / 65535);
-	    v = height * v / astate->maxval[0];
-	    for (int k = 0; k < v; k++)
+	    int h = v / div0;
+	    //printf("vg:%d: %d %d %d\n", __LINE__, v, height * v / 65535, h);
+	    for (int k = 0; k < h; k++)
 		gd[i + (height - k) * width] = c;
 	}
-	if (astate->maxval[1] > 0)
+	if (div1 > 0)
 	{
-	    v = astate->graphdata[1][i];
+	    int v = astate->graphdata[1][i];
 	    if (v < 0) { c = '|'; v = -v; } else c = '!';
-	    v = height * v / astate->maxval[1];
-	    for (int k = 0; k < v; k++)
+	    int h = v / div1;
+
+	    //printf("vg:%d: %d %d %d\n", __LINE__, v, height * v / 65535, h);
+	    for (int k = 0; k < h; k++)
 		gd[i + (height + k) * width] = c;
 
 	    gd[i + middleleft] = '-';
@@ -347,5 +352,6 @@ int main(int argc, char * argv[])
 	astate.currentblock++;
     }
     dograph(&astate, graphheight, centerpos, argv[2], fps1, fps2);
+    //printf("vg:%d: %d %d\n", __LINE__, astate.maxval[0], astate.maxval[1]);
     return 0;
 }

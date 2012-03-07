@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Sun Sep 05 11:12:24 EEST 2004 too
-# Last modified: Sat Feb 07 22:54:24 EET 2009 too
+# Last modified: Wed 15 Feb 2012 18:56:36 EET too
 #
 # This program is licensed under the GPL v2. See file COPYING for details.
 
@@ -294,7 +294,7 @@ done
 mainpid=\$\$
 trap 'kill -USR1 0' 0
 
-'$m2vmp2cut_sh' vermatch 6 \\\n\t|| die 'Tool version mismatch. Rerun!';
+'$m2vmp2cut_sh' . vermatch 6 \\\n\t|| die 'Tool version mismatch. Rerun!';
 
 EOF
 

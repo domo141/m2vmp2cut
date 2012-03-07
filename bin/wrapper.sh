@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Tue Apr 22 19:10:35 EEST 2008 too
-# Last modified: Tue 27 Sep 2011 17:05:44 EEST too
+# Last modified: Wed 15 Feb 2012 19:01:55 EET too
 
 eae () { echo; echo Press ENTER to close this window '' | tr -d \\012
 	read _; exit $1; }
@@ -42,9 +42,10 @@ m2vcut_warp_exit ()
 exec_xterm () {
     geometry=$1
     title=$2
-    font=-misc-fixed-medium-r-normal--20-200-75-75-c-100-iso10646-1
+    #font=-misc-fixed-medium-r-normal--20-200-75-75-c-100-iso10646-1
+    font=fixed
     shift 2
-    exec uxterm -fg black -bg gray70 -g $geometry -T "$title" \
+    exec xterm -fg black -bg gray70 -g $geometry -T "$title" \
 	+sb -fn $font -u8 -e "$0" "$@"
 }
 
