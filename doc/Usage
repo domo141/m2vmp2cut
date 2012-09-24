@@ -1,6 +1,6 @@
 
  Usage: $0 [options] directory \
-	[-v videofile] [-a audiofile] [-s subtitlefile] [-c cutspec]
+        [-v videofile] [-a audiofile] [-s subtitlefile] [-c cutspec]
 
       directory: directory where previous steps have laid out content
 
@@ -14,7 +14,7 @@
         (subtitles currently unsupported, though)
 
       cutspec: frame ranges in format: s-e[,s-e[,s-e...]]
-	start frame inclusive, end frame exclusive
+        start frame inclusive, end frame exclusive
 
       Summary of options:   --options      --examples    -
                             --stop         --nomux       --author

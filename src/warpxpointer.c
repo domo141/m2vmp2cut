@@ -109,7 +109,7 @@ int main(int argc, char * argv[])
     if (argc < 3) return 1;
 
     if ((G.display = XOpenDisplay(null)) == null)
-        return 2;
+	return 2;
 
     atexit(closeDisplay);
 

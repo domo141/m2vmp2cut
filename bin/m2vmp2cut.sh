@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Mon 05 Mar 2012 14:50:52 EET too
+# Last modified: Mon 24 Sep 2012 19:40:47 EEST too
 
 set -eu
 case ${1-} in -x) set -x; shift; esac # debug help, passed thru wrapper.
@@ -24,7 +24,7 @@ x () { echo + "$@"; "$@"; }
 
 M2VMP2CUT_CMD_PATH=`cd \`dirname "$0"\`; pwd`
 case $M2VMP2CUT_CMD_PATH in
-    *' '*) die "Too lazy to support Spaces in '$M2VMP2CUT_CMD_PATH'."; esac
+	*' '*) die "Path '$M2VMP2CUT_CMD_PATH' contains spaces!"; esac
 export M2VMP2CUT_CMD_PATH
 
 #echo $M2VMP2CUT_CMD_PATH
@@ -54,6 +54,7 @@ getcmds ()
 {
 	cmds=`env which projectx java mplex 2>/dev/null | tr '\012' :`
 }
+
 needcmd ()
 {
 	case $cmds in */$1:) ;; *)
@@ -128,6 +129,7 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 	chkindexes .
 	echo
 	echo "Files demuxed in '$dir'"
+	echo 'Next: select'
 }
 
 cmd_select () # Select parts from video with a graphical tool
@@ -142,6 +144,7 @@ cmd_select () # Select parts from video with a graphical tool
 			*' '1' '*) cat "$dir/cutpoints.1" >> "$dir/cutpoints"
 		esac
 	fi
+	echo 'Next: cut, contrib, ...'
 }
 
 cmd_cut () # Cut using m2vmp2cut.pl for the work...
@@ -182,19 +185,21 @@ cmd_contrib () # Contrib material, encoding scripts etc...
 	case ${1-} in '')
 		echo
 		echo Append one of these to your command line to continue.
-		echo Unambiquous prefix will do...
+		echo The choice can be abbreviated to any unambiguous prefix.
 		echo
 		cd $M2VMP2CUT_CMD_DIRNAME/contrib
 		ls -1 | while read line
 		do
+			case $line in *~) continue; esac
 			sed -n '2 { s/./ '"$line"'                    /
-				    s/\(.\{16\}\) */\1/p; q; }' $line
+				    s/\(.\{12\}\) */\1/p; q; }' $line
 		done
 		echo; exit 0
 	esac
+	fp= ff=
 	for f in `ls -1 $M2VMP2CUT_CMD_DIRNAME/contrib`
 	do
-		case $f in
+		case $f in *~) continue ;;
 		    $1) fp= ff=$1 fm=$1 break ;;
 		    $1*) fp=$ff; ff="$f $ff"; fm=$f ;;
 		esac
@@ -202,7 +207,8 @@ cmd_contrib () # Contrib material, encoding scripts etc...
 	case $ff in '') die "'$1': not found." ;; esac
 	case $fp in '') ;; *) die "contrib: ambiquous match: $ff." ;; esac
 	shift
-	export M2VMP2CUT_CMD_DIRNAME
+	M2VMP2CUT_MEDIA_DIRECTORY=$dir
+	export M2VMP2CUT_CMD_DIRNAME M2VMP2CUT_MEDIA_DIRECTORY
 	x exec $M2VMP2CUT_CMD_DIRNAME/contrib/$fm "$@"
 }
 
@@ -212,9 +218,10 @@ cmd_help () # Help of all or some of the commands above
 	:
 	: Enter help <command-name> or '.' to see help of all commands at once.
 	:
-	: The <file>/<directory> argument can be given before or after the
-	: command. Also, if <file> arg is given when <directory> is expected
-	: the needed directory is tried to be deduced from given file name.
+	: The <file>/<directory> argument is given before the command so
+	: that commands can easily changed at the command line. If <file>
+	: argument is given when <directory> is expected, the directory is
+	: deduced from it the same way 'demux' command creates directory name.
 	:
 .
 	exit 0 ;; esac
@@ -226,22 +233,21 @@ cmd_example () # Simple example commands
 {
 	cut -d: -f 2- >&2 <<.
 	:
-	: Simple example commands. In select/cut/play '<dir>' can be used.
-	: (<file> is for user convenience...).
-	: The <file>/<dir> option can also be given after command name...
+	: Simple example commands. In select/cut/play the '<dir>' where demuxed
+	: can also be given instead of original <file> name.
 	:
 	: m2vmp2cut <file> demux
-	: m2vmp2cut <directory> select
-	: m2vmp2cut <directory> cut
-	: m2vmp2cut <directory> play
+	: m2vmp2cut <file/dir> select
+	: m2vmp2cut <file/dir> cut
+	: m2vmp2cut <file/dir> play
 	:
 	: In above, there was basic workflow. 'select' gui provides a test
 	: option -- but if you want to re-test, run these.
 	:
-	: m2vmp2cut <directory> cut --test=200
-	: m2vmp2cut <directory> play
+	: m2vmp2cut <file/dir> cut --test=200
+	: m2vmp2cut <file/dir> play
 	:
-	: getyuv and getmp2 has their own examples. Enter 'example' to their
+	: getyuv and getmp2 have their own examples. Enter 'example' to their
 	: command lines to see those.
 	:
 .
@@ -255,13 +261,13 @@ case ${1-} in --batch) batch=1; shift ;; *) batch= ;; esac
 case $# in 0)
 ;; 1)	set x '' one; shift
 ;; *)
-	case $1 in *' '*) warn
-		die "Support for spaces in '$1' may not have been implemented."
-	esac
+	#case $1 in *' '*) warn
+	#	die "Support for spaces in '$1' may not have been implemented."
+	#esac
 	if test -f "$1"
 	then
- 		file=$1
- 		dir=`basename "$file" | sed 's/\.[^.]*$//'`.d
+		file=$1
+		dir=`basename "$file" | sed 's/\.[^.]*$//'`.d
 		shift
 	elif test -d "$1"
 	then
@@ -285,7 +291,7 @@ case ${1-} in '')
 	sed -n '/^cmd_[a-z0-9_]/ { s/cmd_/ /; s/ () [ -#]*/                   /
 		s/$0/'"`exec basename "$0"`"'/; s/\(.\{14\}\) */\1/p; }' "$0"
 	echo
-	echo Commands may be abbreviated until ambiguous.
+	echo Command can be abbreviated to any unambiguous prefix.
 	echo
 	case ${2-} in one)
 	 warn "$bn requires 2 arguments, 'file/directory' and 'command'."
@@ -330,14 +336,14 @@ exit
 #h lvev6frames: these old edits can be used with this m2vmp2cut version
 #h lvev6frames:
 
-#h demux: demux
+#h demux: demux [projectx options]
 #h demux:
-#h demux: m2vmp2cut reguires mpeg files to be demuxed to elementary streams
+#h demux: m2vmp2cut reguires mpeg files to be demuxed into elementary streams
 #h demux: before cutting. This command uses ProjectX to do the demuxing.
-#h demux: A separate directory (based on source filename) is created for
-#h demux: output files. Note that this doubles the disk usage of a particular
-#h demux: source file.
-#h demux: (Not yet counting the space needed for the final output file.)
+#h demux: A separate directory (in current directory, based on source filename)
+#h demux: is created for output files.
+#h demux: 'projectx options' may contain e.g. more filenames to be demuxed
+#h demux: into output streams.
 #h demux:
 
 #h select: select

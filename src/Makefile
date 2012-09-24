@@ -64,7 +64,7 @@ LF_OPTS= -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 #CFLAGS= -ggdb $(LF_OPTS) $(WOPTS) $(INCLS)
 #CFLAGS=	-s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
-CFLAGS=	-std=gnu99 -s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
+CFLAGS=	-std=c99 -s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
 
 ../bin/m2vmp2cut.bin: $(OBJS)
 	$(CC) -o $@ $(OBJS)
@@ -86,7 +86,7 @@ CFLAGS=	-std=gnu99 -s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
 
 ../bin/m2vcut-gui: m2vcut-gui.c config/mpeg2.conf
 	sh m2vcut-gui.c && mv m2vcut-gui ../bin
-	#$(CC) $(CFLAGS) -c $< -o $@
+#	$(CC) $(CFLAGS) -c $< -o $@
 
 ../bin/wavgraph: wavgraph.c obj_b/x.o
 	sh wavgraph.c && mv wavgraph ../bin

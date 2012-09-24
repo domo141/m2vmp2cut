@@ -4,8 +4,8 @@
  WARN="-Wall -Wstrict-prototypes -pedantic -Wno-long-long"
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
- FLAGS='-O2 -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64' # -pg
- lastrun() { echo "$@"; "$@"; exit $?; }
+ FLAGS='-O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64' # -pg
+ lastrun() { echo "$@"; exec "$@"; exit $?; }
  lastrun ${CC:-gcc} $WARN "$@" -o "$TRG" "$0" $FLAGS -DCDATE="\"`date`\""
  #*/
 #endif
@@ -18,7 +18,7 @@
  *	    All rights reserved
  *
  * Created: Thu Sep 23 19:28:18 EEST 2004 too
- * Last modified: Mon May 05 17:28:33 EEST 2008 too
+ * Last modified: Wed 19 Sep 2012 17:41:27 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -80,7 +80,7 @@ static bool s__fillbuf(ZeroZeroOneBuf * zzob)
 	return false; /* raise BufferFullException */
 
       if (zzob->p.len)
-        memmove(zzob->p.c_buf, zzob->data, zzob->p.len);
+	memmove(zzob->p.c_buf, zzob->data, zzob->p.len);
       zzob->data = zzob->p.c_buf;
       rpos = zzob->data + zzob->p.len;
     }
@@ -118,7 +118,7 @@ static bool s__zzob_init__searchmore(ZeroZeroOneBuf * zzob)
 }
 
 bool zzob_init(ZeroZeroOneBuf * zzob, int fd,
-               unsigned char * buf, int buflen, off_t maxread)
+	       unsigned char * buf, int buflen, off_t maxread)
 {
   unsigned char * data;
 
@@ -141,20 +141,20 @@ bool zzob_init(ZeroZeroOneBuf * zzob, int fd,
   while (true)
     {
       if (s__fillbuf(zzob))
-        {
-          data = s__memmem(zzob->data, zzob->p.len,
-                           (const unsigned char *)"\000\000\001", 3);
-          if (data != NULL)
-            {
-              zzob->pos += data - zzob->data;
-              zzob->p.len -= data - zzob->data;
-              zzob->data = data;
-              return true;
-            }
-        }
+	{
+	  data = s__memmem(zzob->data, zzob->p.len,
+			   (const unsigned char *)"\000\000\001", 3);
+	  if (data != NULL)
+	    {
+	      zzob->pos += data - zzob->data;
+	      zzob->p.len -= data - zzob->data;
+	      zzob->data = data;
+	      return true;
+	    }
+	}
       else
-        if (!s__zzob_init__searchmore(zzob))
-          return false;
+	if (!s__zzob_init__searchmore(zzob))
+	  return false;
     }
 }
 
@@ -182,17 +182,17 @@ bool zzob_data(ZeroZeroOneBuf * zzob, bool locked)
       if (zzob->p.len - o > 0
 	  && (p = s__memmem(zzob->data + o, zzob->p.len - o,
 			    (const unsigned char *)"\000\000\001", 3)) != NULL)
-          break;
+	  break;
 
       if (! s__fillbuf(zzob))
       {
-        D(1,
-          ("s__fillbuf(zzob, zzob->p.len) returned false (%s).\n", PMD));
-        if (locked || zzob->p.len < 4)
-          return false;
+	D(1,
+	  ("s__fillbuf(zzob, zzob->p.len) returned false (%s).\n", PMD));
+	if (locked || zzob->p.len < 4)
+	  return false;
 
-        p = zzob->data + zzob->p.len;
-        break;
+	p = zzob->data + zzob->p.len;
+	break;
       }
     }
 

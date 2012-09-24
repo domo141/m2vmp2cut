@@ -5,10 +5,6 @@ This program can be run without installing, just
 enter `./m2vmp2cut <options>'
 
 Or use something like
-	'make install PREFIX=/usr/local PJXJAR=/path/to/ProjectX.jar'
+        'make install PREFIX=/usr/local'
+   (or  'make install PREFIX=$HOME' )
 to install this software.
-
-(ProjectX is available at project-x.sourceforge.net)
-
-Mjpegtools (mplex and mpeg2enc) is needed in some parts of the usage;
-install it separately unless already there.

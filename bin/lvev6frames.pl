@@ -61,7 +61,7 @@ sub loadmediainfo
     my ( $id, undef, $cnt, $dist_sum, $osize_mb ) = readhdr();
 
     die "$id != LVEMEDV6\n" unless ($id eq "LVEMEDV6");
-    
+
     while (my ( $mid, $vs, $as, $sr, $er, $dst, $s, $e, $avdb, $fname )
 	   = readrec())
     {
@@ -77,7 +77,7 @@ sub loadmediainfo
 	{
 	    ${$hashref}{$sr} = $er;
 	}
-	
+
     }
     close I;
 }
@@ -103,12 +103,12 @@ sub loadeditinfo
     my ( $id, undef, $cnt, $dist_sum, $osize_mb ) = readhdr();
 
     die "$id != LVEEDTV6\n" unless ($id eq "LVEEDTV6");
-    
+
     while (my ( $mid, $vs, $as, $sr, $er, $dst, $s, $e, $avdb, $fname )
 	   = readrec())
     {
 	#print "$mid, $vs, $as, $sr, $er, $dst, $s, $e, $avdb, $fname\n";
-	
+
 	if ($prevfname && $fname ne $prevfname)
 	{
 	    select STDERR;
@@ -132,4 +132,3 @@ sub loadeditinfo
 
 loadeditinfo();
 print "$prevfname @line\n" if (@line);
-      

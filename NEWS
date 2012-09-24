@@ -1,20 +1,26 @@
-m2vmp2cut wip  (201x-xx-xx)
-===========================
+m2vmp2cut 0.81-wip (2012-09-24)
+===============================
 
-m2vmp2cut 0.78 (2008-11-20)
-===========================
+* m2vmp2cut cli now requires source file/dir as first arg (consistently)
+* Approximate audio levels visualized in m2vcut
+* Added contrib/webm.sh script
+* Demux output files now written to subdirectory in current dir
+* General code improvemenet with no functional change
+
+m2vmp2cut 0.78 (2008-11-20) (Lost in transition)
+================================================
 
 * If 'projectx' command is found (in PATH), that is used.
 * Demux can demux multiple files.
 * Bug fix when last chars in file were \000\000\001.
 
-m2vmp2cut 0.76 (2008-09-09) (Not even far!)
-============================================
+m2vmp2cut 0.76 (2008-09-09)
+===========================
 
 * Fixed seeking to offset zero (-sb 0) in m2vtoyuv command.
 
-m2vmp2cut 0.74 (2008-08-18) (Success is not an option)
-======================================================
+m2vmp2cut 0.74 (2008-08-18)
+===========================
 
 * Fixed largefile support in fileparts command.
 * Added getyuv.pl and getmp2.sh -- and related commands to m2vmp2cut;

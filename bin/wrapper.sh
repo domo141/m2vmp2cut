@@ -54,7 +54,7 @@ case $1 in
 	exec_xterm 76x35-0+0 'M2vCut Help' m2vcut_outputhelp
 	;;
     m2vcut_outputhelp)
-    	f=`echo $LANG |sed 's/[^A-Za-z_].*//'`
+	f=`echo $LANG |sed 's/[^A-Za-z_].*//'`
 	pd=`cd \`dirname "$0"\`/..; pwd`
 	helpprefix="$pd/doc/m2vcut_help"
 	test -f "$helpprefix-$f" && cat "$helpprefix-$f" || cat "$helpprefix-default"
@@ -95,7 +95,7 @@ case $1 in
 	echo Estimated target size: `numtune $eds` bytes
 	wmo=`expr $eds \* 1033 / 1000`
 	echo With estimated muxing '"overhead" (3.3%)': `numtune $wmo` bytes
-   	#echo $fdn $vbn $abn $vsize $asize
+	#echo $fdn $vbn $abn $vsize $asize
 	eae 0
 	;;
     m2vcut_test)
@@ -168,7 +168,7 @@ case $1 in
 	die "Can not find image viewer. Install 'feh' or 'display' (or tune this script)".
 	;;
     die)
-    	exec zenity --error --title "Fatal Error!" --text "$2"
+	exec zenity --error --title "Fatal Error!" --text "$2"
 	;;
     '') die Usage: $0 command '[args]'
 	;;

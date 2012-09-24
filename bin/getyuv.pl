@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Sun Aug 03 20:11:33 EEST 2008 too
-# Last modified: Sun Aug 10 12:52:02 EEST 2008 too
+# Last modified: Wed 19 Sep 2012 21:40:03 EEST too
 #
 
 use strict;
@@ -17,7 +17,8 @@ my $MYPATH; BEGIN { $MYPATH = dirname($0); }
 use lib $MYPATH;
 use m2vmp2cut;
 
-die "Usage: $0 <directory>\n" unless defined ($ARGV[0]);
+die "Usage: $0 <directory> [--framecount [(+|-)num]]\n"
+    unless defined ($ARGV[0]);
 
 if ($ARGV[0] ne 'examples') {
     die "'$ARGV[0]': not a directory\n" unless -d $ARGV[0];
@@ -38,6 +39,22 @@ my @cutpoints;
 getcutpoints $cutpoints, \@cutpoints;
 #print "@cutpoints\n";
 
+if (defined $ARGV[1]) {
+    if  ($ARGV[1] eq '--framecount')
+    {
+	my $count = 0;
+	foreach (@cutpoints) {
+	    my ($start, $end) = split '-';
+	    $count += $end - $start;
+	}
+	$count += $ARGV[2] if defined $ARGV[2] && $ARGV[2] =~ /^[+-]\d+$/;
+	print $count, "\n";
+	exit 0;
+    }
+    else {
+	die "$0: unknown option '$ARGV[1]'\n";
+    }
+}
 my (@opts, @fr);
 my ($lastegop, $startgopff) = (0, 0);
 
@@ -106,5 +123,3 @@ transcode (loads of options) & gstreamer tba?
 
 --- add muxing: mpeg2, ogmmerge, mkvmerge, (TS...)
 --- mpeg2, TS to mp2 section, ogmmerge, mkvmerge here.
-
-

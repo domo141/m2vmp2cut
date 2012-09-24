@@ -50,11 +50,11 @@ $ rm -rf dvdvideo && dvdauthor -o dvdvideo -x rec.xml
 Next some old examples:
 
  m2vmp2cut +
-	- Just do it after editing with lve.
+        - Just do it after editing with lve.
 
  m2vmp2cut --sync=200 +
-	- When testing original (undemuxed) file with mplayer, 
-	  using --delay=0.2 gave good a/v sync.
+        - When testing original (undemuxed) file with mplayer,
+          using --delay=0.2 gave good a/v sync.
 
 --
 
@@ -76,4 +76,3 @@ $ su
 
 My player succeeded to play this without hiccups, but all other (consumer dvd)
 players I've tried have had some cd reading speed problems (no smooth playing).
-

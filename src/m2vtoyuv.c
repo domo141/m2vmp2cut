@@ -4,10 +4,10 @@ set -e; TRG=`basename $0 .c`; rm -f "$TRG"
  WARN=$WARN' -Wcast-align -Wpointer-arith' # -Wfloat-equl #-Werror
  WARN=$WARN' -W -Wwrite-strings -Wcast-qual -Wshadow' # -Wconversion
  eval `cat config/mpeg2.conf`
- XF="$mpeg2_only -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
- date=`date`; set -x
- #${CC:-gcc} -ggdb $WARN "$@" -o "$TRG" "$0" $XF -DCDATE="\"$date\""
- ${CC:-gcc} -O2 $WARN "$@" -o "$TRG" "$0" $XF -DCDATE="\"$date\""
+ XF="$mpeg2_only -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+ set -x
+ #${CC:-gcc} -ggdb $WARN "$@" -o "$TRG" "$0" $XF
+ exec ${CC:-gcc} --std=c99 -O2 $WARN "$@" -o "$TRG" "$0" $XF
  exit 0
  */
 #endif
@@ -20,7 +20,7 @@ set -e; TRG=`basename $0 .c`; rm -f "$TRG"
  *	    All rights reserved
  *
  * Created: Fri Feb 08 17:16:45 EET 2008 too
- * Last modified: Tue Sep 09 20:26:49 EEST 2008 too
+ * Last modified: Wed 19 Sep 2012 17:42:12 EEST too
  */
 
 /* this program is originally based on:
@@ -59,6 +59,10 @@ set -e; TRG=`basename $0 .c`; rm -f "$TRG"
  + distribution ('man yuv4mpeg' may work if you have mjpegtools installed).
  */
 
+#ifndef _BSD_SOURCE
+#define _BSD_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
@@ -82,18 +86,18 @@ set -e; TRG=`basename $0 .c`; rm -f "$TRG"
 /* http://en.wikipedia.org/wiki/YCbCr */
 
 static void output_yuv4mpeg(const mpeg2_sequence_t * sequence,
-                            const mpeg2_picture_t * picture,
+			    const mpeg2_picture_t * picture,
 			    const char ip,
-                            uint8_t * const buf[3])
+			    uint8_t * const buf[3])
 {
     struct iovec iov[4];
     static struct
     {
-        int width;
-        int height;
-        char fr[16];
-        char ar[16];
-        char il;
+	int width;
+	int height;
+	char fr[16];
+	char ar[16];
+	char il;
     } fi[2] = {{0,0,{0},{0},0},{0,0,{0},{0},0}};
     char yuvhdr[128];
     int octets;
@@ -111,7 +115,7 @@ static void output_yuv4mpeg(const mpeg2_sequence_t * sequence,
     else {
 	if (picture && PIC_FLAG_PROGRESSIVE_FRAME)    fi[1].il = 'p';
 	else if (picture && PIC_FLAG_TOP_FIELD_FIRST) fi[1].il = 't';
-	else                                          fi[1].il = 'b'; }
+	else					      fi[1].il = 'b'; }
 
     // frame rate from frame_period ?
     // aspect ratio from pixel width/height ?
@@ -119,15 +123,15 @@ static void output_yuv4mpeg(const mpeg2_sequence_t * sequence,
     strcpy(fi[1].ar, "0:0"); // mpeg2enc problem with 16:9 ???
 
     if (memcmp(&fi[0], &fi[1], sizeof fi[0]) != 0) {
-        int hdrlen = sprintf /* ( */
+	int hdrlen = sprintf /* ( */
 	    (yuvhdr, "YUV4MPEG2 W%d H%d F%s I%c A%s C420mpeg2\nFRAME\n",
 	     fi[1].width, fi[1].height, fi[1].fr, fi[1].il, fi[1].ar);
 	iov[0].iov_base = yuvhdr;
 	iov[0].iov_len = hdrlen;
-        memcpy(&fi[0], &fi[1], sizeof fi[0]);
+	memcpy(&fi[0], &fi[1], sizeof fi[0]);
     }
     else {
-	iov[0].iov_base = "FRAME\n"; /* compiler warns. yeah yeah */
+	*(const char **)&iov[0].iov_base = "FRAME\n"; /* yeah yeah... */
 	iov[0].iov_len = 6;
     }
 
@@ -241,12 +245,12 @@ breakwhile:
 	switch (state) {
 	case STATE_BUFFER:
 	    size = fread (buffer, 1, BUFFER_SIZE, mpgfile);
-            if (size != 0)
-                prevsize = size;
-            else if (prevsize != 0) {
-                memcpy(buffer, "\000\000\001\267", 4);
-                size = 4; prevsize = 0;
-            }
+	    if (size != 0)
+		prevsize = size;
+	    else if (prevsize != 0) {
+		memcpy(buffer, "\000\000\001\267", 4);
+		size = 4; prevsize = 0;
+	    }
 	    mpeg2_buffer (decoder, buffer, buffer + size);
 	    break;
 	case STATE_SLICE:
@@ -346,7 +350,7 @@ static void args_init(Args * args, char ** argv)
 static void argdie(Args * args, const char * format, ...)
 {
     va_list ap;
-    fprintf(stderr, "Arg #%d '%s': ",
+    fprintf(stderr, "Arg #%ld '%s': ",
 	    args->argv - args->arg0p, args->argv[0]);
     va_start(ap, format);
     vdie(format, ap);
@@ -355,7 +359,7 @@ static void argdie(Args * args, const char * format, ...)
 static void rangedie(Args * args, const char * format, ...)
 {
     va_list ap;
-    fprintf(stderr, "Arg #%d '%s' near offset %d: ",
+    fprintf(stderr, "Arg #%ld '%s' near offset %ld: ",
 	    args->argv - args->arg0p, args->argv[0],
 	    args->p - args->argv[0]);
     va_start(ap, format);
@@ -551,9 +555,9 @@ static void verrf(const char * format, va_list ap)
     int error = errno; /* XXX is this too late ? */
     vfprintf(stderr, format, ap);
     if (format[strlen(format) - 1] == ':')
-        fprintf(stderr, " %s\n", strerror(error));
+	fprintf(stderr, " %s\n", strerror(error));
     else
-        fputs("\n", stderr);
+	fputs("\n", stderr);
 }
 
 void vdie(const char * format, va_list ap)

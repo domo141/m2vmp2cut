@@ -45,9 +45,10 @@ needcmd ()
 getversion ()
 {
 	VERSION=`sed 's/^m2vmp2cut *//; s/ .*//; q' NEWS`
-	case $VERSION in wip | [0-9][0-9.][0-9] | [0-9][0-9.][0-9.][0-9]) ;;
-		[0-9][0-9.][0-9.][0-9.][0-9]) ;;
-		[0-9][0-9.][0-9.][0-9.][0-9.][0-9]) ;;
+	case $VERSION in wip | *-wip ) ;;
+		[0-9][0-9.][0-9] | [0-9][0-9.][0-9.][0-9] ) ;;
+		[0-9][0-9.][0-9.][0-9.][0-9] ) ;;
+		[0-9][0-9.][0-9.][0-9.][0-9.][0-9] ) ;;
 		*) die "Strange VERSION '$VERSION' string"
 	esac
 }
@@ -86,6 +87,7 @@ cmd_install ()
 	rm -rf $PREFIX/lib/m2vmp2cut-$VERSION
 	x mkdir -m 755 -p $PREFIX
 
+	rm -rf $PREFIX/lib/m2vmp2cut-$VERSION
 	mkmissingdirs $PREFIX/lib $PREFIX/lib/m2vmp2cut-$VERSION
 	mkmissingdirs $PREFIX/lib/m2vmp2cut-$VERSION/bin
 	mkmissingdirs $PREFIX/lib/m2vmp2cut-$VERSION/doc
@@ -96,8 +98,11 @@ cmd_install ()
 	x cp $2 $PREFIX/lib/m2vmp2cut-$VERSION/doc
 	x cp contrib/* $PREFIX/lib/m2vmp2cut-$VERSION/contrib
 	exec 3> $PREFIX/bin/m2vmp2cut.wip
+	case $VERSION in wip) verinfo="$VERSION (installed `date +%Y-%m-%d`)"
+	;;	*) verinfo=$VERSION
+	esac
 	echo '#!/bin/sh' >&3
-	echo 'case ${1-} in'" '') echo; echo m2vmp2cut version $VERSION" >&3
+	echo 'case ${1-} in'" '') echo; echo 'm2vmp2cut version $verinfo'" >&3
 	echo 'esac' >&3
 	echo "exec $PREFIX/lib/m2vmp2cut-$VERSION/bin/m2vmp2cut.sh"' "$@"' >&3
 	exec 3>&-
@@ -128,7 +133,10 @@ makedist ()
 
 cmd_snapshot ()
 {
-	VERSION=`date +'snap-%Y%m%d-%H'`
+	VERSION=`sed 's/^m2vmp2cut *//; s/ .*//; q' NEWS`
+	case $VERSION in 'wip') VERSION=`date +"snap-%Y%m%d-%H"` ;;
+		*-wip) ;; *) die "Snapshotting only 'wip' versions"
+	esac
 	makedist
 }
 
@@ -140,7 +148,7 @@ cmd_release ()
 		/# Your branch is ahead of/ { print; exit 1 }'
 
 	getversion
-	ne "$VERSION" wip || die "Version 'wip'. Please update"
+	case $VERSION in *wip) die "Version 'wip'. Please update"; esac
 	makedist
 }
 
@@ -161,13 +169,16 @@ exit
 #msg1:
 #msg1:  Can not install: PREFIX missing.
 #msg1:
-#msg1:  Try something like `make install PREFIX=/usr/local [PJXJAR=...]'
+#msg1:  Try something like 'make install PREFIX=/usr/local [PJXJAR=...]'
+#msg1:                 or  'make install PREFIX=$HOME'
+#msg1:
+#msg1:  Content written to $PREFIX/bin/m2vmp2cut and $PREFIX/lib/m2vmp2cut/...
 #msg1:
 
 #msg2:
-#msg2:  Can not install: PJXJAR missing.
+#msg2:  Can not install: can not find ProjectX.
 #msg2:
-#msg2:  Try `make install PREFIX=... PJXJAR=/path/to/ProjectX.jar'
+#msg2:  Try 'make install PREFIX=... PJXJAR=/path/to/ProjectX.jar'
 #msg2:
 
 
@@ -180,9 +191,8 @@ exit
 #,# INSTALL
 #,# m2vmp2cut x
 #,# Makefile
-#,# makehelper
+#,# makehelper x
 #,# README
-#,# TODO
 
 #,# bin
 #,# bin/getmp2.sh x
@@ -197,6 +207,7 @@ exit
 
 #,# contrib
 #,# contrib/mpeg2.sh x
+#,# contrib/webm.sh x
 
 #,# doc
 #,# doc/Examples

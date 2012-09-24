@@ -3,9 +3,9 @@
  WARN="-Wall -Wstrict-prototypes -pedantic -Wno-long-long"
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
- date=`date`; set -x
- #${CC:-gcc} -ggdb -std=gnu99 $WARN "$@" -o "$TRG" "$0" -DCDATE="\"$date\""
- ${CC:-gcc} -O2 -std=gnu99 $WARN "$@" -o "$TRG" "$0" obj_b/x.o
+ set -x
+ #${CC:-gcc} -ggdb -std=c99 $WARN "$@" -o "$TRG" "$0"
+ exec ${CC:-gcc} -O2 -std=c99 $WARN "$@" -o "$TRG" "$0" obj_b/x.o
  exit $?
  */
 #endif
@@ -18,7 +18,7 @@
  *	    All rights reserved
  *
  * Created: Fri Jun 06 17:45:42 EEST 2008 too
- * Last modified: Tue 14 Feb 2012 16:37:14 EET too
+ * Last modified: Wed 19 Sep 2012 17:54:32 EEST too
  */
 
 #include <stdio.h>
@@ -109,7 +109,7 @@ static void * xcmalloc(int size, char c)
 {
     char * p = malloc(size);
     if (p == NULL)
-        xerrf("Out of Memory!");
+	xerrf("Out of Memory!");
     memset(p, c, size);
     return p;
 }
@@ -141,7 +141,7 @@ static void dograph(struct AState * astate, int height, int centerpos,
 
     for (i = 0; i < width; i++)
     {
-        int c;
+	int c;
 
 	if (div0 > 0)
 	{
@@ -185,24 +185,24 @@ static void dograph(struct AState * astate, int height, int centerpos,
 
     FILE * of = fopen(ofile, "w");
     if (of == NULL)
-        xerrf("Can not open '%s':", ofile);
+	xerrf("Can not open '%s':", ofile);
 
     fprintf(of, "/* XPM */\n"
-            "static char *graph[] = {\n"
-            "/* width height num_colors chars_per_pixel */\n"
-            "\"   %3d    %3d     5            1\",\n"
-            "/* colors */\n"
-            "\"  c #000000\",\n"
-            "\": c #e0e0e0\",\n"
-            "\"- c #0080c0\",\n"
-            "\"| c #770077\",\n"
-            "\"! c #660066\",\n"
-            "/* pixels */\n", width, height);
+	    "static char *graph[] = {\n"
+	    "/* width height num_colors chars_per_pixel */\n"
+	    "\"   %3d    %3d     5            1\",\n"
+	    "/* colors */\n"
+	    "\"  c #000000\",\n"
+	    "\": c #e0e0e0\",\n"
+	    "\"- c #0080c0\",\n"
+	    "\"| c #770077\",\n"
+	    "\"! c #660066\",\n"
+	    "/* pixels */\n", width, height);
 
     for (i = 0; i < height; i++) {
-        fputc('"', of);
-        fwrite(gd + i * width, 1, width, of);
-        fputs("\",\n", of);
+	fputc('"', of);
+	fwrite(gd + i * width, 1, width, of);
+	fputs("\",\n", of);
     }
     fputs("};\n", of);
     fclose(of);
@@ -233,11 +233,11 @@ static void storedata(struct AState * astate,
 
     // if value positive, overwrite any negative maxval.
     if (value > 0) {
-        if (value > maxval) astate->graphdata[channel][pos] = value;
+	if (value > maxval) astate->graphdata[channel][pos] = value;
 	if (value > astate->maxval[channel]) astate->maxval[channel] = value;
     }
     else if (maxval <= 0)
-        if (value < maxval) astate->graphdata[channel][pos] = value;
+	if (value < maxval) astate->graphdata[channel][pos] = value;
 	if (-value > astate->maxval[channel]) astate->maxval[channel] = -value;
 }
 
@@ -258,15 +258,15 @@ int main(int argc, char * argv[])
 	centerpos = graphwidth - 1;
 
     if (graphwidth < 200)
-        xerrf("Requested width (%d) too narrow (<200)\n", graphwidth);
+	xerrf("Requested width (%d) too narrow (<200)\n", graphwidth);
     if (graphwidth > 1200) {
 	centerpos = centerpos * 1200 / graphwidth;
-        graphwidth = 1200;
+	graphwidth = 1200;
     }
     if (graphheight < 100)
-        xerrf("Requested height (%d) too short (<100)\n", graphheight);
+	xerrf("Requested height (%d) too short (<100)\n", graphheight);
     if (graphheight > 600)
-        graphheight = 600;
+	graphheight = 600;
 
     int * graphdata = xcmalloc(2 * graphwidth * sizeof graphdata[0], 0);
 
@@ -333,8 +333,8 @@ int main(int argc, char * argv[])
 	.currentblock = 0,
 	.samplesperchannel = datalen / (channels * bytespersample),
 	.msecs = datalen / (channels * samplerate * bytespersample / 1000),
-        .graphwidth = graphwidth,
-        .graphdata = { graphdata, graphdata + graphwidth },
+	.graphwidth = graphwidth,
+	.graphdata = { graphdata, graphdata + graphwidth },
 	.maxval = { 0, 0 }
     };
 

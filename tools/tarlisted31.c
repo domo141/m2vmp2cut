@@ -33,7 +33,7 @@
  WARN="-Wall -Wstrict-prototypes -pedantic -Wno-long-long"
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
- XD="-DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+ XD="-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
  set -x; exec ${CC:-gcc} $WARN "$@" -o $TRG $0 -DBUILDDATE="\"$DATE\"" $XD
  #set -x; exec ${CC:-gcc} -Wall "$@" -o $TRG $0 -DBUILDDATE="\"$DATE\"" $XD
  #*/
@@ -601,7 +601,7 @@ int readfileinfo(char buf[4096], struct fis * fis)
 	    skipping = !skipping;
 	    continue;
 	}
- 	else if (strcmp(toks[0], "only") == 0) {
+	else if (strcmp(toks[0], "only") == 0) {
 	    int j, k;
 	    char * p = G.opt_only;
 	    skipping = 1;

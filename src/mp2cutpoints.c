@@ -12,7 +12,7 @@
  *	    All rights reserved
  *
  * Created: Thu Oct 20 19:32:21 EEST 2005 too
- * Last modified: Fri 02 Mar 2012 13:37:39 EET too
+ * Last modified: Sun 23 Sep 2012 20:59:17 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -41,99 +41,99 @@
 typedef struct _simplefilebuf simplefilebuf;
 struct _simplefilebuf
 {
-  int fd;
-  unsigned char buf[65536];
-  unsigned int offset;
-  unsigned int len;
-  off_t gone;
+    int fd;
+    unsigned char buf[65536];
+    unsigned int offset;
+    unsigned int len;
+    off_t gone;
 };
 
 void simplefilebuf_init(simplefilebuf * self, char * fname)
 {
-  if ((self->fd = open(fname, O_RDONLY)) < 0)
-    xerrf("Opening file %s for reading failed:", fname);
+    if ((self->fd = open(fname, O_RDONLY)) < 0)
+	xerrf("Opening file %s for reading failed:", fname);
 
-  self->offset = self->len = self->gone = 0;
+    self->offset = self->len = self->gone = 0;
 }
 
 void simplefilebuf_seekset(simplefilebuf * self, unsigned int pos)
 {
-  if (lseek(self->fd, pos, SEEK_SET) < 0)
-    xerrf("Seek failed:");
-  self->offset = self->len = 0;
-  self->gone = pos;
+    if (lseek(self->fd, pos, SEEK_SET) < 0)
+	xerrf("Seek failed:");
+    self->offset = self->len = 0;
+    self->gone = pos;
 }
 
 bool simplefilebuf_fillbuf(simplefilebuf * self, unsigned int rest)
 {
-  int l;
+    int l;
 
-  if (rest > 0)
+    if (rest > 0)
     {
-      memmove(self->buf, self->buf + self->offset, rest);
-      if ((l = read(self->fd, self->buf + rest, sizeof self->buf - rest)) <= 0)
-	return false;
-      self->gone += self->offset;
+	memmove(self->buf, self->buf + self->offset, rest);
+	if ((l = read(self->fd,self->buf + rest,sizeof self->buf - rest)) <= 0)
+	    return false;
+	self->gone += self->offset;
     }
-  else
+    else
     {
-      self->gone += self->len;
-      if ((l = read(self->fd, self->buf, sizeof self->buf)) <= 0)
-	return false;
+	self->gone += self->len;
+	if ((l = read(self->fd, self->buf, sizeof self->buf)) <= 0)
+	    return false;
     }
-  self->len = rest + l;
-  self->offset = 0;
-  if (self->len == rest)
-    return false;
-  return true;
+    self->len = rest + l;
+    self->offset = 0;
+    if (self->len == rest)
+	return false;
+    return true;
 }
 
 int simplefilebuf_filepos(simplefilebuf * self)
 {
-  return self->gone + self->offset;
+    return self->gone + self->offset;
 }
 
 void simplefilebuf_unusedbytes(simplefilebuf * self, int bytes)
 {
-  self->offset -= bytes;
+    self->offset -= bytes;
 }
 
 unsigned char * simplefilebuf_needbytes(simplefilebuf * self, int bytes)
 {
-  while (true)
+    while (true)
     {
-      int rest = self->len - self->offset;
+	int rest = self->len - self->offset;
 
-      if (rest >= bytes)
+	if (rest >= bytes)
 	{
-	  int oo = self->offset;
-	  self->offset += bytes;
+	    int oo = self->offset;
+	    self->offset += bytes;
 
-	  return self->buf + oo;
+	    return self->buf + oo;
 	}
-      if (! simplefilebuf_fillbuf(self, rest))
-	return NULL;
+	if (! simplefilebuf_fillbuf(self, rest))
+	    return NULL;
     }
 }
 
 int simplefilebuf_dumpto(simplefilebuf * self, unsigned char c)
 {
-  int rv = 0;
+    int rv = 0;
 
-  while (true)
+    while (true)
     {
-      unsigned char * s
-	= memchr(self->buf + self->offset, c, self->len - self->offset);
-      if (s)
+	unsigned char * s
+	    = memchr(self->buf + self->offset, c, self->len - self->offset);
+	if (s)
 	{
-	  int adv = s - (self->buf + self->offset);
-	  rv += adv;
-	  self->offset += adv + 1;
-	  return rv;
+	    int adv = s - (self->buf + self->offset);
+	    rv += adv;
+	    self->offset += adv + 1;
+	    return rv;
 	}
-      rv = self->len - self->offset;
-      if (! simplefilebuf_fillbuf(self, 0))
-	return -1;
+	rv = self->len - self->offset;
+	if (! simplefilebuf_fillbuf(self, 0))
+	    return -1;
     }
 }
 
@@ -154,193 +154,214 @@ static const int siarr[] = { 44100, 48000, 32000, 0 };
 typedef unsigned char u8;
 typedef struct
 {
-  u8 id; /*   B above (mpeg audio version id)  */
-  u8 ld; /*   C above (layer description)  */
-  u8 pb; /*   D above (protection bit) */
+    u8 id; /*   B above (mpeg audio version id)  */
+    u8 ld; /*   C above (layer description)  */
+    u8 pb; /*   D above (protection bit) */
 
-  u8 bi; /*   E above (bitrate index)  */
-  u8 si; /*   F above (sampling rate frequency index)  */
-  u8 pad; /*  G above (padding bit)  */
-  u8 mode; /* I above (mono/stereo/...) */
-  u8 mex;  /* J above (mode extension) */
-  int afn;
-  int ms;
-  int bitrate;
-  int samplerate;
-  simplefilebuf * sfb;
-  unsigned char * frame;
+    u8 bi; /*   E above (bitrate index)  */
+    u8 si; /*   F above (sampling rate frequency index)  */
+    u8 pad; /*  G above (padding bit)  */
+    u8 mode; /* I above (mono/stereo/...) */
+    u8 mex;  /* J above (mode extension) */
+    int afn;
+    int ms;
+    int bitrate;
+    int samplerate;
+    simplefilebuf * sfb;
+    unsigned char * frame;
 } Mp2Info;
 
 static int mp2get(Mp2Info * m2i)
 {
-  char * p;
-  int flib;
+    char * p;
+    int flib;
 
-  p = (char *)simplefilebuf_needbytes(m2i->sfb, 3);
-  if (p == NULL)
-    xerrf("XXX ERROR XXX.\n");
+    p = (char *)simplefilebuf_needbytes(m2i->sfb, 3);
+    if (p == NULL)
+	xerrf("XXX ERROR XXX.\n");
 
-  /* Check that we have header (frame sync: 11 bits set (A above).) */
-  if ((p[0] & 0xe0) != 0xe0)
-    return 0;
+    /* Check that we have header (frame sync: 11 bits set (A above).) */
+    if ((p[0] & 0xe0) != 0xe0)
+	return 0;
 
-  m2i->id = p[0] & 0x18; /*  B above (mpeg audio version id)  */
-  m2i->ld = p[0] & 0x06; /*  C above (layer description)  */
-  m2i->pb = p[0] & 0x01; /*  D above (Protection bit)  */
+    m2i->id = p[0] & 0x18; /*  B above (mpeg audio version id)  */
+    m2i->ld = p[0] & 0x06; /*  C above (layer description)  */
+    m2i->pb = p[0] & 0x01; /*  D above (Protection bit)  */
 
-  m2i->bi = p[1] & 0xf0; /*  E above (bitrate index)  */
-  m2i->si = p[1] & 0x0c; /*  F above (sampling rate frequency index)  */
-  m2i->pad= p[1] & 0x02; /*  G above (padding bit)  */
-  m2i->mode=p[2] & 0xc0; /*  I above (mode) */
-  m2i->mex= p[2] & 0x30; /*  J above (mode extension) */
-  m2i->mode >>= 6;
-  m2i->mex  >>= 4;
+    m2i->bi = p[1] & 0xf0; /*  E above (bitrate index)  */
+    m2i->si = p[1] & 0x0c; /*  F above (sampling rate frequency index)  */
+    m2i->bi >>= 4;
+    m2i->si >>= 2;
+    m2i->pad= p[1] & 0x02; /*  G above (padding bit)  */
+    m2i->mode=p[2] & 0xc0; /*  I above (mode) */
+    m2i->mex= p[2] & 0x30; /*  J above (mode extension) */
+    m2i->pad  >>= 1;
+    m2i->mode >>= 6;
+    m2i->mex  >>= 4;
 
-  m2i->bitrate = biarr[m2i->bi >> 4];
-  m2i->samplerate = siarr[m2i->si >> 2];
+    m2i->bitrate = biarr[m2i->bi];
+    m2i->samplerate = siarr[m2i->si];
 
-  m2i->afn++;
+    m2i->afn++;
 
-  if (m2i->id != 0x18)
-    xerrf("Frame %d (pos %d) not mpeg version 1.\n", m2i->afn,
-	  simplefilebuf_filepos(m2i->sfb) - 4);
-  if (m2i->ld != 0x04)
-    xerrf("Frame %d (pos %d) not mpeg layer 2.\n", m2i->afn,
-	  simplefilebuf_filepos(m2i->sfb) - 4);
+#if 0
+    printf("m2i->afn %d " "m2i->pb %d " "m2i->bi %d " "m2i->si %d "
+	   m2i->afn, m2i->pb, m2i->bi, m2i->si);
 
-  flib = 144000 * m2i->bitrate / m2i->samplerate + (m2i->pad >> 1);
-  // FIXME drift will happen when samplerate 44100 XXX //
-  m2i->ms = flib * 8 / m2i->bitrate;
+    printf("m2i->pad %d " "m2i->mode %d " "m2i->mex %d\n",
+	   m2i->pad, m2i->mode, m2i->mex);
+#endif
 
-  if (m2i->pb == 0) /* drop 16-bit crc in case there is one */
-    (void)simplefilebuf_needbytes(m2i->sfb, 2);
+    if (m2i->id != 0x18)
+	xerrf("Frame %d (pos %d) not mpeg version 1.\n", m2i->afn,
+	      simplefilebuf_filepos(m2i->sfb) - 4);
+    if (m2i->ld != 0x04)
+	xerrf("Frame %d (pos %d) not mpeg layer 2.\n", m2i->afn,
+	      simplefilebuf_filepos(m2i->sfb) - 4);
 
-  m2i->frame = simplefilebuf_needbytes(m2i->sfb, flib - 4);
+    flib = 144000 * m2i->bitrate / m2i->samplerate + m2i->pad;
+    // FIXME drift will happen when samplerate 44100 XXX //
+    m2i->ms = flib * 8 / m2i->bitrate;
 
-  return flib;
+    if (m2i->pb == 0) /* drop 16-bit crc in case there is one */
+	(void)simplefilebuf_needbytes(m2i->sfb, 2);
+
+    m2i->frame = simplefilebuf_needbytes(m2i->sfb, flib - 4);
+
+    return flib;
 }
 
 static const char * ms2tcode(int ms)
 {
-  static char buf[32];
+    static char buf[32];
 
-  sprintf(buf, "%02d:%02d:%02d.%03d",
-	  ms / 1000/60/60, (ms / 1000/60) % 60, (ms / 1000) % 60, ms % 1000);
-  return buf;
+    sprintf(buf, "%02d:%02d:%02d.%03d",
+	    ms / 1000/60/60, (ms / 1000/60) % 60, (ms / 1000) % 60, ms % 1000);
+    return buf;
 }
 
 static int tcode2ms(char * val)
 {
-  int secs;
-  char * s = val;
+    int secs;
+    char * s = val;
 
-  secs = atoi(val);
-  val = strpbrk(val, ".:");
-  if (val == NULL)   goto msfail;
-  if (*val++ == '.') goto msget;
-  secs = secs * 60 + atoi(val);
-  val = strpbrk(val, ".:");
-  if (val == NULL)   goto msfail;
-  if (*val++ == '.') goto msget;
-  secs = secs * 60 + atoi(val);
-  val = strpbrk(val, ".:");
-  if (val == NULL || *val++ == ':')
-    goto msfail;
- msget:
-  return secs * 1000 + atoi(val);
- msfail:
-  xerrf("Incorrect timecode string %s.\n", s);
+    secs = atoi(val);
+    val = strpbrk(val, ".:");
+    if (val == NULL)   goto msfail;
+    if (*val++ == '.') goto msget;
+    secs = secs * 60 + atoi(val);
+    val = strpbrk(val, ".:");
+    if (val == NULL)   goto msfail;
+    if (*val++ == '.') goto msget;
+    secs = secs * 60 + atoi(val);
+    val = strpbrk(val, ".:");
+    if (val == NULL || *val++ == ':')
+	goto msfail;
+msget:
+    return secs * 1000 + atoi(val);
+msfail:
+    xerrf("Incorrect timecode string %s.\n", s);
 }
 
 static void printpositions(off_t * positions, int c)
 {
-  int i;
-  c -= 1;
-  if (c)
+    int i;
+    c -= 1;
+    if (c)
     {
-      printf("%lld-%lld", positions[0], positions[1]);
-      for (i = 2; i < c; i += 2)
-	printf(",%lld-%lld", positions[i], positions[i + 1]);
-      printf("\n");
+	printf("%ld-%ld", positions[0], positions[1]);
+	for (i = 2; i < c; i += 2)
+	    printf(",%ld-%ld", positions[i], positions[i + 1]);
+	printf("\n");
     }
 }
 
 static int wopen(char * ofile)
 {
-  int ofd = open(ofile, O_WRONLY|O_CREAT|O_TRUNC, 0644);
-  if (ofd < 0)
-    xerrf("Opening file '%s' for writing failed:", ofile);
-  return ofd;
+    int ofd = open(ofile, O_WRONLY|O_CREAT|O_TRUNC, 0644);
+    if (ofd < 0)
+	xerrf("Opening file '%s' for writing failed:", ofile);
+    return ofd;
 }
 
 static int filesize(int fd)
 {
-  struct stat st;
-  if (fstat(fd, &st) < 0)
-    xerrf("stat failed:");
-  return st.st_size;
+    struct stat st;
+    if (fstat(fd, &st) < 0)
+	xerrf("stat failed:");
+    return st.st_size;
 }
 
 struct frame_levels_state {
-  int16_t maxval;
-  u8 nybblebit;
-  int msinbuf;
-  int fd;
-  u8 buf[4096 + 4]; // so that finish_frame_levels() does not need to check
-  int bufi;
+    int16_t maxval;
+    u8 nybblebit;
+    int msinbuf;
+    int fd;
+    u8 buf[4096 + 4]; // so that finish_frame_levels() does not need to check
+    int bufi;
 };
+
+
+// Maybe FIXME any of these (alternatives) ??? -- just hand-iterated these...
+static inline u8 mv2val(int mv)
+{
+    int val = (log(pow(mv, 3)) - 13.6); // 1000 -> 7, 10000 -> 14 and so on.
+    if (val < 0)  return 0;
+    if (val > 15) return 15;
+    return (u8)val;
+}
+// #define mv2val(mv) (mv < 90? 0: (u8)(logf( (float)mv / 60 ) / logf( 1.5 )))
+// #define mv2val(mv) ((u8)(mv / 2048))
+
 
 // 4 bits (16 possible levels) per 5 milliseconds (1/200th of a second).
 static void update_frame_levels(struct frame_levels_state * fls,
 				int16_t xmonopcm[1152], int tms)
 {
-  int i;
-  int ms = fls->msinbuf % 5; // later, int64_t nanoseconds for less drift.
-  int mv = fls->maxval;
+    int i;
+    int ms = fls->msinbuf % 5; // later, int64_t nanoseconds for less drift.
+    int mv = fls->maxval;
 
-  // Maybe FIXME this ??? -- just hand-iterated these...
-#define mv2val(mv) (mv < 90? 0: (u8)(logf( (float)mv / 60 ) / logf( 1.5 )))
-  //#define mv2val(mv) ((u8)(mv / 2048))
-
-  for (i = 0; i < 1152; i++) {
-    if (xmonopcm[i] > mv)
-      mv = xmonopcm[i];
-    if (ms + ((i+1) * tms) / 1152 >= 5) {
-      u8 val = mv2val(mv);
-      if (fls->nybblebit++ & 1) {
-	fls->buf[fls->bufi++] |= (val << 4);
-	if (fls->bufi == sizeof fls->buf - 4) {
-	  write(fls->fd, fls->buf, fls->bufi);
-	  fls->bufi = 0;
+    for (i = 0; i < 1152; i++) {
+	if (xmonopcm[i] > mv)
+	    mv = xmonopcm[i];
+	if (ms + ((i+1) * tms) / 1152 >= 5) {
+	    u8 val = mv2val(mv);
+	    /* printf("mv %d, val %d\n", mv, val); */
+	    if (fls->nybblebit++ & 1) {
+		fls->buf[fls->bufi++] |= (val << 4);
+		if (fls->bufi == sizeof fls->buf - 4) {
+		    write(fls->fd, fls->buf, fls->bufi);
+		    fls->bufi = 0;
+		}
+	    }
+	    else
+		fls->buf[fls->bufi] = val;
+	    mv = -1;
+	    ms -= 5;
 	}
-      }
-      else
-	fls->buf[fls->bufi] = val;
-      mv = -1;
-      ms -= 5;
     }
-  }
-  fls->msinbuf += tms;
-  fls->maxval = mv;
+    fls->msinbuf += tms;
+    fls->maxval = mv;
 }
 
 static void finish_frame_levels(struct frame_levels_state * fls)
 {
-  if (fls->maxval >= 0) {
-    u8 val = mv2val(fls->maxval);
-    if (fls->nybblebit++ & 1)
-      fls->buf[fls->bufi++] |= (val << 4);
-    else
-      fls->buf[fls->bufi++] = (val | 0x10); // after end 0x12:s are used...
-  }
-  if (fls->bufi)
-    write(fls->fd, fls->buf, fls->bufi);
+    if (fls->maxval >= 0) {
+	u8 val = mv2val(fls->maxval);
+	if (fls->nybblebit++ & 1)
+	    fls->buf[fls->bufi++] |= (val << 4);
+	else
+	    fls->buf[fls->bufi++] = (val | 0x10); // after end 0x12:s are used.
+    }
+    if (fls->bufi)
+	write(fls->fd, fls->buf, fls->bufi);
 }
 
 /* stuff derived, then modified from kjmp_* */
 struct mp2_ctx_t {
-  int V[2][1024];
-  int Voffs;
+    int V[2][1024];
+    int Voffs;
 };
 static void mp2_init(struct mp2_ctx_t * mp2);
 static void mp2_decode_frame(struct mp2_ctx_t * mp2,
@@ -349,286 +370,286 @@ static void mp2_decode_frame(struct mp2_ctx_t * mp2,
 
 void scan(char * ifile, char * sfile, char * levelfile)
 {
-  int sfd = wopen(sfile);
-  simplefilebuf sfb;
-  Mp2Info m2i;
-  int fsize;
+    int sfd = wopen(sfile);
+    simplefilebuf sfb;
+    Mp2Info m2i;
+    int fsize;
 
-  int totaltime = 0/*, prevtotal = 0*/;
-  int position = 0, prevposx = 0;
-  int cpc, ppc = 0;
-  int pbr = 0, psr = 0;
+    int totaltime = 0/*, prevtotal = 0*/;
+    int position = 0, prevposx = 0;
+    int cpc, ppc = 0;
+    int pbr = 0, psr = 0;
 
-  struct mp2_ctx_t mp2;
-  int16_t xmonopcm[1152];
-  struct frame_levels_state fls;
+    struct mp2_ctx_t mp2;
+    int16_t xmonopcm[1152];
+    struct frame_levels_state fls;
 
-  memset(&m2i, 0, sizeof m2i);
-  simplefilebuf_init(&sfb, ifile);
-  m2i.sfb = &sfb;
-  fsize = filesize(sfb.fd);
+    memset(&m2i, 0, sizeof m2i);
+    simplefilebuf_init(&sfb, ifile);
+    m2i.sfb = &sfb;
+    fsize = filesize(sfb.fd);
 
-  mp2_init(&mp2);
-  memset(&fls, 0, sizeof fls);
-  fls.fd = wopen(levelfile);
+    mp2_init(&mp2);
+    memset(&fls, 0, sizeof fls);
+    fls.fd = wopen(levelfile);
 
-  fdprintf(sfd, "#offset msec fnum brate srate - time\n");
+    fdprintf(sfd, "#offset msec fnum brate srate - time\n");
 
-  while (true)
+    while (true)
     {
-      int skipped = simplefilebuf_dumpto(&sfb, '\377');
-      if (skipped < 0)
+	int skipped = simplefilebuf_dumpto(&sfb, '\377');
+	if (skipped < 0)
 	{
-	  fdprintf(sfd,
-		   "#File ended: audio frames: %d Total time: %d ms (%s).\n",
-		   m2i.afn, totaltime, ms2tcode(totaltime));
-	  fdprintf(0, "\r- Scanning audio at %d of %d bytes (100%%).\n",
-		   fsize, fsize);
-	  break;
+	    fdprintf(sfd,
+		     "#File ended: audio frames: %d Total time: %d ms (%s).\n",
+		     m2i.afn, totaltime, ms2tcode(totaltime));
+	    fdprintf(0, "\r- Scanning audio at %d of %d bytes (100%%).\n",
+		     fsize, fsize);
+	    break;
 	}
 
-      if (skipped > 0)
-	  fprintf(stderr, "Skipped %d bytes of garbage before audio frame %d.",
-		  skipped, m2i.afn + 1);
+	if (skipped > 0)
+	    fprintf(stderr,"Skipped %d bytes of garbage before audio frame %d.",
+		    skipped, m2i.afn + 1);
 
-      cpc = position / (fsize / 100);
-      if (ppc != cpc)
+	cpc = position / (fsize / 100);
+	if (ppc != cpc)
 	{
-	  fdprintf(0, "\r- Scanning audio at %d of %d bytes (%d%%)",
-		   position, fsize, cpc);
-	  ppc = cpc;
+	    fdprintf(0, "\r- Scanning audio at %d of %d bytes (%d%%)",
+		     position, fsize, cpc);
+	    ppc = cpc;
 	}
 
-      position = simplefilebuf_filepos(&sfb) - 1;
+	position = simplefilebuf_filepos(&sfb) - 1;
 
-      if (mp2get(&m2i) > 0)
+	if (mp2get(&m2i) > 0)
 	{
-	  mp2_decode_frame(&mp2, &m2i, xmonopcm);
-	  update_frame_levels(&fls, xmonopcm, m2i.ms);
+	    mp2_decode_frame(&mp2, &m2i, xmonopcm);
+	    update_frame_levels(&fls, xmonopcm, m2i.ms);
 
-	  if (m2i.bitrate != pbr || m2i.samplerate != psr)
+	    if (m2i.bitrate != pbr || m2i.samplerate != psr)
 	    {
-	      fdprintf(0, "\rFrame %d (pos %d): bitrate %d, samplerate %d.\n",
-		       m2i.afn, position, m2i.bitrate, m2i.samplerate);
-	      pbr = m2i.bitrate; psr = m2i.samplerate;
+		fdprintf(0, "\rFrame %d (pos %d): bitrate %d, samplerate %d.\n",
+			 m2i.afn, position, m2i.bitrate, m2i.samplerate);
+		pbr = m2i.bitrate; psr = m2i.samplerate;
 
-	      fdprintf(sfd, "%d %d %d %d %d - %s \n", position, totaltime,
-		       m2i.afn, pbr, psr, ms2tcode(totaltime));
+		fdprintf(sfd, "%d %d %d %d %d - %s \n", position, totaltime,
+			 m2i.afn, pbr, psr, ms2tcode(totaltime));
 #define OFFDIST (2 * 1000 * 1000)
-	      prevposx = position / OFFDIST;
+		prevposx = position / OFFDIST;
 	    }
-	  else if (position / OFFDIST != prevposx) {
-	    fdprintf(sfd, "%d %d %d %d %d - %s\n", position, totaltime,
-		     m2i.afn, pbr, psr, ms2tcode(totaltime));
-	    prevposx = position / OFFDIST;
-	  }
-	  //prevtotal = totaltime;
-	  totaltime += m2i.ms;
+	    else if (position / OFFDIST != prevposx) {
+		fdprintf(sfd, "%d %d %d %d %d - %s\n", position, totaltime,
+			 m2i.afn, pbr, psr, ms2tcode(totaltime));
+		prevposx = position / OFFDIST;
+	    }
+	    //prevtotal = totaltime;
+	    totaltime += m2i.ms;
 	}
-      else
-	simplefilebuf_unusedbytes(&sfb, 3);
+	else
+	    simplefilebuf_unusedbytes(&sfb, 3);
     }
-  finish_frame_levels(&fls);
+    finish_frame_levels(&fls);
 }
 
 void cutpoints(char * timespec, char * ifile, char * ofile, char * sfile)
 {
-  int    timev[512];
-  char * times[512];
-  off_t positions[512];
-  int i;
-  char * p, *q, *r;
+    int    timev[512];
+    char * times[512];
+    off_t positions[512];
+    int i;
+    char * p, *q, *r;
 
-  int lasttime, lastindex;
-  int stime;
-  int totaltime = 0;
-  int prevtotal = 0;
-  int position = 0;
-  int cpc, ppc = 0;
-  int pbr = 0, psr = 0;
+    int lasttime, lastindex;
+    int stime;
+    int totaltime = 0;
+    int prevtotal = 0;
+    int position = 0;
+    int cpc, ppc = 0;
+    int pbr = 0, psr = 0;
 
-  struct { int pos; int time; int afn; } prevscan, currscan;
+    struct { int pos; int time; int afn; } prevscan, currscan;
 
-  int ofd;
-  FILE * sfh;
-  simplefilebuf sfb;
-  Mp2Info m2i;
+    int ofd;
+    FILE * sfh;
+    simplefilebuf sfb;
+    Mp2Info m2i;
 
-  memset(&m2i, 0, sizeof m2i);
-  m2i.sfb = &sfb;
+    memset(&m2i, 0, sizeof m2i);
+    m2i.sfb = &sfb;
 
-  memset(&prevscan, 0 , sizeof prevscan);
-  memset(&currscan, 0 , sizeof currscan);
+    memset(&prevscan, 0 , sizeof prevscan);
+    memset(&currscan, 0 , sizeof currscan);
 
-  if (sfile) {
-      sfh = fopen(sfile, "r");
-      if (sfh == NULL)
-	  xerrf("Opening '%s' failed:", sfile);
-  }
-  else {
-      currscan.time = MAXINTVAL(currscan.time);
-      sfh = NULL;
-  }
-
-  q = timespec;
-  for (i = 0; i < 510; i += 2)
-    {
-      p = strchr(q, ',');
-      if (p)
-	*p++ = '\0';
-      r = strchr(q, '-');
-      if (r == NULL)
-	xerrf("Incorrect timecode range %s.\n", q);
-      *r++ = '\0';
-      timev[i] = tcode2ms(q); times[i] = q;
-      lasttime = tcode2ms(r); times[i + 1] = r;
-      timev[i + 1] = lasttime;
-
-      if (!p)
-	break;
-      q = p;
+    if (sfile) {
+	sfh = fopen(sfile, "r");
+	if (sfh == NULL)
+	    xerrf("Opening '%s' failed:", sfile);
     }
-  if (i == 510)
-    xerrf("Too long timecode arg string.\n");
-  lastindex = i + 2;
+    else {
+	currscan.time = MAXINTVAL(currscan.time);
+	sfh = NULL;
+    }
 
-  ofd = wopen(ofile);
-  simplefilebuf_init(&sfb, ifile);
-
-  stime = timev[0];
-  i = 0;
-  while (true)
+    q = timespec;
+    for (i = 0; i < 510; i += 2)
     {
-      int skipped;
+	p = strchr(q, ',');
+	if (p)
+	    *p++ = '\0';
+	r = strchr(q, '-');
+	if (r == NULL)
+	    xerrf("Incorrect timecode range %s.\n", q);
+	*r++ = '\0';
+	timev[i] = tcode2ms(q); times[i] = q;
+	lasttime = tcode2ms(r); times[i + 1] = r;
+	timev[i + 1] = lasttime;
 
-      if (stime >= currscan.time) {
-	  char linebuf[128];
-	  while (true) {
-	      int offset, msec, afn, brate, srate;
-	      if (fgets(linebuf, sizeof linebuf, sfh) == NULL) {
- 		  if (prevscan.pos > position) {
-		      simplefilebuf_seekset(&sfb, prevscan.pos);
-		      m2i.afn = prevscan.afn;
-		      position = prevscan.pos; totaltime = prevscan.time;
-		  }
-		  currscan.time = MAXINTVAL(currscan.time);
-		  break;
-	      }
-	      if (sscanf(linebuf, "%d %d %d %d %d",
-			 &offset, &msec, &afn, &brate, &srate) == 5) {
-		  if (brate != pbr || psr != psr) {
-		      fdprintf(0, "\rFrame %d (pos %d): bitrate %d, samplerate %d.\n",
-			       afn, offset, brate, srate);
-		      pbr = brate; psr = srate;
-		      /* XXX better handling (and error message) below */
-		      if (i & 1)
-			  xerrf("Audio rate change in output is problematic ! "
-				"exiting.");
-		  }
-	      }
-	      else
-		  continue;
-	      currscan.time = msec;
-	      currscan.pos = offset;
-	      currscan.afn = afn;
-	      if (currscan.time > stime) {
- 		  if (prevscan.pos > position) {
-		      simplefilebuf_seekset(&sfb, prevscan.pos);
-		      m2i.afn = prevscan.afn;
-		      position = prevscan.pos; totaltime = prevscan.time;
-		  }
-		  break;
-	      }
-	      prevscan = currscan;
-	  }
-      }
+	if (!p)
+	    break;
+	q = p;
+    }
+    if (i == 510)
+	xerrf("Too long timecode arg string.\n");
+    lastindex = i + 2;
 
-      skipped = simplefilebuf_dumpto(&sfb, '\377');
-      if (skipped < 0)
-	{
-	  fdprintf(ofd, "cut %s: %s filepos: %d sync: #EOF!\n",
-		   i & 1? "out": "in ", times[i], simplefilebuf_filepos(&sfb));
-	  fdprintf(ofd,
-		   "File ended: audio frames: %d Total time: %d ms (%s).\n",
-		   m2i.afn, totaltime, ms2tcode(totaltime));
-	  fdprintf(0, "\r- Scanning audio at %d ms of %d ms (100%%).\n",
-		   lasttime, lasttime);
-	  printpositions(positions, i);
-	  exit(0);
+    ofd = wopen(ofile);
+    simplefilebuf_init(&sfb, ifile);
+
+    stime = timev[0];
+    i = 0;
+    while (true)
+    {
+	int skipped;
+
+	if (stime >= currscan.time) {
+	    char linebuf[128];
+	    while (true) {
+		int offset, msec, afn, brate, srate;
+		if (fgets(linebuf, sizeof linebuf, sfh) == NULL) {
+		    if (prevscan.pos > position) {
+			simplefilebuf_seekset(&sfb, prevscan.pos);
+			m2i.afn = prevscan.afn;
+			position = prevscan.pos; totaltime = prevscan.time;
+		    }
+		    currscan.time = MAXINTVAL(currscan.time);
+		    break;
+		}
+		if (sscanf(linebuf, "%d %d %d %d %d",
+			   &offset, &msec, &afn, &brate, &srate) == 5) {
+		    if (brate != pbr || psr != psr) {
+			fdprintf(0, "\rFrame %d (pos %d): bitrate %d, samplerate %d.\n",
+				 afn, offset, brate, srate);
+			pbr = brate; psr = srate;
+			/* XXX better handling (and error message) below */
+			if (i & 1)
+			    xerrf("Audio rate change in output is problematic ! "
+				  "exiting.");
+		    }
+		}
+		else
+		    continue;
+		currscan.time = msec;
+		currscan.pos = offset;
+		currscan.afn = afn;
+		if (currscan.time > stime) {
+		    if (prevscan.pos > position) {
+			simplefilebuf_seekset(&sfb, prevscan.pos);
+			m2i.afn = prevscan.afn;
+			position = prevscan.pos; totaltime = prevscan.time;
+		    }
+		    break;
+		}
+		prevscan = currscan;
+	    }
 	}
 
-      if (skipped > 0)
-	  fprintf(stderr, "Skipped %d bytes of garbage before audio frame %d.",
-		  skipped, m2i.afn + 1);
-
-      cpc = totaltime / (lasttime / 100);
-      if (ppc != cpc || totaltime == lasttime)
+	skipped = simplefilebuf_dumpto(&sfb, '\377');
+	if (skipped < 0)
 	{
-	  fdprintf(0, "\r- Scanning audio at %d ms of %d ms (%d%%)",
-		   totaltime, lasttime, cpc);
-	  ppc = cpc;
+	    fdprintf(ofd, "cut %s: %s filepos: %d sync: #EOF!\n",
+		     i & 1? "out":"in ", times[i], simplefilebuf_filepos(&sfb));
+	    fdprintf(ofd,
+		     "File ended: audio frames: %d Total time: %d ms (%s).\n",
+		     m2i.afn, totaltime, ms2tcode(totaltime));
+	    fdprintf(0, "\r- Scanning audio at %d ms of %d ms (100%%).\n",
+		     lasttime, lasttime);
+	    printpositions(positions, i);
+	    exit(0);
 	}
-      if (totaltime >= stime)
+
+	if (skipped > 0)
+	    fprintf(stderr,"Skipped %d bytes of garbage before audio frame %d.",
+		    skipped, m2i.afn + 1);
+
+	cpc = totaltime / (lasttime / 100);
+	if (ppc != cpc || totaltime == lasttime)
 	{
-	  int _pos, _sync;
-	  if ( (totaltime - stime) <= (stime - prevtotal) )
-	    {
-	      _pos = simplefilebuf_filepos(&sfb) - 1;
-	      _sync = totaltime - stime;
-	    }
-	  else
-	    {
-	      _pos = position;
-	      _sync = prevtotal - stime;
-	    }
-	  positions[i] = _pos;
-
-	  fdprintf(ofd, "cut %s: %s filepos: %d sync: %d ms.\n",
-		   i & 1? "out": "in ", times[i], _pos, _sync);
-
-	  i += 1;
-	  if (i >= lastindex)
-	    {
-	      fdprintf(0, "\n");
-	      printpositions(positions, i);
-	      exit(0);
-	    }
-	  stime = timev[i]  + _sync;
+	    fdprintf(0, "\r- Scanning audio at %d ms of %d ms (%d%%)",
+		     totaltime, lasttime, cpc);
+	    ppc = cpc;
 	}
-      position = simplefilebuf_filepos(&sfb) - 1;
-
-      if (mp2get(&m2i) > 0)
+	if (totaltime >= stime)
 	{
-	  if (m2i.bitrate != pbr || m2i.samplerate != psr)
+	    int _pos, _sync;
+	    if ( (totaltime - stime) <= (stime - prevtotal) )
 	    {
-	      fdprintf(0, "\rFrame %d (pos %d): bitrate %d, samplerate %d.\n",
-		       m2i.afn, position, m2i.bitrate, m2i.samplerate);
-	      pbr = m2i.bitrate; psr = m2i.samplerate;
+		_pos = simplefilebuf_filepos(&sfb) - 1;
+		_sync = totaltime - stime;
+	    }
+	    else
+	    {
+		_pos = position;
+		_sync = prevtotal - stime;
+	    }
+	    positions[i] = _pos;
 
-	      /* XXX better handling (and error message) below */
-	      if (i & 1)
-		xerrf("Audio rate change in output is problematic ! exiting.");
+	    fdprintf(ofd, "cut %s: %s filepos: %d sync: %d ms.\n",
+		     i & 1? "out": "in ", times[i], _pos, _sync);
+
+	    i += 1;
+	    if (i >= lastindex)
+	    {
+		fdprintf(0, "\n");
+		printpositions(positions, i);
+		exit(0);
+	    }
+	    stime = timev[i]  + _sync;
+	}
+	position = simplefilebuf_filepos(&sfb) - 1;
+
+	if (mp2get(&m2i) > 0)
+	{
+	    if (m2i.bitrate != pbr || m2i.samplerate != psr)
+	    {
+		fdprintf(0, "\rFrame %d (pos %d): bitrate %d, samplerate %d.\n",
+			 m2i.afn, position, m2i.bitrate, m2i.samplerate);
+		pbr = m2i.bitrate; psr = m2i.samplerate;
+
+		/* XXX better handling (and error message) below */
+		if (i & 1)
+		    xerrf("Audio rate change in output is problematic ! exiting.");
 	    }
 
-	  prevtotal = totaltime;
-	  totaltime += m2i.ms;
+	    prevtotal = totaltime;
+	    totaltime += m2i.ms;
 	}
-      else
-	simplefilebuf_unusedbytes(&sfb, 3);
+	else
+	    simplefilebuf_unusedbytes(&sfb, 3);
     }
 }
 
 int main(int argc, char ** argv)
 {
-  if (argc < 4)
-    xerrf("Usage: %s --scan ifile ofile levelfile\n"
-	  "  or   %s timespec ifile ofile sfile\n", argv[0], argv[0]);
+    if (argc < 4)
+	xerrf("Usage: %s --scan ifile ofile levelfile\n"
+	      "  or   %s timespec ifile ofile sfile\n", argv[0], argv[0]);
 
-  if (strcmp(argv[1], "--scan") == 0)
-    scan(argv[2], argv[3], argv[4]);
-  else
-    cutpoints(argv[1], argv[2], argv[3], argv[4]);
-  return 0;
+    if (strcmp(argv[1], "--scan") == 0)
+	scan(argv[2], argv[3], argv[4]);
+    else
+	cutpoints(argv[1], argv[2], argv[3], argv[4]);
+    return 0;
 }
 
 /* The following code uses parts from kjmp2.c */
@@ -1001,7 +1022,7 @@ static void mp2_decode_frame(struct mp2_ctx_t * mp2,
     int sb, ch, gr, part, idx, nch, i, j, sum;
     int table_idx;
 
-    //frame_size = 144000 * m2i->bitrate / m2i->samplerate + (m2i->pad >> 1);
+    //frame_size = 144000 * m2i->bitrate / m2i->samplerate + m2i->pad;
     unsigned mode = m2i->mode;
     if (m2i->mode == JOINT_STEREO)
         bound = (m2i->mex + 1) << 2;
@@ -1139,7 +1160,7 @@ static void mp2_decode_frame(struct mp2_ctx_t * mp2,
 /*
  * Local variables:
  * mode: c
- * c-file-style: "gnu"
+ * c-file-style: "stroustrup"
  * tab-width: 8
  * End:
  */

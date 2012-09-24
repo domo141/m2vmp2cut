@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Sun Sep 26 08:51:22 EEST 2004 too
- * Last modified: 2008-08-17 20:03:32.000000000 +0200 (patch from Göran)
+ * Last modified: Wed 19 Sep 2012 17:41:54 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -26,6 +26,8 @@
 #include "zzob.h"
 #include "ghdrs/fileparts_priv.h"
 
+#define isizeof (int)sizeof
+
 int main(int argc, char ** argv)
 {
   char * prgname = argv[0];
@@ -40,9 +42,9 @@ int main(int argc, char ** argv)
   while (argv[1] && argv[1][0] == '-')
     {
       if (strcmp(argv[1], "-q") == 0)
-        quiet = true;
+	quiet = true;
       if (strcmp(argv[1], "--close-gop") == 0)
-        closegop = true;
+	closegop = true;
       argc--; argv++;
     }
 
@@ -75,7 +77,7 @@ int main(int argc, char ** argv)
 #if 1
       if (closegop) {
 	off_t olen = len;
-        len = s__closegop(fd, 1, len);
+	len = s__closegop(fd, 1, len);
 	if (len < 0)
 	  xerrf("Data copy failure:");
 	tlen += (olen - len);
@@ -94,7 +96,7 @@ int main(int argc, char ** argv)
     }
 
   if (! quiet)
-    fprintf(stderr, "fileparts: Transferred %lld bytes of data.\n", tlen);
+    fprintf(stderr, "fileparts: Transferred %ld bytes of data.\n", tlen);
 
   return 0;
 }
@@ -147,7 +149,7 @@ static off_t s__fdcopy(int in, int out, off_t len)
 
   for(; len > 0; )
     {
-      int l = read(in, megabuf, len > sizeof megabuf? sizeof megabuf: len);
+      int l = read(in, megabuf, len > isizeof megabuf? isizeof megabuf: len);
 
       if (l <= 0)
 	{
@@ -185,50 +187,50 @@ static off_t s__closegop(int in, int out, off_t len)
   while (zzob_data(&zzob, false))
     {
       if (zzob.len >= 3)
-        {
+	{
 	  switch (zzob.data[3])
 	    {
 	    case 0x00: /* picture header */
-              if (zzob.len < 7)
-                xerrf("!!!\n");
-              int frame_type = ((zzob.data[5] & 0x38) >> 3);
-              int tsn = (zzob.data[4] << 2) + ((zzob.data[5] & 0xc0) >> 6);
-              if (frame_type == 1) { /* i-frame */
-                if (iframetsn < 0)
-                  iframetsn = tsn;
-              }
-              else { /* not i-frame */
-                if (iframetsn < 0)
-                  xerrf("!!!\n");
-              }
-              if (tsn >= iframetsn) {
-                outputdata = 1;
-                tsn -= iframetsn;
-                zzob.data[4] = (tsn >> 2);
-                zzob.data[5] = (zzob.data[5] & 0x3f) | (tsn << 6);
-              }
-              else
-                outputdata = 0;
+	      if (zzob.len < 7)
+		xerrf("!!!\n");
+	      int frame_type = ((zzob.data[5] & 0x38) >> 3);
+	      int tsn = (zzob.data[4] << 2) + ((zzob.data[5] & 0xc0) >> 6);
+	      if (frame_type == 1) { /* i-frame */
+		if (iframetsn < 0)
+		  iframetsn = tsn;
+	      }
+	      else { /* not i-frame */
+		if (iframetsn < 0)
+		  xerrf("!!!\n");
+	      }
+	      if (tsn >= iframetsn) {
+		outputdata = 1;
+		tsn -= iframetsn;
+		zzob.data[4] = (tsn >> 2);
+		zzob.data[5] = (zzob.data[5] & 0x3f) | (tsn << 6);
+	      }
+	      else
+		outputdata = 0;
 	      break;
 	    case 0xb3:	/* sequence header */
-              if (iframetsn >= 0)
-                goto breakwhile;
-              outputdata = 1;
+	      if (iframetsn >= 0)
+		goto breakwhile;
+	      outputdata = 1;
 	      break;
 	    case 0xb8: /* GOP header */
-              outputdata = 1;
-              break;
-            }
-          if (outputdata) {
-            if (oadded + zzob.len >= sizeof obuf) {
-              if (writefully(out, obuf, oadded) != oadded)
+	      outputdata = 1;
+	      break;
+	    }
+	  if (outputdata) {
+	    if (oadded + zzob.len >= isizeof obuf) {
+	      if (writefully(out, obuf, oadded) != oadded)
 		return -1;
-              oadded = 0;
-            }
-            memcpy(obuf + oadded, zzob.data, zzob.len);
-            oadded += zzob.len;
-          }
-        }
+	      oadded = 0;
+	    }
+	    memcpy(obuf + oadded, zzob.data, zzob.len);
+	    oadded += zzob.len;
+	  }
+	}
     }
  breakwhile:
   if (oadded)

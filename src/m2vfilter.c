@@ -137,7 +137,7 @@ static void s__thefilter(ZeroZeroOneBuf * zzob, BufWrite * bw,
     /* The value written below may not be exact */
     xerrf("mpg video data write failure after writing %lld bytes:", zzob->pos);
 
-  fprintf(stderr, "Transferred %lld bytes of mpeg video data.\n", zzob->pos);
+  fprintf(stderr, "Transferred %ld bytes of mpeg video data.\n", zzob->pos);
 
   if (fcount == frames)
     fprintf(stderr, "Total frame count %d is what was expected.\n", fcount);

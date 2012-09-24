@@ -4,11 +4,12 @@
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
  eval `cat config/mpeg2.conf`
- xo="`pkg-config --cflags --libs gtk+-2.0` -lutil $mpeg2_both"
- xo="$xo -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE"
- date=`date`; set -x
-#${CC:-gcc} -ggdb -std=gnu99 $WARN "$@" -o "$TRG" "$0" $xo -DCDATE="\"$date\""
-${CC:-gcc} -O2 -std=gnu99 $WARN "$@" -o "$TRG" "$0" $xo -DCDATE="\"$date\""
+ xo=`pkg-config --cflags --libs gtk+-2.0 | sed 's/-I/-isystem /g'`
+ xo="$xo -lutil $mpeg2_both -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE"
+ case $1 in '') set x -ggdb
+ #case $1 in '') set x -O2
+	shift; esac
+ set -x; exec ${CC:-gcc} -std=c99 $WARN "$@" -o "$TRG" "$0" $xo
  exit 0
  */
 #endif
@@ -21,11 +22,21 @@ ${CC:-gcc} -O2 -std=gnu99 $WARN "$@" -o "$TRG" "$0" $xo -DCDATE="\"$date\""
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Mon 05 Mar 2012 10:21:38 EET too
+ * Last modified: Wed 19 Sep 2012 17:43:17 EEST too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
 //       and esc-bs...
+
+#ifndef _BSD_SOURCE
+#define _BSD_SOURCE
+#endif
+#ifndef _POSIX_SOURCE
+#define _POSIX_SOURCE
+#endif
+
+// In unix-like system I've never seen execvp() fail with const argv
+#define execvp(a,b) xexecvp(a,b)
 
 #define index indx
 #include <unistd.h>
@@ -58,6 +69,9 @@ ${CC:-gcc} -O2 -std=gnu99 $WARN "$@" -o "$TRG" "$0" $xo -DCDATE="\"$date\""
 #include "mpeg2.h"
 #include "mpeg2convert.h"
 #undef index
+
+#undef execvp
+int execvp(const char * file, const char * argv[]);
 
 #define null ((void *)0)
 typedef enum { false = 0, true = 1 } bool;
@@ -95,10 +109,10 @@ typedef unsigned int u_int; // c99 blocks this definition in <sys/types.h>
 // XXX problems with these and c99
 #define S2U(v, t, i, o) \
   __builtin_choose_expr (__builtin_types_compatible_p (typeof (v), t i), \
-                         ((unsigned t o)(v)), (void)0)
+			 ((unsigned t o)(v)), (void)0)
 #define U2S(v, t, i, o) \
   __builtin_choose_expr (__builtin_types_compatible_p \
-                         (typeof (v), unsigned t i), /**/ ((t o)(v)), (void)0)
+			 (typeof (v), unsigned t i), /**/ ((t o)(v)), (void)0)
 #else
 #define GCCATTR_PRINTF(m, n)
 #define GCCATTR_NORETURN
@@ -542,11 +556,11 @@ static Frame * decode_iframe(off_t offset)
 	case STATE_BUFFER:
 	    size = read (M.fd, M.buffer, sizeof M.buffer);
 	    if (size > 0)
-                prevsize = size;
+		prevsize = size;
 	    else if (prevsize > 0) {
-                memcpy(M.buffer, "\000\000\001\267", 4);
-                size = 4; prevsize = 0;
-            }
+		memcpy(M.buffer, "\000\000\001\267", 4);
+		size = 4; prevsize = 0;
+	    }
 	    mpeg2_buffer (M.decoder, M.buffer, M.buffer + size);
 	    break;
 	case STATE_SEQUENCE:
@@ -640,11 +654,11 @@ static void decode_frames(int frameno, int untilframe)
 	case STATE_BUFFER:
 	    size = read (M.fd, M.buffer, sizeof M.buffer);
 	    if (size > 0)
-                prevsize = size;
+		prevsize = size;
 	    else if (prevsize > 0) {
-                memcpy(M.buffer, "\000\000\001\267", 4);
-                size = 4; prevsize = 0;
-            }
+		memcpy(M.buffer, "\000\000\001\267", 4);
+		size = 4; prevsize = 0;
+	    }
 	    mpeg2_buffer (M.decoder, M.buffer, M.buffer + size);
 	    break;
 	case STATE_SEQUENCE:
@@ -658,8 +672,8 @@ static void decode_frames(int frameno, int untilframe)
 	    if (M.reference_frames <= 0) {
 		// XXX != PIC_FLAG_CODING_TYPE_I does not work ...
 		// XXX so heuristics, that BB:s until next P...
-                // well, P frame needs one and B frame 2 reference frames...
-                // but we try to cope this by just dropping until I frame...
+		// well, P frame needs one and B frame 2 reference frames...
+		// but we try to cope this by just dropping until I frame...
 		if ((M.info->current_picture->flags & PIC_MASK_CODING_TYPE)
 		    == PIC_FLAG_CODING_TYPE_B)
 		    mpeg2_skip(M.decoder, 1);
@@ -827,19 +841,19 @@ void read_indexfile(FILE * fh)
     while (fgets(line, sizeof line, fh) != null) {
 	uint32_t frame, tsr, fig;
 	d0(("%s", line));
-	if (sscanf(line, "%llu %u %u %u", &index[i].offset, &gop,
+	if (sscanf(line, "%lu %u %u %u", &index[i].offset, &gop,
 		   &frame, &tsr) == 4) {
 	    if (gop != i)
 		die("gop discontinuity in index file '%s' at line %d (gop %d)",
 		    G.indexfile, i, gop);
 	    fig = frame - pframe;
-            if (fig > maxfig) {
-                enum { FIGMAX = 32 };
-                if (fig >= FIGMAX)
-                    die("Gop %d in index file '%s' has too many frames "
+	    if (fig > maxfig) {
+		enum { FIGMAX = 32 };
+		if (fig >= FIGMAX)
+		    die("Gop %d in index file '%s' has too many frames "
 			"(%d > %d)", i, G.indexfile, fig, FIGMAX);
-                maxfig = fig;
-            }
+		maxfig = fig;
+	    }
 	    if (i == gops)
 		die("More gops in index file '%s' than expected", G.indexfile);
 	    index[i++].iframeno = frame + tsr;
@@ -1048,7 +1062,7 @@ void alloc_frames(void)
 
     if (frames == null || rgb == null || G.framecache == null) {
 	zfree(&G.framecache); free(rgb); free(frames);
- 	die("Out of Memory (frame cache allocation)!");
+	die("Out of Memory (frame cache allocation)!");
     }
     G.framemem = frames;
     G.rgbmem = rgb;
@@ -1077,10 +1091,10 @@ void alloc_frames(void)
 */
 
 GtkWidget * aWindow(const char * title,
-                    gboolean (*delete_cb)(void * w, void * e, void * d),
+		    gboolean (*delete_cb)(void * w, void * e, void * d),
 		    gpointer deletedata,
-                    int borderwidth, bool resizable, bool show,
-                    GtkWidget * child)
+		    int borderwidth, bool resizable, bool show,
+		    GtkWidget * child)
 {
     GtkWidget * window;
 
@@ -1088,10 +1102,10 @@ GtkWidget * aWindow(const char * title,
     gtk_window_set_title(GTK_WINDOW(window), title);
 
     g_signal_connect(G_OBJECT(window), "delete_event",
-                     G_CALLBACK(delete_cb), deletedata);
+		     G_CALLBACK(delete_cb), deletedata);
 #if 0
     g_signal_connect(G_OBJECT(window), "destroy",
-                     G_CALLBACK(delete_cb), ...);
+		     G_CALLBACK(delete_cb), ...);
 #endif
     gtk_container_set_border_width (GTK_CONTAINER (window), borderwidth);
 
@@ -1101,7 +1115,7 @@ GtkWidget * aWindow(const char * title,
     gtk_widget_set_size_request(window, 400, 300);
 #endif
     if (show)
-        gtk_widget_show_all(window);
+	gtk_widget_show_all(window);
 
   return window;
 }
@@ -1112,17 +1126,17 @@ GtkBox * _aBox(bool hbox, gboolean homogeneous, gint spacing, va_list ap)
     GtkWidget * child;
 
     if (hbox)
-        box = GTK_BOX(gtk_hbox_new(homogeneous, spacing));
+	box = GTK_BOX(gtk_hbox_new(homogeneous, spacing));
     else
-        box = GTK_BOX(gtk_vbox_new(homogeneous, spacing));
+	box = GTK_BOX(gtk_vbox_new(homogeneous, spacing));
 
     while ((child = va_arg(ap, GtkWidget *)) != null) {
-        gboolean expand = va_arg(ap, gboolean);
-        gboolean fill = va_arg(ap, gboolean);
-        guint padding = va_arg(ap, guint);
-        d0(("aBox child %p", child));
+	gboolean expand = va_arg(ap, gboolean);
+	gboolean fill = va_arg(ap, gboolean);
+	guint padding = va_arg(ap, guint);
+	d0(("aBox child %p", child));
 
-        gtk_box_pack_start(box, child, expand, fill, padding);
+	gtk_box_pack_start(box, child, expand, fill, padding);
     }
     return box;
 }
@@ -1470,10 +1484,10 @@ void update_image(void)
     for (i = 1; i < G.cutpoints - 1; i++) {
 	int fb = G.cutpoint[i].frameno, fe = G.cutpoint[i + 1].frameno;
 	int x = fb * G.maxwidth / G.lastframe;
-        int w = fe * G.maxwidth / G.lastframe - x + 1;
+	int w = fe * G.maxwidth / G.lastframe - x + 1;
 	if (i & 1) G.greenframes += fe - fb;
-        if (x == x0) x++;
-        else x0 = x;
+	if (x == x0) x++;
+	else x0 = x;
 	gdk_draw_rectangle(W.pm, W.gcz[i & 1], true, x, 0, w, 22);
     }
     draw_triangle();
@@ -1586,7 +1600,7 @@ void need_iframe(int index, bool force)
     G.frame->frameno = frameno;
 
     if (G.frame->listnode.succ == null) {
-        addTail(&G.free_frames, &G.iframecache[ii]->listnode);
+	addTail(&G.free_frames, &G.iframecache[ii]->listnode);
 	G.iframecache[ii] = G.frame;
 	G.lastdecodediframe = null;
     }
@@ -1602,25 +1616,25 @@ void need_frame(void)
 
     d1(("need_frame: %d %d", G.framecache[fi]->frameno, G.currentframe));
     if (G.framecache[fi]->frameno != G.currentframe) {
-        if (G.currentindex != G.lastdecodedindex)
-            need_iframe(G.currentindex, true);
+	if (G.currentindex != G.lastdecodedindex)
+	    need_iframe(G.currentindex, true);
 
-        int iframeno = G.index[G.currentindex].iframeno;
+	int iframeno = G.index[G.currentindex].iframeno;
 
 	d1((".. %d %d", G.currentindex, iframeno));
 
-        int ii = G.currentindex % G_iframecachesize;
-        int f1 = iframeno % G.framecachesize;
+	int ii = G.currentindex % G_iframecachesize;
+	int f1 = iframeno % G.framecachesize;
 
-        if (G.iframecache[ii]->frameno == iframeno) {
-            G.frame = G.iframecache[ii];
-            G.iframecache[ii] = G.framecache[f1];
-            G.framecache[f1] = G.frame;
-        }
+	if (G.iframecache[ii]->frameno == iframeno) {
+	    G.frame = G.iframecache[ii];
+	    G.iframecache[ii] = G.framecache[f1];
+	    G.framecache[f1] = G.frame;
+	}
 	// XXX a bit xxx, decode_frames may invalidate lastdecodedindex..
-        G.lastdecodedindex = G.currentindex + 1;
+	G.lastdecodedindex = G.currentindex + 1;
 	G.lastdecodediframe = null;
-        decode_frames(iframeno, G.index[G.currentindex + 1].iframeno);
+	decode_frames(iframeno, G.index[G.currentindex + 1].iframeno);
     }
     G.frame = G.framecache[fi];
 

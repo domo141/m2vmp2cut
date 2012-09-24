@@ -7,10 +7,14 @@
  *	    All rights reserved
  *
  * Created: Sun Sep 26 13:23:29 EEST 2004 too
- * Last modified: Wed 22 Feb 2012 14:26:41 EET too
+ * Last modified: Wed 19 Sep 2012 17:55:42 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
+
+#ifndef _POSIX_SOURCE
+#define _POSIX_SOURCE
+#endif
 
 #include <unistd.h>
 #include <stdio.h>
@@ -86,7 +90,7 @@ static void s__scan(int ifd, int ofd,
 
       if (cpc != prevpc)
 	{
-	  printf("\r- Scanning video at %lld of %lld (%d%%) ",
+	  printf("\r- Scanning video at %ld of %ld (%d%%) ",
 		 zzob.pos, fsize, cpc);
 	  fflush(stdout);
 	  prevpc = cpc;
@@ -121,19 +125,19 @@ static void s__scan(int ifd, int ofd,
 	    case 0xb8: /* group of pictures (GOP) header */
 	      if (printgopinfo) {
 		/* XXX currently a problem */
-		fprintf(stderr,"\nZero picture gop at filepos %lld..., ",
+		fprintf(stderr,"\nZero picture gop at filepos %ld..., ",
 			zzob.pos);
 		exit(1);
 	      }
 
 	      if (zzob.len > 7)
 		{
-                  /* int drop_frame_flag = data[4] & 0x80; */
-                  gop.hour   = (data[4] & 0x7f) >> 2;
-                  gop.minute = ((data[4] & 0x03) << 4) + (data[5] >> 4);
-                  gop.second = ((data[5] & 0x07) << 3) + (data[6] >> 5);
-                  gop.frame  = ((data[6] & 0x1f) << 1) + (data[7] >> 7);
-                  gop.closed = data[7] & 0x40;
+		  /* int drop_frame_flag = data[4] & 0x80; */
+		  gop.hour   = (data[4] & 0x7f) >> 2;
+		  gop.minute = ((data[4] & 0x03) << 4) + (data[5] >> 4);
+		  gop.second = ((data[5] & 0x07) << 3) + (data[6] >> 5);
+		  gop.frame  = ((data[6] & 0x1f) << 1) + (data[7] >> 7);
+		  gop.closed = data[7] & 0x40;
 		  /* int broken_gop_flag = data[7] & 0x20; */
 
 		  gop.time = (((gop.hour * 60 + gop.minute) * 60 + gop.second) * 25)
@@ -146,7 +150,7 @@ static void s__scan(int ifd, int ofd,
 
 		  if (gop.time != pictures)
 		    {
-		      fprintf(stderr,"\nTimecode problem at filepos %lld ",
+		      fprintf(stderr,"\nTimecode problem at filepos %ld ",
 			      zzob.pos);
 		      fprintf(stderr, " %02d:%02d:%02d.%02d -- ",
 			      gop.hour, gop.minute, gop.second, gop.frame);
@@ -172,7 +176,7 @@ static void s__scan(int ifd, int ofd,
 		      else
 			c = '-';
 		      goppic = pictures;
-		      fprintf(ofh, "%10lld %5d %6d %c  %d  %02d:%02d:%02d.%02d  %c  ",
+		      fprintf(ofh, "%10ld %5d %6d %c  %d  %02d:%02d:%02d.%02d  %c  ",
 			      seqpos, gops, goppic, c, asr,
 			      gop.hour, gop.minute, gop.second, gop.frame,
 			      gop.closed? 'c': 'o');
@@ -186,10 +190,10 @@ static void s__scan(int ifd, int ofd,
     }
 
   fprintf(ofh, "%d\n", pictures - goppic);
-  fprintf(ofh, "end: size %lld frames %d gops %d abr %ld  w %d h %d\n",
+  fprintf(ofh, "end: size %ld frames %d gops %d abr %ld  w %d h %d\n",
 	  zzob.pos, pictures, ++gops, (long)(zzob.pos / (pictures / 25) * 8),
 	  maxwidth, maxheight);
-  printf("\r- Scanning video at %lld of %lld (100%%).\n", zzob.pos, fsize);
+  printf("\r- Scanning video at %ld of %ld (100%%).\n", zzob.pos, fsize);
   exit(0);
 }
 

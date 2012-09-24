@@ -57,7 +57,7 @@ bool bufwrite(BufWrite * bw, unsigned char * buf, int len)
 
   return true;
 }
-  
+
 bool bufwrite_exit(BufWrite * bw)
 {
   return writefully(bw->fd, bw->buf, bw->len) == bw->len;
