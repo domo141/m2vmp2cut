@@ -9,7 +9,7 @@
 #	    All rights reserved
 #
 # Created: Wed 19 Sep 2012 17:24:05 EEST too
-# Last modified: Sat 22 Sep 2012 23:07:47 EEST too
+# Last modified: Sat 29 Sep 2012 15:06:11 EEST too
 
 set -eu
 #set -x
@@ -42,7 +42,8 @@ case ~ in
 *)	getval () { val=${1#*=}; }
 esac
 
-aspect= vframes= vbs=1111k aq=2 vf= af=
+aspect= vframes= vbs=1042k aq=2 vf= af=
+of=out.webm
 while case ${1-} in
 	4:3 | 16:9) aspect=$1 ;;
 	vframes=*) getval "$1"; vframes=$val ;;
@@ -50,6 +51,7 @@ while case ${1-} in
 	aq=*) getval "$1"; aq=$val ;;
 	vf=*) getval "$1"; vf=$val ;;
 	af=*) getval "$1"; af=$val ;;
+	of=*) getval "$1"; of=$val ;;
 	'') break ;;
 	*) die "$0: unknown option -- '$1'"
  esac
@@ -64,7 +66,7 @@ m2vmp2cut <dir> contrib webm 16:9 vf='drawtext=fontfile=/usr/share/fonts/dejavu/
 esac
 
 case $aspect in '') echo "
- Usage $0 (4:3|16:9) [vframes=<num>] [vbs=<val>] [aq=<num>] [vf=<vfgraph>] [af=<afgraph>]
+ Usage $0 (4:3|16:9) [vframes=<num>] [vbs=<val>] [aq=<num>] [vf=<vfgraph>] [af=<afgraph>] [of=<filename>]
 
  Encode to webm.
 
@@ -76,6 +78,7 @@ case $aspect in '') echo "
 	aq='$aq'
 	vf='$vf'
 	af='$af'
+	of='$of'
 
  Audio quality 2 gives 96-112 bps vorbis; higher more.
 
@@ -90,6 +93,17 @@ case $aspect in '') echo "
 "
 	exit 0
 esac
+
+case $of in *.webm) ;; *) die "Filename '$of' does not end with '.webm'."; esac
+
+if ls "$of" >/dev/null 2>&1
+then	die "Output file '$of' exists."
+fi
+
+if ls "$of.wip" >/dev/null 2>&1
+then	die "Work in progress file '$of.wip' exists."
+fi
+
 
 m2vmp2cut_bindir=$M2VMP2CUT_CMD_DIRNAME/bin
 
@@ -111,7 +125,7 @@ exitrap () {
 	ev=$?
 	set +e
 	rmfifos
-	rm -f out.wip
+	rm -f "$of.wip"
 	case ${apid-}${vpid-} in '') ;; *) kill ${apid-} ${vpid-} 2>/dev/null
 	esac
 	exit $ev
@@ -143,12 +157,14 @@ aopts="-acodec libvorbis -q:a $aq ${af:+-af $af}"
 echo; echo
 mkfifos fifo.video.$$
 fifovideo
-x ffmpeg -i fifo.video.$$ -pass 1 $vopts -an -y out.wip
+x ffmpeg -i fifo.video.$$ -pass 1 $vopts -an -y "$of.wip"
 
 echo; echo
 mkfifos fifo.video.$$ fifo.audio.$$
 fifoaudio
 fifovideo
-x ffmpeg -i fifo.video.$$ -i fifo.audio.$$ -pass 2 $vopts $aopts -y out.webm
+x ffmpeg -i fifo.video.$$ -i fifo.audio.$$ -pass 2 $vopts $aopts -y "$of.wip"
 
-echo result is in './out.webm'
+mv "$of".wip "$of"
+
+echo "Result is in '$of'"

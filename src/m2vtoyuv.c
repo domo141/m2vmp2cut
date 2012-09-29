@@ -20,7 +20,7 @@ set -e; TRG=`basename $0 .c`; rm -f "$TRG"
  *	    All rights reserved
  *
  * Created: Fri Feb 08 17:16:45 EET 2008 too
- * Last modified: Wed 19 Sep 2012 17:42:12 EEST too
+ * Last modified: Thu 27 Sep 2012 23:32:11 EEST too
  */
 
 /* this program is originally based on:
@@ -65,7 +65,7 @@ set -e; TRG=`basename $0 .c`; rm -f "$TRG"
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <inttypes.h>
+#include <stdint.h>
 
 #include <unistd.h>
 #include <stdarg.h>
@@ -74,8 +74,6 @@ set -e; TRG=`basename $0 .c`; rm -f "$TRG"
 #include <errno.h>
 
 #include "mpeg2.h"
-
-#include <string.h>
 
 #define null ((void *)0)
 
@@ -219,7 +217,7 @@ int main (int argc, char ** argv)
 	{
 	case ARG_SEEK:
 	    if (fseeko(mpgfile, args.o.offset, SEEK_SET) < 0)
-		die("fseeko(%lld):", args.o.offset);
+		die("fseeko(%jd):", (intmax_t)args.o.offset);
 	    continue;
 	case ARG_SLEEP:
 	    mseconds = (int)(args.o.sleep * 1000);
@@ -270,7 +268,7 @@ breakwhile:
 			{
 			case ARG_SEEK:
 			    if (fseeko(mpgfile, args.o.offset, SEEK_SET) < 0)
-				die("fseeko(%lld):", args.o.offset);
+				die("fseeko(%jd):", (intmax_t)args.o.offset);
 			    framenum = 0;
 			    continue;
 			case ARG_SLEEP:
@@ -487,7 +485,7 @@ static FILE * testargs_getfile(Args * args)
 	switch (type)
 	{
 	case ARG_SEEK:
-	    d0(("seek %lld\n", args->o.offset));
+	    d0(("seek %jd\n", (intmax_t)args->o.offset));
 	    start = end = 0;
 	    seeks = 1;
 	    break;
@@ -538,7 +536,7 @@ int main(int argc, char ** argv)
 	switch (type)
 	{
 	case ARG_SEEK:
-	    printf("seek %lld\n", args.o.offset);
+	    printf("seek %jd\n", (intmax_t)args.o.offset);
 	    break;
 	case ARG_RANGE:
 	    printf("range %d %d\n", args.o.r.start, args.o.r.end);

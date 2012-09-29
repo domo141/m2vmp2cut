@@ -12,7 +12,7 @@
  *	    All rights reserved
  *
  * Created: Thu Oct 20 19:32:21 EEST 2005 too
- * Last modified: Sun 23 Sep 2012 20:59:17 EEST too
+ * Last modified: Fri 28 Sep 2012 21:00:01 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -88,7 +88,7 @@ bool simplefilebuf_fillbuf(simplefilebuf * self, unsigned int rest)
     return true;
 }
 
-int simplefilebuf_filepos(simplefilebuf * self)
+off_t simplefilebuf_filepos(simplefilebuf * self)
 {
     return self->gone + self->offset;
 }
@@ -213,11 +213,11 @@ static int mp2get(Mp2Info * m2i)
 #endif
 
     if (m2i->id != 0x18)
-	xerrf("Frame %d (pos %d) not mpeg version 1.\n", m2i->afn,
-	      simplefilebuf_filepos(m2i->sfb) - 4);
+	xerrf("Audio frame %d (pos %jd) not mpeg version 1.\n", m2i->afn,
+	      (intmax_t)simplefilebuf_filepos(m2i->sfb) - 4);
     if (m2i->ld != 0x04)
-	xerrf("Frame %d (pos %d) not mpeg layer 2.\n", m2i->afn,
-	      simplefilebuf_filepos(m2i->sfb) - 4);
+	xerrf("Audio frame %d (pos %jd) not mpeg layer 2.\n", m2i->afn,
+	      (intmax_t)simplefilebuf_filepos(m2i->sfb) - 4);
 
     flib = 144000 * m2i->bitrate / m2i->samplerate + m2i->pad;
     // FIXME drift will happen when samplerate 44100 XXX //
@@ -269,9 +269,9 @@ static void printpositions(off_t * positions, int c)
     c -= 1;
     if (c)
     {
-	printf("%ld-%ld", positions[0], positions[1]);
+	printf("%jd-%jd", (intmax_t)positions[0], (intmax_t)positions[1]);
 	for (i = 2; i < c; i += 2)
-	    printf(",%ld-%ld", positions[i], positions[i + 1]);
+	    printf(",%jd-%jd",(intmax_t)positions[i],(intmax_t)positions[i+1]);
 	printf("\n");
     }
 }
@@ -429,7 +429,8 @@ void scan(char * ifile, char * sfile, char * levelfile)
 
 	    if (m2i.bitrate != pbr || m2i.samplerate != psr)
 	    {
-		fdprintf(0, "\rFrame %d (pos %d): bitrate %d, samplerate %d.\n",
+		fdprintf(0, "\rAudio frame #%d (pos %d): "
+			 "bitrate %d, samplerate %d.\n",
 			 m2i.afn, position, m2i.bitrate, m2i.samplerate);
 		pbr = m2i.bitrate; psr = m2i.samplerate;
 
@@ -538,7 +539,7 @@ void cutpoints(char * timespec, char * ifile, char * ofile, char * sfile)
 		if (sscanf(linebuf, "%d %d %d %d %d",
 			   &offset, &msec, &afn, &brate, &srate) == 5) {
 		    if (brate != pbr || psr != psr) {
-			fdprintf(0, "\rFrame %d (pos %d): bitrate %d, samplerate %d.\n",
+			fdprintf(0, "\rAudio frame %d (pos %d): bitrate %d, samplerate %d.\n",
 				 afn, offset, brate, srate);
 			pbr = brate; psr = srate;
 			/* XXX better handling (and error message) below */
@@ -567,8 +568,9 @@ void cutpoints(char * timespec, char * ifile, char * ofile, char * sfile)
 	skipped = simplefilebuf_dumpto(&sfb, '\377');
 	if (skipped < 0)
 	{
-	    fdprintf(ofd, "cut %s: %s filepos: %d sync: #EOF!\n",
-		     i & 1? "out":"in ", times[i], simplefilebuf_filepos(&sfb));
+	    fdprintf(ofd, "cut %s: %s filepos: %jd sync: #EOF!\n",
+		     i & 1? "out":"in ", times[i],
+		     (intmax_t)simplefilebuf_filepos(&sfb));
 	    fdprintf(ofd,
 		     "File ended: audio frames: %d Total time: %d ms (%s).\n",
 		     m2i.afn, totaltime, ms2tcode(totaltime));
@@ -591,7 +593,8 @@ void cutpoints(char * timespec, char * ifile, char * ofile, char * sfile)
 	}
 	if (totaltime >= stime)
 	{
-	    int _pos, _sync;
+	    off_t _pos;
+	    int _sync;
 	    if ( (totaltime - stime) <= (stime - prevtotal) )
 	    {
 		_pos = simplefilebuf_filepos(&sfb) - 1;
@@ -604,8 +607,8 @@ void cutpoints(char * timespec, char * ifile, char * ofile, char * sfile)
 	    }
 	    positions[i] = _pos;
 
-	    fdprintf(ofd, "cut %s: %s filepos: %d sync: %d ms.\n",
-		     i & 1? "out": "in ", times[i], _pos, _sync);
+	    fdprintf(ofd, "cut %s: %s filepos: %jd sync: %d ms.\n",
+		     i & 1? "out": "in ", times[i], (intmax_t)_pos, _sync);
 
 	    i += 1;
 	    if (i >= lastindex)
@@ -622,7 +625,7 @@ void cutpoints(char * timespec, char * ifile, char * ofile, char * sfile)
 	{
 	    if (m2i.bitrate != pbr || m2i.samplerate != psr)
 	    {
-		fdprintf(0, "\rFrame %d (pos %d): bitrate %d, samplerate %d.\n",
+		fdprintf(0, "\rAudio frame %d (pos %d): bitrate %d, samplerate %d.\n",
 			 m2i.afn, position, m2i.bitrate, m2i.samplerate);
 		pbr = m2i.bitrate; psr = m2i.samplerate;
 

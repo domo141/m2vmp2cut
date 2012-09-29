@@ -1,20 +1,46 @@
-Last committed: $Id$
 
-README for m2vmp2cut 0.81-wip:
+m2vmp2cut 0.82
 
-m2vmp2cut is frame accurate (currently PAL) mpeg2 video (m2v file)
-with accompanied mp2 audio (mp2 file) cutter.
+m2vmp2cut is command-line driven frame accurate (currently PAL) mpeg2
+video (m2v file) with accompanied mp2 audio (mp2 file) cutter.
+A GUI tool is used for selecting the cutpoints.
 
 Frame accuracy is achieved by re-encoding video around cutpoints.
 
-Audio is cut from separate mp2 file at positions that keep a/v sync
-as good as possible (maximum sync difference is around 10-15 milliseconds).
+Audio is cut from separate mp2 file at positions that keep a/v sync as
+good as possible (maximum sync difference is around 10-15 milliseconds).
 
 This program is licensed under the GPL v2. See file COPYING for details.
 
 
-Usually before using this software mpeg file needs to be demuxed first
-to separate mpeg video and mp2 audio files -- we come to that below.
+BASIC WORKFLOW:
+
+Note that 'm2vmp2cut' has pretty good help built-in. Executing 'm2vmp2cut'
+or 'm2vmp2cut . help' will get to it...
+
+First run:
+
+$ m2vmp2cut <mpeg2 file> demux <more mpeg2 files or other ProjectX opts>
+
+to demultiplex the source mpeg2, then execute GUI for cutpoint hunt:
+
+$ m2vmp2cut <mpeg2 file/demux outputdir> select
+
+<demux outdir> is derived from original mpeg2 file by removing latest suffix
+after dot (.) and replacing that with '.d'.
+
+In order to 'select' to work the directory where m2v & mp2 files were demuxed
+must have 'video.m2v' symlinked to the video and 'audio.mp2' to the video;
+if those exist, the 'select' tool can be used to continue with content demuxed
+by something else than m2vmp2cut.
+
+After selection of cutpoints are done, the 'cut' command will create new
+mpeg2 file from the selected contents, re-encoding some video frames to
+achieve frame accuracy. Audio frames don't require any re-encoding.
+Alternatively, there are some scripts in 'contrib' directory which can
+re-encode the selected material to other formats. The 'contrib' command
+will show available contrib scripts.
+
 
 REQUIREMENTS:
 
@@ -24,7 +50,6 @@ Mjpegtools      -- for mpeg2enc and mplex tools
 ProjecX (project-x.sourceforge.net) -- to demux source mpeg files
 Java runtime    -- to run ProjectX (many non-sun vm:s work also)
 
-Xterm           -- for help and info windows...
 Perl            -- m2vmp2cut.pl (run frontend) is written in perl
 Python          -- some m2vmp2cut utilities are written in python
 Posix Shell     -- /bin/sh which has posix shell capabilities
@@ -38,7 +63,6 @@ RECOMMENDED:
 Transcode       -- for requantize option
 
 
-
 (Other than ProjecX) Demux Tools (: (not used here (anymore))
 mpgtx
 replex
@@ -49,6 +73,12 @@ mplayer (dumpaudio/dumpvideo?)
 USAGE:
 
 Run 'm2vmp2cut help' to get more usage information.
+
+
+CONTRIBUTORS:
+
+Göran Uddeborg
+Daniel Pielmeier
 
 
 WHY LIKE THIS:

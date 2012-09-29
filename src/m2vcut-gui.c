@@ -22,7 +22,7 @@
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Wed 19 Sep 2012 17:43:17 EEST too
+ * Last modified: Wed 26 Sep 2012 13:32:03 EEST too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
@@ -2076,12 +2076,12 @@ void make_layout_etc(GdkDrawable * drawable)
     W.gcz[0] = gdk_gc_new (drawable);
     W.gcz[1] = gdk_gc_new (drawable);
 
-
+#if 0
     PangoContext * context = gdk_pango_context_get_for_screen (screen);
     W.layout = pango_layout_new (context);
 
     pango_layout_set_font_description (W.layout, W.fd);
-
+#endif
     // figure out better color
     GdkColor color = { .red = 32768, .green = 32768, .blue  = 65535 };
     gdk_gc_set_rgb_fg_color(W.gct, &color);

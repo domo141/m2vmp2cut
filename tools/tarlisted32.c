@@ -7,7 +7,7 @@
  #	    All rights reserved
  #
  # Created: Thu Apr 20 19:59:29 EEST 2006 too
- # Last modified: Thu 09 Sep 2010 19:17:14 EEST too
+ # Last modified: Tue 25 Sep 2012 21:25:53 EEST too
  #
  # Redistribution and use in source and binary forms, with or without
  # modification, are permitted provided that the following conditions
@@ -34,12 +34,12 @@
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
  XD="-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
- set -x; exec ${CC:-gcc} $WARN "$@" -o $TRG $0 -DBUILDDATE="\"$DATE\"" $XD
- #set -x; exec ${CC:-gcc} -Wall "$@" -o $TRG $0 -DBUILDDATE="\"$DATE\"" $XD
+ set -x; exec ${CC:-gcc} $WARN "$@" -o $TRG $0
+ #set -x; exec ${CC:-gcc} -Wall "$@" -o $TRG $0
  #*/
 #endif
 
-#define VERSION "3.1"
+#define VERSION "3.2"
 
 /* example content, run
    sed -n 's/#[:]#//p' tarlisted.c | ./tarlisted -V -o test.tar.gz '|' gzip -c
@@ -431,7 +431,7 @@ static const char helptxt3[] =
     "\t// fifo:      add fifo (named pipe) file to the tar archive.\n"
     "\n"
     "  Backspace \"\\\" must be used when adding [back]spaces to filenames.\n"
-    "  Pipeline output to gzip/bzip2 (| gzip -c > outfile.tar.gz) for compression.\n"
+    "  Pipeline output to gzip/xz (| gzip -c > outfile.tar.gz) for compression.\n"
     "\n"
     "  Output format is POSIX Unix Standard TAR (ustar, IEEE Std 1003.1-1988).\n"
     "\n";
@@ -446,7 +446,7 @@ static void usage(bool help)
 
     fprintf(fh, "\n"
 #ifndef WIN32
-	    "Usage: %s [-nVzj] [-C dir] [-i infile] [(-o|-a) outfile] [| cmd [args]]\n\n"
+	    "Usage: %s [-nVzjJ] [-C dir] [-i infile] [(-o|-a) outfile] [| cmd [args]]\n\n"
 #else
 	    "Usage: %s [-nVh] [-C dir] [-i infile] (-o|-a) outfile\n\n"
 #endif
@@ -459,8 +459,9 @@ static void usage(bool help)
 	  "\t-o: output file (- = stdout); required if '|' not used\n"
 	  "\t-a: append to output archive\n"
 	  "\t-A: concatenate to output file\n"
-	  "\t-z: compress archive with gzip (mutually exclusive with -j and '|')\n"
-	  "\t-j: compress archive with bzip2 (mutually exclusive with -z and '|')\n"
+	  "\t-z: compress archive with gzip (mutually exclusive with -j, -z and '|')\n"
+	  "\t-j: compress archive with bzip2 (mutually exclusive with -z, -J and '|')\n"
+	  "\t-J: compress archive with xz (mutually exclusive with -z, -j and '|')\n"
 #else
 	  "\t-o: output file (- = stdout)\n"
 #endif
@@ -736,9 +737,8 @@ void ustar_add(char * name, int mode, int uid, int gid, off_t fsize,
 	preflen = (p - name); }
 
 #ifndef WIN32
-    /* FIXME, check LARGEFILE... */
     if (sizeof fsize > 4 && fsize >= (1LL << 33)) /* 8 ** 11 */
-	inputerror("File size %lld too large.", fsize);
+	inputerror("File size %llu too large.", (unsigned long long)fsize);
 #endif /* XXX can not check size if off_t is 32 bits wide */
 
     if (output_fd < 0)
@@ -755,7 +755,7 @@ void ustar_add(char * name, int mode, int uid, int gid, off_t fsize,
     snprintf(header.uid, 8, "%07o", uid);
     snprintf(header.gid, 8, "%07o", gid);
 #ifndef WIN32 /* FIXME, filloctal() or something */
-    snprintf(header.size, 12, "%011llo", fsize);
+    snprintf(header.size, 12, "%011llo", (unsigned long long)fsize);
     snprintf(header.mtime, 12, "%011lo", mtime);
 #else
     sprintf(header.size, "%011lo", fsize);
@@ -853,11 +853,12 @@ void sigchld_handler(int sig UU)
 
 const char * gzipline[] =  { "gzip",  "-c", null };
 const char * bzip2line[] = { "bzip2", "-c", null };
+const char * xzline[] = { "xz", "-c", null };
 
 void setppcmdp(const char *** ppcmdpp, const char ** p)
 {
     if (*ppcmdpp)
-	xerrf("Options -z, -j and '|' are mutually exclusive\n");
+	xerrf("Options -z, -j, -J and '|' are mutually exclusive\n");
     *ppcmdpp = p;
 }
 
@@ -946,6 +947,7 @@ int main(int argc UU, char * argv[])
 #ifndef WIN32
 	    case 'z': setppcmdp(&ppcmdp, gzipline); break;
 	    case 'j': setppcmdp(&ppcmdp, bzip2line); break;
+	    case 'J': setppcmdp(&ppcmdp, xzline); break;
 #endif
 	    case 'h': usage(true); break;
 	    default:
@@ -958,7 +960,7 @@ int main(int argc UU, char * argv[])
 	if ( argv[0][0] != '|' || argv[0][1] != '\0' )
 	    errf("%s: unknown argument\n", argv[0]);
 	else
-	    setppcmdp(&ppcmdp, (const char **)argv + 1);
+	    setppcmdp(&ppcmdp, (const char **)(argv + 1));
     } else if (ofname == null)
 	xerrf("Option -o reguired if postprocessor command (with '|') not used\n");
 #else

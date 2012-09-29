@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Sun Sep 26 13:23:29 EEST 2004 too
- * Last modified: Wed 19 Sep 2012 17:55:42 EEST too
+ * Last modified: Thu 27 Sep 2012 23:17:38 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -90,8 +91,8 @@ static void s__scan(int ifd, int ofd,
 
       if (cpc != prevpc)
 	{
-	  printf("\r- Scanning video at %ld of %ld (%d%%) ",
-		 zzob.pos, fsize, cpc);
+	  printf("\r- Scanning video at %jd of %jd (%d%%) ",
+		 (intmax_t)zzob.pos, (intmax_t)fsize, cpc);
 	  fflush(stdout);
 	  prevpc = cpc;
 	}
@@ -125,8 +126,8 @@ static void s__scan(int ifd, int ofd,
 	    case 0xb8: /* group of pictures (GOP) header */
 	      if (printgopinfo) {
 		/* XXX currently a problem */
-		fprintf(stderr,"\nZero picture gop at filepos %ld..., ",
-			zzob.pos);
+		fprintf(stderr,"\nZero picture gop at filepos %jd..., ",
+			(intmax_t)zzob.pos);
 		exit(1);
 	      }
 
@@ -150,8 +151,8 @@ static void s__scan(int ifd, int ofd,
 
 		  if (gop.time != pictures)
 		    {
-		      fprintf(stderr,"\nTimecode problem at filepos %ld ",
-			      zzob.pos);
+		      fprintf(stderr,"\nTimecode problem at filepos %jd ",
+			      (intmax_t)zzob.pos);
 		      fprintf(stderr, " %02d:%02d:%02d.%02d -- ",
 			      gop.hour, gop.minute, gop.second, gop.frame);
 		      fprintf(stderr, "%d %d\n", gop.time, pictures);
@@ -176,8 +177,8 @@ static void s__scan(int ifd, int ofd,
 		      else
 			c = '-';
 		      goppic = pictures;
-		      fprintf(ofh, "%10ld %5d %6d %c  %d  %02d:%02d:%02d.%02d  %c  ",
-			      seqpos, gops, goppic, c, asr,
+		      fprintf(ofh, "%10jd %5d %6d %c  %d  %02d:%02d:%02d.%02d  %c  ",
+			      (intmax_t)seqpos, gops, goppic, c, asr,
 			      gop.hour, gop.minute, gop.second, gop.frame,
 			      gop.closed? 'c': 'o');
 		    }
@@ -190,10 +191,11 @@ static void s__scan(int ifd, int ofd,
     }
 
   fprintf(ofh, "%d\n", pictures - goppic);
-  fprintf(ofh, "end: size %ld frames %d gops %d abr %ld  w %d h %d\n",
-	  zzob.pos, pictures, ++gops, (long)(zzob.pos / (pictures / 25) * 8),
-	  maxwidth, maxheight);
-  printf("\r- Scanning video at %ld of %ld (100%%).\n", zzob.pos, fsize);
+  fprintf(ofh, "end: size %jd frames %d gops %d abr %ld  w %d h %d\n",
+	  (intmax_t)zzob.pos, pictures, ++gops,
+	  (long)(zzob.pos / (pictures / 25) * 8), maxwidth, maxheight);
+  printf("\r- Scanning video at %jd of %jd (100%%).\n",
+	 (intmax_t)zzob.pos, (intmax_t)fsize);
   exit(0);
 }
 

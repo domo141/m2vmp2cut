@@ -1,6 +1,4 @@
-
 Keybindings:
-
 
 Left Arrow:  1 frame backward.
 Right Arrow: 1 frame forward.
@@ -17,18 +15,16 @@ Page Down: 5 gops backward, after 20 jumps, 25 gops forward (*)
 1, 2 ... 9, 0: Jump to position 5%, 15% ... 85%, 95%
 
 TAB:       Mark cutpoint to current position
-BackSpace: Delete cutpoint under current position (if any)
+Backspace: Delete cutpoint under current position (if any)
 
 , (comma):  Go to previous cutpoint from current location
 . (period): Go to next cutpoint from current location
 
 
-qq: Quit, Saving cutpoints to file
+qq: Quit, saving cutpoints to file
 
 t: Test output around current/closest cutpoint
 
-a: Show audio graph around current position
+a: Show audio graph around current position (deprecating feature)
 
 i: information (about estimated final file size)
-
-Press ENTER to close this window

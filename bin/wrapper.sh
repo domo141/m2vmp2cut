@@ -7,12 +7,11 @@
 #	    All rights reserved
 #
 # Created: Tue Apr 22 19:10:35 EEST 2008 too
-# Last modified: Wed 15 Feb 2012 19:01:55 EET too
+# Last modified: Fri 28 Sep 2012 22:36:15 EEST too
 
-eae () { echo; echo Press ENTER to close this window '' | tr -d \\012
-	read _; exit $1; }
-
-die () { exec 1>&2; echo; echo "$@"; eae 1; }
+die () { exec 1>&2; echo; echo "$@";
+	 echo; echo Press Ctrl-C to close this window ''; sleep 60; exit 1;
+}
 
 #numtune () { echo $1 | sed 's/\(...\)\(...\)\(...\)$/ \1 \2 \3/;
 #			s/\(...\)\(...\)$/ \1 \2/; s/\(...\)$/ \1/'; }
@@ -35,34 +34,26 @@ numtune () {
 
 m2vcut_warp_exit ()
 {
-    "`dirname $0`"/warpxpointer -name M2vCut c c
+    "`dirname "$0"`"/warpxpointer -name M2vCut c c
     exit 0
 }
 
-exec_xterm () {
-    geometry=$1
-    title=$2
-    #font=-misc-fixed-medium-r-normal--20-200-75-75-c-100-iso10646-1
-    font=fixed
-    shift 2
-    exec xterm -fg black -bg gray70 -g $geometry -T "$title" \
-	+sb -fn $font -u8 -e "$0" "$@"
+exec_textdisp () {
+	exec "`dirname "$0"`"/textdisp -title "$@"
 }
+
 
 case $1 in
     m2vcut_help)
-	exec_xterm 76x35-0+0 'M2vCut Help' m2vcut_outputhelp
-	;;
-    m2vcut_outputhelp)
 	f=`echo $LANG |sed 's/[^A-Za-z_].*//'`
 	pd=`cd \`dirname "$0"\`/..; pwd`
-	helpprefix="$pd/doc/m2vcut_help"
-	test -f "$helpprefix-$f" && cat "$helpprefix-$f" || cat "$helpprefix-default"
-	read line
+	helprefix="$pd/doc/m2vcut_help"
+	test -f "$helprefix-$f" && f="$helprefix-$f" || f="$helprefix-default"
+	exec_textdisp 'M2vCut Help' -hold cat "$f"
 	;;
     m2vcut_info)
 	shift
-	exec_xterm 76x20-0+0 'M2vCut Info' m2vcut_runinfo "$@"
+	exec_textdisp 'M2vCut Info' -hold "$0" m2vcut_runinfo "$@"
 	;;
     m2vcut_runinfo)
 	#echo "$@" - $5
@@ -96,11 +87,10 @@ case $1 in
 	wmo=`expr $eds \* 1033 / 1000`
 	echo With estimated muxing '"overhead" (3.3%)': `numtune $wmo` bytes
 	#echo $fdn $vbn $abn $vsize $asize
-	eae 0
 	;;
     m2vcut_test)
 	shift
-	exec_xterm 76x28-0+0 'M2vCut Test' m2vcut_runtest "$@"
+	exec_textdisp 'M2vCut Test' "$0" m2vcut_runtest "$@"
 	;;
     m2vcut_runtest)
 	vd=`dirname "$5"`
@@ -122,7 +112,7 @@ case $1 in
 	;;
     m2vcut_agraph)
 	shift
-	exec_xterm 76x28-0+0 'M2vCut Test' m2vcut_runagraph "$@"
+	exec_textdisp 'M2vCut Test' "$0" m2vcut_runagraph "$@"
 	;;
     m2vcut_runagraph)
 	shift

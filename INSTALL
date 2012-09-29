@@ -1,8 +1,8 @@
 
 See REQUIREMENTS section in README -- or try your luck.
 
-This program can be run without installing, just
-enter `./m2vmp2cut <options>'
+This program can be run without installing (after make),
+just enter `./m2vmp2cut <options>'
 
 Or use something like
         'make install PREFIX=/usr/local'

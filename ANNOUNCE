@@ -1,5 +1,5 @@
 
-ANNOUNCE for m2vmp2cut
+m2vmp2cut 0.82
 
 This is stable release of m2vmp2cut -- frame accurate (currently PAL)
 mpeg2 video (m2v file) with accompanied mp2 audio (mp2 file) cutter.
@@ -7,13 +7,16 @@ mpeg2 video (m2v file) with accompanied mp2 audio (mp2 file) cutter.
 Some frames around cutpoints are re-encoded using mpeg2enc;
 rest picture data is written untouched to the output.
 
-Audio is cut from separate mp2 file at positions that keep a/v sync
-as good as possible (maximum sync difference is around 10-15 milliseconds).
+Audio is cut from separate mp2 file at positions that keep a/v sync as
+good as possible (maximum sync difference is around 10-15 milliseconds).
 
-This software is available currently at http://www.iki.fi/too/sw/m2vmp2cut/
+The demultiplexing of mpeg2 file containing these m2v & mp2 streams is
+also managed by this tool.
+
+This software is available at http://www.iki.fi/too/sw/m2vmp2cut/
 and is licensed under GNU Public License version 2 (GPLv2).
 
-Check NEWS for change log.
+Check README for more information and NEWS for change log.
 
 Enjoy
 

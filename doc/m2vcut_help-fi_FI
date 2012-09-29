@@ -1,4 +1,3 @@
-
 Näppäimet:
 
 Vasen nuoli: 1 kuva taaksepäin
@@ -16,17 +15,16 @@ Page Down:  5 goppia taaksepäin, 20 hypyn jälkeen 25 goppia taaksepäin (*)
 1, 2 ... 9, 0: Hyppää kohtaan 5%, 15% ... 85%, 95%
 
 TAB:       Merkitse leikkauspiste tämänhetkiseen kohtaan
-BackSpace: Poista leikkauspiste mikäli ollaan leikkauspisteen "päällä"
+Backspace: Poista leikkauspiste mikäli ollaan leikkauspisteen "päällä"
 
 , (pilkku): Siirry edelliseen leikkauspisteeseen nykypaikasta
 . (piste):  Siirry seuraavaan leikkauspisteeseen nykypaikasta
+
 
 qq: Lopeta, tallentaen leikkauspisteet tiedostoon
 
 t: Testaa tulos lähimmän leikkauspisteen kohdalta
 
-a: Näytä äänigraafi nykyisen sijainnin ympärillä
+a: Näytä äänigraafi nykyisen sijainnin ympärillä (vanhentuva ominaisuus)
 
 i: tietoa (lopullisesta tiedostokoosta)
-
-Paina ENTERiä sulkeaksesi tämän ikkunan

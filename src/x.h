@@ -6,6 +6,7 @@ typedef enum { false = 0, true = 1 } bool;
 #if (__GNUC__ >= 3)
 #define GCCATTR_NORETURN __attribute ((noreturn))
 #define GCCATTR_CONST    __attribute ((const))
+#define GCCATTR_PRINTF(m, n) __attribute__ ((format (printf, m, n)))
 
 #define from_type(ft, v) \
   __builtin_choose_expr (__builtin_types_compatible_p (typeof (v), ft), \
@@ -17,6 +18,7 @@ typedef enum { false = 0, true = 1 } bool;
 #else
 #define GCCATTR_NORETURN
 #define GCCATTR_CONST
+#define GCCATTR_PRINTF(m, n)
 
 #define from_type(ft, v) (v)
 #define checked_cast(tt, ft, v) ((tt)(v))
@@ -37,8 +39,8 @@ typedef enum { false = 0, true = 1 } bool;
 ssize_t readfully(int fd, unsigned char * buf, ssize_t len);
 ssize_t writefully(int fd, const unsigned char * buf, ssize_t len);
 
-void fdprintf(int fd, const char * format, ...); /* GCCATTR_PRINTF... */
-void xerrf(const char * format, ...) GCCATTR_NORETURN;
+void fdprintf(int fd, const char * format, ...) GCCATTR_PRINTF(2, 3);
+void xerrf(const char * format, ...) GCCATTR_NORETURN  GCCATTR_PRINTF(1, 2);
 
 /*
  * debug macros.

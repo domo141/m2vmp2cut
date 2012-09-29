@@ -1,11 +1,11 @@
-m2vmp2cut 0.81-wip (2012-09-24)
-===============================
+m2vmp2cut 0.82 (2012-09-30)
+===========================
 
-* m2vmp2cut cli now requires source file/dir as first arg (consistently)
-* Approximate audio levels visualized in m2vcut
-* Added contrib/webm.sh script
-* Demux output files now written to subdirectory in current dir
-* General code improvemenet with no functional change
+* m2vmp2cut cli now requires source file/dir as first arg (consistently).
+* Approximate audio levels visualized in m2vcut.
+* Added contrib/webm.sh script.
+* Demux output files now written to subdirectory in current dir.
+* General code improvemenet with no functional change.
 
 m2vmp2cut 0.78 (2008-11-20) (Lost in transition)
 ================================================

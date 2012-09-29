@@ -18,7 +18,7 @@ EGHDRS=$(TOCCODE:%=ghdrs/%.h)
 
 BINARIES= ../bin/m2vscan ../bin/m2vfilter ../bin/fileparts ../bin/filerotate \
 	../bin/mp2cutpoints ../bin/m2vcut-gui ../bin/m2vtoyuv ../bin/wavgraph \
-	../bin/warpxpointer
+	../bin/warpxpointer ../bin/textdisp
 
 all:	$(BINARIES)
 
@@ -96,6 +96,9 @@ CFLAGS=	-std=c99 -s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
 
 ../bin/warpxpointer: warpxpointer.c
 	sh warpxpointer.c && mv warpxpointer ../bin
+
+../bin/textdisp: textdisp.c
+	sh textdisp.c && mv textdisp ../bin
 
 config/mpeg2.conf: ../tools/chksyslibmpeg.sh ../tools/chklibmpeg-051.sh
 	../tools/chksyslibmpeg.sh || ../tools/chklibmpeg-051.sh ..

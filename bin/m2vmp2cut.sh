@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Mon 24 Sep 2012 19:40:47 EEST too
+# Last modified: Tue 25 Sep 2012 21:47:23 EEST too
 
 set -eu
 case ${1-} in -x) set -x; shift; esac # debug help, passed thru wrapper.
@@ -42,12 +42,16 @@ cmd_lvev6frames () # Legacy m2vmp2cut support; dig cutpoints from ~/.lve/* file
 
 chkindexes ()
 {
-	test -s "$1/video.index" ||
-		$M2VMP2CUT_CMD_PATH/m2vscan "$1/video.m2v" "$1/video.index"
+	test -s "$1/video.index" || {
+		$M2VMP2CUT_CMD_PATH/m2vscan "$1/video.m2v" "$1/video.index.wip"
+		mv "$1/video.index.wip" "$1/video.index"
+	}
 
-	test -s "$1/audio.scan" -a -s "$1/audio.levels" ||
-		$M2VMP2CUT_CMD_PATH/mp2cutpoints \
-			--scan "$1/audio.mp2" "$1/audio.scan" "$1/audio.levels"
+	test -s "$1/audio.scan" -a -s "$1/audio.levels" || {
+		$M2VMP2CUT_CMD_PATH/mp2cutpoints --scan \
+			"$1/audio.mp2" "$1/audio.scan.wip" "$1/audio.levels"
+		mv "$1/audio.scan.wip" "$1/audio.scan"
+	}
 }
 
 getcmds ()

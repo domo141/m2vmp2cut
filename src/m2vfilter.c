@@ -1,5 +1,5 @@
 /*
- * mpgfilter.c
+ * m2vfilter.c
  *
  * Author: Tomi Ollila too ät iki fi
  *
@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Sat Sep 25 16:35:59 EEST 2004 too
- * Last modified: Fri May 09 20:00:26 EEST 2008 too
+ * Last modified: Thu 27 Sep 2012 22:43:13 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -18,6 +18,7 @@
 #include <fcntl.h>
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #define DBGS 0
 #include "x.h"
@@ -128,16 +129,18 @@ static void s__thefilter(ZeroZeroOneBuf * zzob, BufWrite * bw,
 	}
       if (! bufwrite(bw, zzob->data, zzob->len))
 	/* The value written below may not be exact */
-	xerrf("mpg video data write failure after writing %lld bytes:",
-	      zzob->pos + zzob->len);
+	xerrf("mpg video data write failure after writing %jd bytes:",
+	      (intmax_t)zzob->pos + zzob->len);
     }
 
   printf("\n");
   if (! bufwrite_exit(bw))
     /* The value written below may not be exact */
-    xerrf("mpg video data write failure after writing %lld bytes:", zzob->pos);
+    xerrf("mpg video data write failure after writing %jd bytes:",
+	  (intmax_t)zzob->pos);
 
-  fprintf(stderr, "Transferred %ld bytes of mpeg video data.\n", zzob->pos);
+  fprintf(stderr, "Transferred %jd bytes of mpeg video data.\n",
+	  (intmax_t)zzob->pos);
 
   if (fcount == frames)
     fprintf(stderr, "Total frame count %d is what was expected.\n", fcount);

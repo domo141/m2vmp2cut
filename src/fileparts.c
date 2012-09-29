@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Sun Sep 26 08:51:22 EEST 2004 too
- * Last modified: Wed 19 Sep 2012 17:41:54 EEST too
+ * Last modified: Thu 27 Sep 2012 22:31:07 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -17,6 +17,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
@@ -35,7 +36,7 @@ int main(int argc, char ** argv)
   char * ifile;
   int fd;
   char * p;
-  off_t tlen = 0;
+  intmax_t tlen = 0;
   bool quiet = false;
   bool closegop = false;
 
@@ -96,7 +97,7 @@ int main(int argc, char ** argv)
     }
 
   if (! quiet)
-    fprintf(stderr, "fileparts: Transferred %ld bytes of data.\n", tlen);
+    fprintf(stderr, "fileparts: Transferred %jd bytes of data.\n", tlen);
 
   return 0;
 }

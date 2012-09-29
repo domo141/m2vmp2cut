@@ -125,9 +125,9 @@ makedist ()
 		test -d $f && d=/ || {	test -f $d.mod && d=$d.mod
 					ne "$x" '' || p=644; }
 		echo $p root root . $version/$f $d; done
-	} | tools/tarlisted31 -Vz -o $version.tar.gz
+	} | tools/tarlisted32 -VJ -o $version.tar.xz
 
-	echo Created $version.tar.gz
+	echo Created $version.tar.xz
 
 }
 
@@ -145,10 +145,16 @@ cmd_release ()
 	git status | awk ' \
 		/# Changes to be committed/ { print; exit 1 }
 		/# Changed but not updated/ { print; exit 1 }
-		/# Your branch is ahead of/ { print; exit 1 }'
+		/# Changes not staged for commit/ { print; exit 1 }'
+#		/# Your branch is ahead of/ { print; exit 1 }'
 
 	getversion
 	case $VERSION in *wip) die "Version 'wip'. Please update"; esac
+	echo Version $VERSION
+	v=`sed '1d;2q' ANNOUNCE`
+	case $v in "m2vmp2cut $VERSION") ;; *) die ANNOUNCE: fix $v; esac
+	v=`sed '1d;2q' README`
+	case $v in "m2vmp2cut $VERSION") ;; *) die README: fix $v; esac
 	makedist
 }
 
@@ -227,6 +233,7 @@ exit
 #,# src/m2vtoyuv.c
 #,# src/Makefile
 #,# src/mp2cutpoints.c
+#,# src/textdisp.c
 #,# src/warpxpointer.c
 #,# src/wavgraph.c
 #,# src/x.c
@@ -238,6 +245,6 @@ exit
 #,# tools/buildlibmpeg-051.sh x
 #,# tools/chksyslibmpeg.sh x
 #,# tools/chklibmpeg-051.sh x
-#,# tools/tarlisted31.c x
+#,# tools/tarlisted32.c x
 
 #EOF
