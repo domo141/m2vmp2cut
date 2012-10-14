@@ -1,3 +1,4 @@
+
 Keybindings:
 
 Left Arrow:  1 frame backward.
@@ -24,7 +25,5 @@ Backspace: Delete cutpoint under current position (if any)
 qq: Quit, saving cutpoints to file
 
 t: Test output around current/closest cutpoint
-
-a: Show audio graph around current position (deprecating feature)
 
 i: information (about estimated final file size)

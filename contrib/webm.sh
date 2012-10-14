@@ -1,5 +1,5 @@
 #!/bin/sh
-# encode to vp8, vorbis and put into webm (matroska subset) container
+# encode to vp8 video and vorbis audio into webm container
 # -*- mode: shell-script; sh-basic-offset: 8; tab-width: 8 -*-
 # $ webm.sh $
 #
@@ -9,7 +9,7 @@
 #	    All rights reserved
 #
 # Created: Wed 19 Sep 2012 17:24:05 EEST too
-# Last modified: Sat 29 Sep 2012 15:06:11 EEST too
+# Last modified: Fri 12 Oct 2012 16:46:45 EEST too
 
 set -eu
 #set -x
@@ -104,8 +104,19 @@ if ls "$of.wip" >/dev/null 2>&1
 then	die "Work in progress file '$of.wip' exists."
 fi
 
+printtimediff ()
+{
+	st=$1 et=$2; shift 2
+	awk -v s=$st -v e=$et 'BEGIN {
+		t = e - s; h = int(t / 3600); m = int(t / 60) % 60; s = t % 60
+		printf "%s", "'"$*"' "; if (h > 0) printf "%d hours ", h
+		if (m > 0) printf "%d minutes ", m; print s, "seconds"
+	}'
+
+}
 
 m2vmp2cut_bindir=$M2VMP2CUT_CMD_DIRNAME/bin
+m2vmp2cut_cntdir=$M2VMP2CUT_CMD_DIRNAME/contrib
 
 denoisefilt='| yuvdenoise'
 #deintfilter='| yuvdeinterlace -s1' # m2vtoyuv provides "full" frames...
@@ -143,7 +154,7 @@ fifoaudio ()
 }
 fifovideo ()
 {
-	eval "$m2vmp2cut_bindir/getyuv.pl '$src' $filters" > fifo.video.$$ &
+	eval "$m2vmp2cut_cntdir/ffgetyuv.pl $filters" > fifo.video.$$ &
 	vpid=$!
 }
 
@@ -154,17 +165,31 @@ vopts="$vopts $vframes -f webm"
 # -q 2 	~96 	~96 - ~112 	point/lossless 	yes
 aopts="-acodec libvorbis -q:a $aq ${af:+-af $af}"
 
-echo; echo
+eval `date "+sdate='%c' ss=%s"`
+echo
+echo '***' Starting pass1 at $sdate
+echo
 mkfifos fifo.video.$$
 fifovideo
 x ffmpeg -i fifo.video.$$ -pass 1 $vopts -an -y "$of.wip"
 
-echo; echo
+eval `date "+date='%c' ms=%s"`
+echo
+echo '***' Starting pass2 at $date
+echo
 mkfifos fifo.video.$$ fifo.audio.$$
 fifoaudio
 fifovideo
 x ffmpeg -i fifo.video.$$ -i fifo.audio.$$ -pass 2 $vopts $aopts -y "$of.wip"
 
+eval `date "+date='%c' es=%s"`
+echo
+echo Started at $sdate
+printtimediff $ss $ms Pass 1 execution time:
+printtimediff $ms $es Pass 2 execution time:
+printtimediff $ss $es Total execution time:' '
+echo Completed at $date
+echo
 mv "$of".wip "$of"
-
-echo "Result is in '$of'"
+ls -o "$of"
+echo

@@ -13,7 +13,8 @@ export PREFIX
 export PJXJAR
 
 TRG_BINS = m2vcut-gui m2vfilter m2vscan m2vtoyuv mp2cutpoints \
-	fileparts filerotate textdisp wavgraph warpxpointer \
+	fileparts filerotate textdisp \
+	libpreload_ffm2vtoyuv4mpeghax.so \
 	m2vmp2cut.pl m2vmp2cut.sh m2v_catfiltered.py m2v_somehdrinfo.py \
 	wrapper.sh lvev6frames.pl getyuv.pl getmp2.sh m2vmp2cut.pm
 

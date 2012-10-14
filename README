@@ -1,5 +1,5 @@
 
-m2vmp2cut 0.82
+m2vmp2cut 0.84
 
 m2vmp2cut is command-line driven frame accurate (currently PAL) mpeg2
 video (m2v file) with accompanied mp2 audio (mp2 file) cutter.

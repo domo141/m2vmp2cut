@@ -22,7 +22,7 @@
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Wed 26 Sep 2012 13:32:03 EEST too
+ * Last modified: Wed 10 Oct 2012 16:56:13 EEST too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
@@ -1870,6 +1870,7 @@ static void show_info(void)
 		M.mpeg2filename, afp, gfp, allframes, greenframes, null);
 }
 
+#if 0
 static void show_agraph(void)
 {
     char cfs[12], lfs[12];
@@ -1878,6 +1879,7 @@ static void show_agraph(void)
     run_command(m2vmp2cut_command("wrapper.sh"), "m2vcut_agraph",
 		M.mpeg2filename, cfs, lfs, null);
 }
+#endif
 
 gboolean main_window_delete_event(void * w, void * e, void * d)
 {
@@ -1970,7 +1972,7 @@ gboolean on_key_press(GtkWidget * w, GdkEventKey * k,
     case GDK_h: show_help(); break;
     case GDK_i: show_info(); break;
     case GDK_t: test_cutpoint(); break;
-    case GDK_a: show_agraph(); break;
+    //case GDK_a: show_agraph(); break;
 
     case GDK_q:
 	if (prevkey == GDK_q)

@@ -17,10 +17,11 @@ TOCCODE= m2vmp2cut.pl lvev6frames.pl \
 EGHDRS=$(TOCCODE:%=ghdrs/%.h)
 
 BINARIES= ../bin/m2vscan ../bin/m2vfilter ../bin/fileparts ../bin/filerotate \
-	../bin/mp2cutpoints ../bin/m2vcut-gui ../bin/m2vtoyuv ../bin/wavgraph \
-	../bin/warpxpointer ../bin/textdisp
+	../bin/mp2cutpoints ../bin/m2vcut-gui ../bin/m2vtoyuv ../bin/textdisp
 
-all:	$(BINARIES)
+PRELOADS= ../bin/libpreload_ffm2vtoyuv4mpeghax.so
+
+all:	$(BINARIES) $(PRELOADS)
 
 #obj_b/embeds.o: $(EGHDRS)
 
@@ -88,17 +89,22 @@ CFLAGS=	-std=c99 -s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
 	sh m2vcut-gui.c && mv m2vcut-gui ../bin
 #	$(CC) $(CFLAGS) -c $< -o $@
 
-../bin/wavgraph: wavgraph.c obj_b/x.o
-	sh wavgraph.c && mv wavgraph ../bin
+#../bin/wavgraph: wavgraph.c obj_b/x.o
+#	sh wavgraph.c && mv wavgraph ../bin
 
 ../bin/m2vtoyuv: m2vtoyuv.c config/mpeg2.conf
 	sh m2vtoyuv.c && mv m2vtoyuv ../bin
 
-../bin/warpxpointer: warpxpointer.c
-	sh warpxpointer.c && mv warpxpointer ../bin
+#../bin/warpxpointer: warpxpointer.c
+#	sh warpxpointer.c && mv warpxpointer ../bin
 
 ../bin/textdisp: textdisp.c
 	sh textdisp.c && mv textdisp ../bin
+
+../bin/libpreload_ffm2vtoyuv4mpeghax.so: libpreload_ffm2vtoyuv4mpeghax.c
+	sh $<
+	chmod 644 libpreload_ffm2vtoyuv4mpeghax.so
+	mv libpreload_ffm2vtoyuv4mpeghax.so ../bin
 
 config/mpeg2.conf: ../tools/chksyslibmpeg.sh ../tools/chklibmpeg-051.sh
 	../tools/chksyslibmpeg.sh || ../tools/chklibmpeg-051.sh ..
@@ -145,7 +151,7 @@ clean:
 	rm -rf *~ *.o ghdrs obj_m obj_b config
 
 distclean: clean
-	rm -f $(BINARIES) libmpeg2-svn-trunk
+	rm -f $(BINARIES) $(PRELOADS) libmpeg2-svn-trunk
 
 # Embedded scripts follow...
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# re-encode to mpeg2, using mpeg2enc. original mp2 audio is muxed in.
+# re-encode mpeg2 video using mpeg2enc, with original mp2 audio
 #
 # Author: Tomi Ollila -- too ät iki piste fi
 #
@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Mon Aug 18 18:54:24 EEST 2008 too
-# Last modified: Mon Aug 18 20:49:45 EEST 2008 too
+# Last modified: Fri 12 Oct 2012 16:45:39 EEST too
 
 
 case $1 in
@@ -19,8 +19,7 @@ case $1 in
 
  initial version, most of the planned features missing (not much even tested!).
 
- current options: (4:3|16:9) <dir>
-        <dir>: m2vmp2cut-created directory containing source to be encoded
+ current options: (4:3|16:9)
 
  currently fixed bitrate: 2000 kb/s
 
@@ -31,8 +30,7 @@ case $1 in
 .
 exit 0 ;; esac
 
-case $2 in '') exit 1;; esac
-test -d "$2" || exit 2;
+src=$M2VMP2CUT_MEDIA_DIRECTORY
 
 denoisefilt=
 deintfilter=
@@ -42,9 +40,9 @@ filters="$denoisefilt $deintfilter"
 trap "rm -f fifo.video.$$ fifo.audio.$$" 0
 mkfifo fifo.video.$$ fifo.audio.$$
 
-$M2VMP2CUT_CMD_DIRNAME/bin/getmp2.sh "$2" > fifo.audio.$$ &
+$M2VMP2CUT_CMD_DIRNAME/bin/getmp2.sh "$src" > fifo.audio.$$ &
 
-eval "$M2VMP2CUT_CMD_DIRNAME/bin/getyuv.pl '$2' $filters" | \
+eval "$M2VMP2CUT_CMD_DIRNAME/contrib/ffgetyuv.pl $filters" | \
 	mpeg2enc -f 3 -a $a -b 2000 -R 2 -K kvcd -s -o fifo.video.$$ 2>&1 &
 
 mplex -f 8 -o out.mpg fifo.video.$$ fifo.audio.$$

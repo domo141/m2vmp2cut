@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Tue 25 Sep 2012 21:47:23 EEST too
+# Last modified: Fri 12 Oct 2012 16:47:06 EEST too
 
 set -eu
 case ${1-} in -x) set -x; shift; esac # debug help, passed thru wrapper.
@@ -20,7 +20,7 @@ usage () {
 	warn; die Usage: m2vmp2cut '(file|directory)' $cmd "$@"
 }
 
-x () { echo + "$@"; "$@"; }
+x () { echo + "$@" >&2; "$@"; }
 
 M2VMP2CUT_CMD_PATH=`cd \`dirname "$0"\`; pwd`
 case $M2VMP2CUT_CMD_PATH in
@@ -35,8 +35,12 @@ cmd_vermatch ()
 	case $1 in 6) exit 0 ;; *) exit 1 ;; esac
 }
 
-cmd_lvev6frames () # Legacy m2vmp2cut support; dig cutpoints from ~/.lve/* file
+cmd_lvev6frames () ## Legacy m2vmp2cut support; dig cutpoints from ~/.lve/*
 {
+	case ${1-} in '!') ;; *)
+		warn; warn "'lvev6frames' is deprecated command"
+		die "to use this add '!' to the command line"
+	esac
 	$M2VMP2CUT_CMD_PATH/lvev6frames.pl
 }
 
@@ -196,7 +200,7 @@ cmd_contrib () # Contrib material, encoding scripts etc...
 		do
 			case $line in *~) continue; esac
 			sed -n '2 { s/./ '"$line"'                    /
-				    s/\(.\{12\}\) */\1/p; q; }' $line
+				    s/\(.\{15\}\) */\1/p; q; }' $line
 		done
 		echo; exit 0
 	esac
@@ -286,14 +290,15 @@ esac
 # ---
 
 case ${1-} in '')
-	bn=`basename "$0" .sh`
+	bn=`exec basename "$0" .sh`
 	echo
 	echo Usage: $bn '[-batch] (file|directory) <command> [args]'
 	echo
 	echo $bn commands available:
 	echo
-	sed -n '/^cmd_[a-z0-9_]/ { s/cmd_/ /; s/ () [ -#]*/                   /
-		s/$0/'"`exec basename "$0"`"'/; s/\(.\{14\}\) */\1/p; }' "$0"
+	sed -n '/^cmd_[a-z0-9_].*() *#[^#]/ { s/cmd_/ /;
+		s/ () [ -#]*/                   /
+		s/$0/'"$bn"'/; s/\(.\{14\}\) */\1/p; }' "$0"
 	echo
 	echo Command can be abbreviated to any unambiguous prefix.
 	echo
@@ -333,11 +338,13 @@ exit
 
 # fixme: move these to separate doc file (w/ locale extension)
 
-#h lvev6frames: lvev6frames (no options)
+#h lvev6frames: lvev6frames !
 #h lvev6frames:
-#h lvev6frames: Old versions of m2vmp2cut supported using lve-generated
-#h lvev6frames: "edit lists" for cutpoint information. With lvev6frames
-#h lvev6frames: these old edits can be used with this m2vmp2cut version
+#h lvev6frames: Old versions of m2vmp2cut supported using  lve-generated
+#h lvev6frames: "edit lists" for cutpoint information.  With lvev6frames
+#h lvev6frames: these old edits can be used with this m2vmp2cut version.
+#h lvev6frames: This is deprecated feature. To use this the '!' needs to
+#h lvev6frames: be added to the command line.
 #h lvev6frames:
 
 #h demux: demux [projectx options]

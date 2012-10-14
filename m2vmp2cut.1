@@ -19,13 +19,7 @@ The file/directory argument points which content is to be processed.
 directory is resolved from file name if file argument is given.
 
 .TP
-.B lvev6frames
-Old versions of m2vmp2cut supported using lve-generated "edit lists"
-for cutpoint information.
-With lvev6frames these old edits can be used with this m2vmp2cut
-version.
-.TP
-\fBdemux\fP
+\fBdemux\fP [\fIProjectX option\fP...]
 .B M2vmp2cut
 requires mpeg files to be demuxed to elementary streams before
 cutting.
@@ -36,6 +30,8 @@ A separate directory (based on source filename) is created for output
 files.
 Note that this doubles the disk usage of a particular source file.
 (Not yet counting the space needed for the final output file.)
+\fIProjectX option\fPs may contain e.g. more filenames to be demuxed
+into output streams.
 .TP
 \fBselect\fP
 This command uses new

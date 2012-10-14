@@ -83,6 +83,12 @@ cmd_install ()
 	do	test -f $f || die "'$f' missing"
 	done
 
+	case $VERSION in *wip*)
+		if test -d .git
+		then	VERSION=$VERSION-g`git log -1 --format=format:%h`
+		fi
+	esac
+
 	echo; echo Begin installation.; echo
 	rm -rf $PREFIX/lib/m2vmp2cut-$VERSION
 	x mkdir -m 755 -p $PREFIX
@@ -133,9 +139,12 @@ makedist ()
 
 cmd_snapshot ()
 {
+	# XXX any git suffices ;/
+	test -d .git || die "Snapshotting only from git working copies"
 	VERSION=`sed 's/^m2vmp2cut *//; s/ .*//; q' NEWS`
 	case $VERSION in 'wip') VERSION=`date +"snap-%Y%m%d-%H"` ;;
-		*-wip) ;; *) die "Snapshotting only 'wip' versions"
+		*-wip) VERSION=$VERSION-g`git log -1 --format=format:%h` ;;
+		*) die "Snapshotting only 'wip' versions"
 	esac
 	makedist
 }

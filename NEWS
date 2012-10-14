@@ -1,3 +1,12 @@
+m2vmp2cut 0.84 (2012-10-14)
+===========================
+
+* Added contrib/ffgetyuv.pl which uses ffmpeg to decode m2v input.
+* Contrib scripts use ffgetyuv.pl for some m2v error concealment.
+* Hid deprecated m2vmp2cut lvev6frames feature.
+* Removed obsoleted 'a' (show agraph) feature from select GUI.
+* Some small usage/doc improvements.
+
 m2vmp2cut 0.82 (2012-09-30)
 ===========================
 
@@ -7,8 +16,8 @@ m2vmp2cut 0.82 (2012-09-30)
 * Demux output files now written to subdirectory in current dir.
 * General code improvemenet with no functional change.
 
-m2vmp2cut 0.78 (2008-11-20) (Lost in transition)
-================================================
+m2vmp2cut 0.78 (2009-11-20) (Lost and Found)
+============================================
 
 * If 'projectx' command is found (in PATH), that is used.
 * Demux can demux multiple files.

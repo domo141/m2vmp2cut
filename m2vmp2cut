@@ -4,4 +4,4 @@
 
 case ${1-} in '') echo; echo m2vmp2cut inplace wrapper:
 esac
-exec ./bin/m2vmp2cut.sh "$@"
+exec "`dirname "$0"`"/bin/m2vmp2cut.sh "$@"
