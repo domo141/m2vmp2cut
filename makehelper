@@ -96,18 +96,21 @@ cmd_install ()
 		LIBEXECDIR=$PREFIX/lib/m2vmp2cut-$VERSION
 	fi
 
+	D_PREFIX=${DESTDIR-}$PREFIX
+	D_LIBEXECDIR=${DESTDIR-}$LIBEXECDIR
+
 	echo; echo Begin installation.; echo
-	rm -rf $LIBEXECDIR
-	x mkdir -m 755 -p $LIBEXECDIR
-	test -d $PREFIX || x mkdir -m 755 -p $PREFIX
+	rm -rf "$D_LIBEXECDIR"
+	x mkdir -m 755 -p "$D_LIBEXECDIR"
+	test -d "$D_PREFIX" || x mkdir -m 755 -p "$D_PREFIX"
 
-	mkmissingdirs $LIBEXECDIR/bin $LIBEXECDIR/doc $LIBEXECDIR/contrib
-	mkmissingdirs $PREFIX/bin
+	mkmissingdirs "$D_PREFIX"/bin \
+		"$D_LIBEXECDIR"/bin "$D_LIBEXECDIR"/doc "$D_LIBEXECDIR"/contrib
 
-	x cp $1 $LIBEXECDIR/bin
-	x cp $2 $LIBEXECDIR/doc
-	x cp contrib/* $LIBEXECDIR/contrib
-	exec 3> $PREFIX/bin/m2vmp2cut.wip
+	x cp $1 "$D_LIBEXECDIR"/bin
+	x cp $2 "$D_LIBEXECDIR"/doc
+	x cp contrib/* "$D_LIBEXECDIR"/contrib
+	exec 3> "$D_PREFIX"/bin/m2vmp2cut.wip
 	case $VERSION in wip) verinfo="$VERSION (installed `date +%Y-%m-%d`)"
 	;;	*) verinfo=$VERSION
 	esac
@@ -116,13 +119,13 @@ cmd_install ()
 	echo 'esac' >&3
 	echo "exec $LIBEXECDIR/bin/m2vmp2cut.sh"' "$@"' >&3
 	exec 3>&-
-	chmod 755 $PREFIX/bin/m2vmp2cut.wip
-	mv $PREFIX/bin/m2vmp2cut.wip $PREFIX/bin/m2vmp2cut
+	chmod 755 "$D_PREFIX"/bin/m2vmp2cut.wip
+	mv "$D_PREFIX"/bin/m2vmp2cut.wip "$D_PREFIX"/bin/m2vmp2cut
 	echo wrote $PREFIX/bin/m2vmp2cut
 
 	if ne "${PJXJAR-}" ''
 	then
-		x ln -s $PJXJAR $LIBEXECDIR/bin/ProjectX.jar
+		x ln -s $PJXJAR "$D_LIBEXECDIR"/bin/ProjectX.jar
 	fi
 	echo; echo Installation done.; echo
 }
