@@ -10,6 +10,7 @@ all: ALWAYS
 
 # From command line to subproceses...
 export PREFIX
+export LIBEXECDIR
 export PJXJAR
 
 TRG_BINS = m2vcut-gui m2vfilter m2vscan m2vtoyuv mp2cutpoints \
