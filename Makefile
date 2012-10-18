@@ -5,7 +5,7 @@
 .SUFFIXES:
 
 all: ALWAYS
-	cd src && make all
+	make -C src all
 	@echo; echo Build done.; echo
 
 # From command line to subproceses...
@@ -15,6 +15,8 @@ PREFIX =
 export PREFIX
 LIBEXECDIR =
 export LIBEXECDIR
+DATAROOTDIR =
+export DATAROOTDIR
 PJXJAR =
 export PJXJAR
 

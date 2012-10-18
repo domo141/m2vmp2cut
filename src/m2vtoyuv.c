@@ -5,9 +5,9 @@ set -e; TRG=`basename $0 .c`; rm -f "$TRG"
  WARN=$WARN' -W -Wwrite-strings -Wcast-qual -Wshadow' # -Wconversion
  eval `cat config/mpeg2.conf`
  XF="$mpeg2_only -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
- set -x
- #${CC:-gcc} -ggdb $WARN "$@" -o "$TRG" "$0" $XF
- exec ${CC:-gcc} --std=c99 -O2 $WARN "$@" -o "$TRG" "$0" $XF
+ case ${1-} in '') set x -O2; shift; esac
+ #case ${1-} in '') set x -ggdb; shift; esac
+ set -x; exec ${CC:-gcc} --std=c99 $WARN "$@" -o "$TRG" "$0" $XF
  exit 0
  */
 #endif
@@ -20,7 +20,7 @@ set -e; TRG=`basename $0 .c`; rm -f "$TRG"
  *	    All rights reserved
  *
  * Created: Fri Feb 08 17:16:45 EET 2008 too
- * Last modified: Thu 27 Sep 2012 23:32:11 EEST too
+ * Last modified: Mon 15 Oct 2012 16:25:01 EEST too
  */
 
 /* this program is originally based on:

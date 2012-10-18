@@ -65,7 +65,9 @@ LF_OPTS= -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
 #CFLAGS= -ggdb $(LF_OPTS) $(WOPTS) $(INCLS)
 #CFLAGS=	-s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
-CFLAGS=	-std=c99 -s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
+CFLAGS=	-std=c99 $(OPTFLAGS) $(LF_OPTS) $(WOPTS) $(INCLS)
+
+OPTFLAGS=-s -O3
 
 ../bin/m2vmp2cut.bin: $(OBJS)
 	$(CC) -o $@ $(OBJS)
@@ -86,23 +88,26 @@ CFLAGS=	-std=c99 -s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
 	$(CC) -o $@ obj_b/filerotate.o obj_b/x.o
 
 ../bin/m2vcut-gui: m2vcut-gui.c config/mpeg2.conf
-	sh m2vcut-gui.c && mv m2vcut-gui ../bin
+	sh m2vcut-gui.c $(OPTFLAGS)
+	mv m2vcut-gui ../bin
 #	$(CC) $(CFLAGS) -c $< -o $@
 
 #../bin/wavgraph: wavgraph.c obj_b/x.o
 #	sh wavgraph.c && mv wavgraph ../bin
 
 ../bin/m2vtoyuv: m2vtoyuv.c config/mpeg2.conf
-	sh m2vtoyuv.c && mv m2vtoyuv ../bin
+	sh m2vtoyuv.c $(OPTFLAGS)
+	mv m2vtoyuv ../bin
 
 #../bin/warpxpointer: warpxpointer.c
 #	sh warpxpointer.c && mv warpxpointer ../bin
 
 ../bin/textdisp: textdisp.c
-	sh textdisp.c && mv textdisp ../bin
+	sh textdisp.c $(OPTFLAGS)
+	mv textdisp ../bin
 
 ../bin/libpreload_ffm2vtoyuv4mpeghax.so: libpreload_ffm2vtoyuv4mpeghax.c
-	sh $<
+	sh $< $(OPTFLAGS)
 	chmod 644 libpreload_ffm2vtoyuv4mpeghax.so
 	mv libpreload_ffm2vtoyuv4mpeghax.so ../bin
 

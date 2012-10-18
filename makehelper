@@ -24,13 +24,6 @@ needvar ()
 	return 0
 }
 
-mkmissingdirs ()
-{
-	for d
-	do	test -d "$d" || x mkdir -m 755 "$d"
-	done
-}
-
 getcmds ()
 {
 	cmds=`env which projectx java mplex 2>/dev/null | tr '\012' :`
@@ -96,24 +89,36 @@ cmd_install ()
 		LIBEXECDIR=$PREFIX/lib/m2vmp2cut-$VERSION
 	fi
 
+	if ne "${DATAROOTDIR-}" ''
+	then
+		needvar DATAROOTDIR # variable content check (spaces...)
+		DOCDIR=$DATAROOTDIR/doc/m2vmp2cut-$VERSION
+	else
+		DOCDIR=$LIBEXECDIR/doc
+	fi
+
 	D_PREFIX=${DESTDIR-}$PREFIX
 	D_LIBEXECDIR=${DESTDIR-}$LIBEXECDIR
+	D_DOCDIR=${DESTDIR-}$DOCDIR
 
 	echo; echo Begin installation.; echo
 	rm -rf "$D_LIBEXECDIR"
 	x mkdir -m 755 -p "$D_LIBEXECDIR"
 	test -d "$D_PREFIX" || x mkdir -m 755 -p "$D_PREFIX"
 
-	mkmissingdirs "$D_PREFIX"/bin \
-		"$D_LIBEXECDIR"/bin "$D_LIBEXECDIR"/doc "$D_LIBEXECDIR"/contrib
+	test -d "$D_PREFIX"/bin || x mkdir -m 755 "$D_PREFIX"/bin
+	x mkdir -m 755 "$D_LIBEXECDIR"/bin "$D_LIBEXECDIR"/contrib
+
+	x mkdir -m 755 -p "$D_DOCDIR" # no test as docdir seldom exists...
+	test -d "$D_LIBEXECDIR"/doc || x ln -s "$DOCDIR" "$D_LIBEXECDIR"/doc
 
 	x cp $1 "$D_LIBEXECDIR"/bin
-	x cp $2 "$D_LIBEXECDIR"/doc
+	x cp $2 "$D_DOCDIR"
 	x cp contrib/* "$D_LIBEXECDIR"/contrib
-	exec 3> "$D_PREFIX"/bin/m2vmp2cut.wip
 	case $VERSION in wip) verinfo="$VERSION (installed `date +%Y-%m-%d`)"
 	;;	*) verinfo=$VERSION
 	esac
+	exec 3> "$D_PREFIX"/bin/m2vmp2cut.wip
 	echo '#!/bin/sh' >&3
 	echo 'case ${1-} in'" '') echo; echo 'm2vmp2cut version $verinfo'" >&3
 	echo 'esac' >&3
@@ -243,6 +248,7 @@ exit
 #,# src/bufwrite.h
 #,# src/fileparts.c
 #,# src/filerotate.c
+#,# src/libpreload_ffm2vtoyuv4mpeghax.c
 #,# src/m2vcut-gui.c
 #,# src/m2vfilter.c
 #,# src/m2vscan.c
@@ -250,8 +256,6 @@ exit
 #,# src/Makefile
 #,# src/mp2cutpoints.c
 #,# src/textdisp.c
-#,# src/warpxpointer.c
-#,# src/wavgraph.c
 #,# src/x.c
 #,# src/x.h
 #,# src/zzob.c

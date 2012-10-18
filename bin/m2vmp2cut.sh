@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Fri 12 Oct 2012 16:47:06 EEST too
+# Last modified: Thu 18 Oct 2012 17:53:10 EEST too
 
 set -eu
 case ${1-} in -x) set -x; shift; esac # debug help, passed thru wrapper.
@@ -117,8 +117,17 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 	then	die "Directory '$dir' is on the way (demuxed already)?"
 	fi
 	mkdir "$dir"
-	x $pjx -ini /dev/null -out "$dir" -name in "$file" "$@"
+	# for future use, perhaps...
+	echo 'SubtitlePanel.SubtitleExportFormat=SRT' > "$dir"/X.ini
+	echo 'SubtitlePanel.SubtitleExportFormat_2=SON' >> "$dir"/X.ini
+	echo 'SubtitlePanel.exportAsVobSub=1' >> "$dir"/X.ini
+	x $pjx -ini "$dir"/X.ini -out "$dir" -name in "$file" "$@"
 	cd "$dir"
+	if test -f in.son
+	then
+		mkdir in_sp
+		mv *.son *.sup *.sup.* *.spf *.bmp in_sp 2>/dev/null || :
+	fi
 
 #	ac3=`ls *.ac3 2>/dev/null`
 	mp2=`ls *.mp2 2>/dev/null`

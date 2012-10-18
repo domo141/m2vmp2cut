@@ -7,7 +7,8 @@
 	WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
 	WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
 	set -xeu
-	gcc -fPIC -rdynamic -std=c99 -O2 -c $WARN "$0" -o "$bn.o" -DDBG=0 \
+	case ${1-} in '') set x -O2; shift; esac
+	gcc -fPIC -rdynamic -std=c99 "$@" -c $WARN "$0" -o "$bn.o" -DDBG=0 \
 		-DARCHOS="\"$archos\"" -DLIBC_SO="\"$libc_so\""
 	gcc -shared -Wl,-soname,$lbn.so -o $lbn.so $bn.o -lc -ldl
 	#gcc -fPIC -rdynamic -g -c $WARN "$0" -o "$bn.o" -DDBG=1 \
@@ -25,7 +26,7 @@
  *	    All rights reserved
  *
  * Created: Tue 09 Oct 2012 17:19:48 EEST too
- * Last modified: Tue 09 Oct 2012 22:10:11 EEST too
+ * Last modified: Mon 15 Oct 2012 16:28:18 EEST too
  */
 /*
  * Compile this as: sh libpreload_ffm2vtoyuv4mpeghax.c
