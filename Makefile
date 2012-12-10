@@ -20,12 +20,12 @@ export DATAROOTDIR
 PJXJAR =
 export PJXJAR
 
-
-TRG_BINS = m2vcut-gui m2vfilter m2vscan m2vtoyuv mp2cutpoints \
-	fileparts filerotate textdisp \
+TRG_BINS = m2vcut-gui m2vfilter m2vscan m2vtoyuv mp2cutpoints m2vstream \
+	assel-gui fileparts filerotate textdisp pgssupout \
 	libpreload_ffm2vtoyuv4mpeghax.so \
 	m2vmp2cut.pl m2vmp2cut.sh m2v_catfiltered.py m2v_somehdrinfo.py \
-	wrapper.sh lvev6frames.pl getyuv.pl getmp2.sh m2vmp2cut.pm
+	wrapper.sh lvev6frames.pl getyuv.pl getmp2.sh m2vmp2cut.pm \
+	pxsuptime.py assel.pl
 
 TRG_DOCS = Examples m2vcut_help-default m2vcut_help-fi_FI Options Usage
 
@@ -34,9 +34,16 @@ install: all
 
 release: tools/tarlisted32
 	./makehelper release
+	@echo Remember to do test build from the release archive.
 
 snapshot: tools/tarlisted32
 	./makehelper snapshot
+	@echo Remember to do test build from the snapshot archive.
+
+P =
+N =
+diffa:
+	./makehelper diffa $P $N
 
 tools/tarlisted32:
 	cd tools && sh tarlisted32.c

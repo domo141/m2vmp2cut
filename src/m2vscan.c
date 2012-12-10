@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Sun Sep 26 13:23:29 EEST 2004 too
- * Last modified: Thu 27 Sep 2012 23:17:38 EEST too
+ * Last modified: Wed 24 Oct 2012 17:57:35 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -38,8 +38,8 @@ int main(int argc, char ** argv)
   int ifd, ofd;
   struct stat st;
 
-  if (argc < 3) // XXX to be fixed
-    xerrf("argc < 3\n");
+  if (argc != 3)
+    xerrf("Usage: %s ifile ofile\n", argv[0]);
 
   ifile = argv[1];
   ofile = argv[2];
@@ -190,10 +190,11 @@ static void s__scan(int ifd, int ofd,
 	}
     }
 
+  long abr = pictures? (long)(zzob.pos / (pictures / 25) * 8): 0;
+
   fprintf(ofh, "%d\n", pictures - goppic);
   fprintf(ofh, "end: size %jd frames %d gops %d abr %ld  w %d h %d\n",
-	  (intmax_t)zzob.pos, pictures, ++gops,
-	  (long)(zzob.pos / (pictures / 25) * 8), maxwidth, maxheight);
+	  (intmax_t)zzob.pos, pictures, ++gops, abr, maxwidth, maxheight);
   printf("\r- Scanning video at %jd of %jd (100%%).\n",
 	 (intmax_t)zzob.pos, (intmax_t)fsize);
   exit(0);

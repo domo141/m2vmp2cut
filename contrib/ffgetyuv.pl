@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Sun Aug 03 20:11:33 EEST 2008 too (as getyuv.pl)
-# Last modified: Fri 12 Oct 2012 16:46:51 EEST too
+# Last modified: Wed 31 Oct 2012 16:41:41 EET too
 #
 
 use 5.8.1;
@@ -20,7 +20,7 @@ use lib $LIBPATH;
 use m2vmp2cut;
 
 my $dir = $ENV{M2VMP2CUT_MEDIA_DIRECTORY};
-my $bdir = $ENV{M2VMP2CUT_CMD_DIRNAME} . '/bin';
+my $bindir = $ENV{M2VMP2CUT_CMD_PATH};
 
 my $videofile = "$dir/video.m2v"; needfile $videofile;
 my $indexfile = "$dir/video.index"; needfile $indexfile;
@@ -59,7 +59,7 @@ close I;
 delete $ENV{GNOME_KEYRING_CONTROL};
 delete $ENV{DROP_YUV4MPEG_HEADER};
 
-$ENV{LD_PRELOAD} = $bdir . '/libpreload_ffm2vtoyuv4mpeghax.so';
+$ENV{LD_PRELOAD} = $bindir . '/libpreload_ffm2vtoyuv4mpeghax.so';
 
 open STDIN, '<', $videofile or die $!;
 foreach (@opts) {

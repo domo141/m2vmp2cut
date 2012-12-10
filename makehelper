@@ -85,36 +85,40 @@ cmd_install ()
 	if ne "${LIBEXECDIR-}" ''
 	then
 		needvar LIBEXECDIR # variable content check (spaces...)
+		M2VMP2CUTDIR=$LIBEXECDIR/m2vmp2cut-$VERSION
 	else
-		LIBEXECDIR=$PREFIX/lib/m2vmp2cut-$VERSION
+		case $PREFIX in /usr|/usr/|/usr/local|/usr/local/) lib=libexec
+			;; *) lib=lib; esac
+		M2VMP2CUTDIR=$PREFIX/$lib/m2vmp2cut-$VERSION
 	fi
+	unset LIBEXECDIR
 
 	if ne "${DATAROOTDIR-}" ''
 	then
 		needvar DATAROOTDIR # variable content check (spaces...)
-		DOCDIR=$DATAROOTDIR/doc/m2vmp2cut-$VERSION
+		DATADIR=$DATAROOTDIR/m2vmp2cut-$VERSION
 	else
-		DOCDIR=$LIBEXECDIR/doc
+		DATADIR=$M2VMP2CUTDIR/doc
 	fi
+	unset DATAROOTDIR
 
 	D_PREFIX=${DESTDIR-}$PREFIX
-	D_LIBEXECDIR=${DESTDIR-}$LIBEXECDIR
-	D_DOCDIR=${DESTDIR-}$DOCDIR
+	D_M2VMP2CUTDIR=${DESTDIR-}$M2VMP2CUTDIR
+	D_DATADIR=${DESTDIR-}$DATADIR
 
 	echo; echo Begin installation.; echo
-	rm -rf "$D_LIBEXECDIR"
-	x mkdir -m 755 -p "$D_LIBEXECDIR"
+	rm -rf "$D_M2VMP2CUTDIR"
+	x mkdir -m 755 -p "$D_M2VMP2CUTDIR"
 	test -d "$D_PREFIX" || x mkdir -m 755 -p "$D_PREFIX"
 
 	test -d "$D_PREFIX"/bin || x mkdir -m 755 "$D_PREFIX"/bin
-	x mkdir -m 755 "$D_LIBEXECDIR"/bin "$D_LIBEXECDIR"/contrib
+	x mkdir -m 755 "$D_M2VMP2CUTDIR"/bin "$D_M2VMP2CUTDIR"/contrib
 
-	x mkdir -m 755 -p "$D_DOCDIR" # no test as docdir seldom exists...
-	test -d "$D_LIBEXECDIR"/doc || x ln -s "$DOCDIR" "$D_LIBEXECDIR"/doc
-
-	x cp $1 "$D_LIBEXECDIR"/bin
-	x cp $2 "$D_DOCDIR"
-	x cp contrib/* "$D_LIBEXECDIR"/contrib
+	x mkdir -m 755 -p "$D_DATADIR" # no test as datadir seldom exists...
+	test -d "$D_M2VMP2CUTDIR"/doc || x ln -s "$DATADIR" "$D_M2VMP2CUTDIR"/doc
+	x cp $1 "$D_M2VMP2CUTDIR"/bin
+	x cp $2 "$D_DATADIR"
+	x cp contrib/* "$D_M2VMP2CUTDIR"/contrib
 	case $VERSION in wip) verinfo="$VERSION (installed `date +%Y-%m-%d`)"
 	;;	*) verinfo=$VERSION
 	esac
@@ -122,7 +126,7 @@ cmd_install ()
 	echo '#!/bin/sh' >&3
 	echo 'case ${1-} in'" '') echo; echo 'm2vmp2cut version $verinfo'" >&3
 	echo 'esac' >&3
-	echo "exec $LIBEXECDIR/bin/m2vmp2cut.sh"' "$@"' >&3
+	echo "exec $M2VMP2CUTDIR/bin/m2vmp2cut.sh"' "$@"' >&3
 	exec 3>&-
 	chmod 755 "$D_PREFIX"/bin/m2vmp2cut.wip
 	mv "$D_PREFIX"/bin/m2vmp2cut.wip "$D_PREFIX"/bin/m2vmp2cut
@@ -130,7 +134,7 @@ cmd_install ()
 
 	if ne "${PJXJAR-}" ''
 	then
-		x ln -s $PJXJAR "$D_LIBEXECDIR"/bin/ProjectX.jar
+		x ln -s $PJXJAR "$D_M2VMP2CUTDIR"/bin/ProjectX.jar
 	fi
 	echo; echo Installation done.; echo
 }
@@ -179,6 +183,17 @@ cmd_release ()
 	makedist
 }
 
+cmd_diffa ()
+{
+	getversion
+	case ${1-} in '') die Usage: make diffa P=prevver; esac
+	case ${2-} in '') set $1 $VERSION; esac
+	x test -f m2vmp2cut-$1.tar.xz
+	x test -f m2vmp2cut-$2.tar.xz
+	diffa.sh 88 m2vmp2cut-$1.tar.xz m2vmp2cut-$2.tar.xz > diff-$1-$2.html
+}
+
+
 cmd_ ()
 {
 	warn Usage: $0 command [args...]
@@ -222,6 +237,7 @@ exit
 #,# README
 
 #,# bin
+#,# bin/assel.pl x
 #,# bin/getmp2.sh x
 #,# bin/getyuv.pl x
 #,# bin/lvev6frames.pl x
@@ -244,6 +260,7 @@ exit
 #,# doc/Usage
 
 #,# src
+#,# src/assel-gui.c
 #,# src/bufwrite.c
 #,# src/bufwrite.h
 #,# src/fileparts.c

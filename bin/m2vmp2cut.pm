@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Sun Aug 03 20:12:37 EEST 2008 too
-# Last modified: Wed Aug 06 18:36:18 EEST 2008 too
+# Last modified: Fri 26 Oct 2012 19:16:02 EEST too
 #
 
 use strict;
@@ -108,5 +108,11 @@ sub palframe2timecode($$)
     return sprintf "%02d.%03d", $s, $ms;
 }
 
+sub xfork()
+{
+    my $pid = fork;
+    die "fork() failed: $!\n" unless defined $pid;
+    return $pid;
+}
 
 1;

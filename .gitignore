@@ -1,0 +1,12 @@
+bin/assel-gui
+bin/fileparts
+bin/filerotate
+bin/libpreload_ffm2vtoyuv4mpeghax.so
+bin/m2vcut-gui
+bin/m2vfilter
+bin/m2vscan
+bin/m2vstream
+bin/m2vtoyuv
+bin/mp2cutpoints
+bin/pgssupout
+bin/textdisp

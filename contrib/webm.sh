@@ -9,7 +9,7 @@
 #	    All rights reserved
 #
 # Created: Wed 19 Sep 2012 17:24:05 EEST too
-# Last modified: Fri 12 Oct 2012 16:46:45 EEST too
+# Last modified: Wed 31 Oct 2012 16:50:16 EET too
 
 set -eu
 #set -x
@@ -41,6 +41,9 @@ case ~ in
 ;;
 *)	getval () { val=${1#*=}; }
 esac
+
+test -f "$M2VMP2CUT_MEDIA_DIRECTORY"/video.m2v ||
+	die "'$M2VMP2CUT_MEDIA_DIRECTORY/video.m2v' missing"
 
 aspect= vframes= vbs=1042k aq=2 vf= af=
 of=out.webm
@@ -115,8 +118,8 @@ printtimediff ()
 
 }
 
-m2vmp2cut_bindir=$M2VMP2CUT_CMD_DIRNAME/bin
-m2vmp2cut_cntdir=$M2VMP2CUT_CMD_DIRNAME/contrib
+m2vmp2cut_bindir=$M2VMP2CUT_CMD_PATH
+m2vmp2cut_cntdir=$M2VMP2CUT_CONTRIB_PATH
 
 denoisefilt='| yuvdenoise'
 #deintfilter='| yuvdeinterlace -s1' # m2vtoyuv provides "full" frames...

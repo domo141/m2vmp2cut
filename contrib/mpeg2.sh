@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Mon Aug 18 18:54:24 EEST 2008 too
-# Last modified: Fri 12 Oct 2012 16:45:39 EEST too
+# Last modified: Wed 31 Oct 2012 16:42:11 EET too
 
 
 case $1 in
@@ -40,9 +40,9 @@ filters="$denoisefilt $deintfilter"
 trap "rm -f fifo.video.$$ fifo.audio.$$" 0
 mkfifo fifo.video.$$ fifo.audio.$$
 
-$M2VMP2CUT_CMD_DIRNAME/bin/getmp2.sh "$src" > fifo.audio.$$ &
+$M2VMP2CUT_CMD_PATH/getmp2.sh "$src" > fifo.audio.$$ &
 
-eval "$M2VMP2CUT_CMD_DIRNAME/contrib/ffgetyuv.pl $filters" | \
+eval "$M2VMP2CUT_CONTRIB_PATH/ffgetyuv.pl $filters" | \
 	mpeg2enc -f 3 -a $a -b 2000 -R 2 -K kvcd -s -o fifo.video.$$ 2>&1 &
 
 mplex -f 8 -o out.mpg fifo.video.$$ fifo.audio.$$

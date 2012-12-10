@@ -3,7 +3,7 @@
 
 # XXX mixed code from old & new system. to be fixed later (maybe)
 
-MSRCS=	m2vscan.c m2vfilter.c fileparts.c mp2cutpoints.c \
+MSRCS=	m2vscan.c m2vfilter.c m2vstream.c fileparts.c mp2cutpoints.c \
 	zzob.c filerotate.c bufwrite.c x.c
 
 SRCS=	$(MSRCS) #embeds.c
@@ -16,8 +16,10 @@ TOCCODE= m2vmp2cut.pl lvev6frames.pl \
 
 EGHDRS=$(TOCCODE:%=ghdrs/%.h)
 
-BINARIES= ../bin/m2vscan ../bin/m2vfilter ../bin/fileparts ../bin/filerotate \
-	../bin/mp2cutpoints ../bin/m2vcut-gui ../bin/m2vtoyuv ../bin/textdisp
+BINS=	m2vscan m2vfilter m2vstream fileparts filerotate \
+	mp2cutpoints assel-gui m2vcut-gui m2vtoyuv textdisp pgssupout
+
+BINARIES= $(BINS:%=../bin/%)
 
 PRELOADS= ../bin/libpreload_ffm2vtoyuv4mpeghax.so
 
@@ -63,8 +65,6 @@ CC=gcc
 
 LF_OPTS= -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
 
-#CFLAGS= -ggdb $(LF_OPTS) $(WOPTS) $(INCLS)
-#CFLAGS=	-s -O3 $(LF_OPTS) $(WOPTS) $(INCLS)
 CFLAGS=	-std=c99 $(OPTFLAGS) $(LF_OPTS) $(WOPTS) $(INCLS)
 
 OPTFLAGS=-s -O3
@@ -78,6 +78,9 @@ OPTFLAGS=-s -O3
 ../bin/m2vfilter: $(OBJS)
 	$(CC) -o $@ obj_b/m2vfilter.o obj_b/zzob.o obj_b/x.o obj_b/bufwrite.o
 
+../bin/m2vstream: $(OBJS)
+	$(CC) -o $@ obj_b/m2vstream.o obj_b/zzob.o obj_b/x.o obj_b/bufwrite.o
+
 ../bin/mp2cutpoints: $(OBJS)
 	$(CC) -o $@ obj_b/mp2cutpoints.o obj_b/x.o -lm
 
@@ -86,6 +89,11 @@ OPTFLAGS=-s -O3
 
 ../bin/filerotate: $(OBJS)
 	$(CC) -o $@ obj_b/filerotate.o obj_b/x.o
+
+../bin/assel-gui: assel-gui.c
+	sh assel-gui.c $(OPTFLAGS)
+	mv assel-gui ../bin
+#	$(CC) $(CFLAGS) -c $< -o $@
 
 ../bin/m2vcut-gui: m2vcut-gui.c config/mpeg2.conf
 	sh m2vcut-gui.c $(OPTFLAGS)
@@ -105,6 +113,10 @@ OPTFLAGS=-s -O3
 ../bin/textdisp: textdisp.c
 	sh textdisp.c $(OPTFLAGS)
 	mv textdisp ../bin
+
+../bin/pgssupout: pgssupout.c
+	sh pgssupout.c $(OPTFLAGS)
+	mv pgssupout ../bin
 
 ../bin/libpreload_ffm2vtoyuv4mpeghax.so: libpreload_ffm2vtoyuv4mpeghax.c
 	sh $< $(OPTFLAGS)

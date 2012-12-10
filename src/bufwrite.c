@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Sat Sep 25 16:02:07 EEST 2004 too
- * Last modified: Tue Nov 02 17:44:42 EET 2004 too
+ * Last modified: Thu 25 Oct 2012 21:22:58 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -30,7 +30,7 @@ void bufwrite_init(BufWrite * bw, int fd, unsigned char * buf, int buflen)
   bw->len = 0;
 }
 
-bool bufwrite(BufWrite * bw, unsigned char * buf, int len)
+bool bufwrite(BufWrite * bw, const unsigned char * buf, int len)
 {
   if (len > bw->buflen - bw->len)
     {

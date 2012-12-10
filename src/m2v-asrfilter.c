@@ -13,13 +13,13 @@
 /*
  * $Id: m2v-asrfilter.c $
  *
- * Author: Tomi Ollila too ät iki fi
+ * Author: Tomi Ollila too Ã¤t iki fi
  *
  *	Copyright (c) 2004 Tomi Ollila
  *	    All rights reserved
  *
  * Created: Thu May 05 15:23:43 EEST 2005 too
- * Last modified: Tue 09 Oct 2012 18:05:29 EEST too
+ * Last modified: Wed 24 Oct 2012 17:46:14 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */

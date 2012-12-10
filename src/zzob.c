@@ -18,7 +18,7 @@
  *	    All rights reserved
  *
  * Created: Thu Sep 23 19:28:18 EEST 2004 too
- * Last modified: Wed 19 Sep 2012 17:41:27 EEST too
+ * Last modified: Thu 25 Oct 2012 21:45:18 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -120,23 +120,35 @@ static bool s__zzob_init__searchmore(ZeroZeroOneBuf * zzob)
 bool zzob_init(ZeroZeroOneBuf * zzob, int fd,
 	       unsigned char * buf, int buflen, off_t maxread)
 {
-  unsigned char * data;
+  zzob_set(zzob, fd, buf, buflen, maxread);
+  return zzob_reset(zzob);
+}
 
+void zzob_set(ZeroZeroOneBuf * zzob, int fd,
+	      unsigned char * buf, int buflen, off_t maxread)
+{
   zzob->p.c_fd     = fd;
   zzob->p.c_buf    = buf;
   zzob->p.c_buflen = buflen;
 
-  zzob->p.len      = 0;
-
   if (maxread < 0) {
-      maxread = 1; maxread <<= 8 * sizeof maxread - 1; maxread--; }
+      // 1 << 31 || 1 << 63 and then -1
+      maxread = 1; maxread <<= 8 * sizeof maxread - 1; maxread--;
+  }
   zzob->p.maxread  = maxread;
+}
+
+bool zzob_reset(ZeroZeroOneBuf * zzob)
+{
+  unsigned char * data;
+
+  zzob->p.len = 0;
 
   zzob->pos  = 0;
-  zzob->data = buf;
+  zzob->data = zzob->p.c_buf;
   zzob->len  = 0;
 
-  D(1, ("zzob_init(fd=%d, %s)\n", fd, PMD));
+  D(1, ("zzob_reset(fd=%d, %s)\n", fd, PMD));
 
   while (true)
     {

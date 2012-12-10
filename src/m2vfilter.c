@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Sat Sep 25 16:35:59 EEST 2004 too
- * Last modified: Thu 27 Sep 2012 22:43:13 EEST too
+ * Last modified: Wed 24 Oct 2012 18:03:54 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -41,7 +41,7 @@ int main(int argc, char ** argv)
   int fd;
 
   if (argc < 4)
-    xerrf("argc < 4\n");
+    xerrf("Usage: %s asr frames ofile\n", argv[0]);
 
   asr = atoi(argv[1]);
   frames = atoi(argv[2]);
@@ -51,7 +51,7 @@ int main(int argc, char ** argv)
     xerrf("frames <= 0 (%d)\n", frames);
 
   if (asr <= 0 && argv[3][0] != '0')
-    xerrf("asr incorrect (%s)\n", argv[3]);
+    xerrf("asr incorrect ('%s')\n", argv[3]);
 
   if ((fd = open(ofile, O_WRONLY|O_CREAT|O_TRUNC, 0644)) < 0)
     xerrf("open (write) failed:");

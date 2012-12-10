@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Fri Mar 04 21:09:14 EET 2005 too
- * Last modified: Mon May 05 17:13:47 EEST 2008 too
+ * Last modified: Thu 25 Oct 2012 21:22:40 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -44,6 +44,9 @@ struct _ZeroZeroOneBuf
 
 bool zzob_init(ZeroZeroOneBuf * zzob, int fd,
 	       unsigned char * buf, int buflen, off_t maxread);
+void zzob_set(ZeroZeroOneBuf * zzob, int fd,
+	      unsigned char * buf, int buflen, off_t maxread);
+bool zzob_reset(ZeroZeroOneBuf * zzob);
 bool zzob_data(ZeroZeroOneBuf * zzob, bool locked);
 int zzob_rest(ZeroZeroOneBuf * zzob, bool lastconsumed);
 

@@ -22,7 +22,7 @@
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Wed 10 Oct 2012 16:56:13 EEST too
+ * Last modified: Wed 07 Nov 2012 18:12:08 EET too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
@@ -2109,19 +2109,21 @@ void make_layout_etc(GdkDrawable * drawable)
    which has this 'focus-follows-mouse' configured -- but well,
    I wanted to test this warping thing... */
 
-gboolean warp_pointer(void * v)
+gboolean warp_pointer(GtkWidget * wid, GdkEvent * e, gpointer any_ptr)
 {
+    (void)e;
     GdkDisplay * display = gdk_display_get_default();
     GdkScreen * screen = gdk_display_get_default_screen(display);
 
-    GtkWidget * wid = (GtkWidget *)v;
     gint x, y, w, h;
     gdk_window_get_root_origin(wid->window, &x, &y);
     gdk_drawable_get_size(wid->window, &w, &h);
 
     // not exactly centered, but good enough
     gdk_display_warp_pointer(display, screen, x + w / 2, y + h / 2);
-    return 0;
+
+    g_signal_handlers_disconnect_by_data(wid, any_ptr);
+    return false;
 }
 #endif /* DISABLE_WARP */
 
@@ -2161,7 +2163,8 @@ int init_W(void)
     //gtk_widget_queue_draw(W.i);
 
 #ifndef DISABLE_WARP
-    g_idle_add(warp_pointer, W.w);
+    g_signal_connect(G_OBJECT(W.w), "configure-event",
+		     G_CALLBACK(warp_pointer), (gpointer)&W.w); // any ptr
 #endif
 
 #if 0

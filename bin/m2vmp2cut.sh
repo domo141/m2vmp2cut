@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Thu 18 Oct 2012 17:53:10 EEST too
+# Last modified: Tue 06 Nov 2012 19:26:14 EET too
 
 set -eu
 case ${1-} in -x) set -x; shift; esac # debug help, passed thru wrapper.
@@ -38,7 +38,7 @@ cmd_vermatch ()
 cmd_lvev6frames () ## Legacy m2vmp2cut support; dig cutpoints from ~/.lve/*
 {
 	case ${1-} in '!') ;; *)
-		warn; warn "'lvev6frames' is deprecated command"
+		warn; warn "'lvev6frames' command is deprecated"
 		die "to use this add '!' to the command line"
 	esac
 	$M2VMP2CUT_CMD_PATH/lvev6frames.pl
@@ -50,6 +50,7 @@ chkindexes ()
 		$M2VMP2CUT_CMD_PATH/m2vscan "$1/video.m2v" "$1/video.index.wip"
 		mv "$1/video.index.wip" "$1/video.index"
 	}
+	test -f "$1/audio.mp2" || return
 
 	test -s "$1/audio.scan" -a -s "$1/audio.levels" || {
 		$M2VMP2CUT_CMD_PATH/mp2cutpoints --scan \
@@ -88,16 +89,6 @@ chkpjx () # getcmds run before
 	pjx="java -jar $pjxjar"
 }
 
-findlargestaudio ()
-{
-	largestaudio=nothing largestsize=0
-	for f
-	do	currentsize=`stat -c%s "$f"`
-		test $currentsize -gt $largestsize || continue
-		largestaudio=$f
-		largestsize=$currentsize
-	done
-}
 
 cmd_tmp ()
 {
@@ -127,20 +118,21 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 	then
 		mkdir in_sp
 		mv *.son *.sup *.sup.* *.spf *.bmp in_sp 2>/dev/null || :
+		( cd in_sp
+		  for f in *.sup
+		  do $M2VMP2CUT_CMD_PATH/pxsuptime.py $f > ${f}time
+		  done )
 	fi
 
 #	ac3=`ls *.ac3 2>/dev/null`
 	mp2=`ls *.mp2 2>/dev/null`
-#	if [ -n "$ac3" ] ; then
-#		findlargestaudio $ac3
-#		ln -s $largestaudio audio.ac3
-#	elif [ -n "$mp2" ] ; then
-	case $mp2 in '')
-		die "No audio files to process"
-	;; *)
-		findlargestaudio $mp2
-		ln -s $largestaudio audio.mp2
+	mp2c=
+	for f in $mp2; do mp2c=$mp2c.; done
+	case $mp2c in
+	  '')	die "No audio files to process" ;;
+	  .)	ln -s $mp2 audio.mp2 ;;
 	esac
+	unset mp2c
 	ln -s in.m2v video.m2v
 
 	chkindexes .
@@ -152,6 +144,9 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 cmd_select () # Select parts from video with a graphical tool
 {
 	test -f "$dir/video.m2v" || die "'$dir/video.m2v' does not exist"
+	x $M2VMP2CUT_CMD_PATH/assel-gui "$dir"
+	test -f "$dir/audio.mp2" ||
+		x $M2VMP2CUT_CMD_PATH/assel.pl "$dir" linkfirstaudio || :
 	chkindexes "$dir"
 	x $M2VMP2CUT_CMD_PATH/m2vcut-gui "$dir/video.index" "$dir/video.m2v" \
 		"$dir/cutpoints" "$dir/audio.levels"
@@ -199,12 +194,14 @@ cmd_getmp2 () # Get selected parts of mp2 audio
 cmd_contrib () # Contrib material, encoding scripts etc...
 {
 	M2VMP2CUT_CMD_DIRNAME=`dirname "$M2VMP2CUT_CMD_PATH"`
+	M2VMP2CUT_CONTRIB_PATH=$M2VMP2CUT_CMD_DIRNAME/contrib
+	export M2VMP2CUT_CONTRIB_PATH
 	case ${1-} in '')
 		echo
 		echo Append one of these to your command line to continue.
 		echo The choice can be abbreviated to any unambiguous prefix.
 		echo
-		cd $M2VMP2CUT_CMD_DIRNAME/contrib
+		cd $M2VMP2CUT_CONTRIB_PATH
 		ls -1 | while read line
 		do
 			case $line in *~) continue; esac
@@ -214,7 +211,7 @@ cmd_contrib () # Contrib material, encoding scripts etc...
 		echo; exit 0
 	esac
 	fp= ff=
-	for f in `ls -1 $M2VMP2CUT_CMD_DIRNAME/contrib`
+	for f in `ls -1 $M2VMP2CUT_CONTRIB_PATH`
 	do
 		case $f in *~) continue ;;
 		    $1) fp= ff=$1 fm=$1 break ;;
@@ -224,9 +221,7 @@ cmd_contrib () # Contrib material, encoding scripts etc...
 	case $ff in '') die "'$1': not found." ;; esac
 	case $fp in '') ;; *) die "contrib: ambiquous match: $ff." ;; esac
 	shift
-	M2VMP2CUT_MEDIA_DIRECTORY=$dir
-	export M2VMP2CUT_CMD_DIRNAME M2VMP2CUT_MEDIA_DIRECTORY
-	x exec $M2VMP2CUT_CMD_DIRNAME/contrib/$fm "$@"
+	x exec $M2VMP2CUT_CONTRIB_PATH/$fm "$@"
 }
 
 cmd_help () # Help of all or some of the commands above
@@ -339,6 +334,10 @@ esac
 case $cp in '') ;; *) echo $0: $cm -- ambiguous command: matches $cc; exit 1
 esac
 unset cc cp cm
+
+M2VMP2CUT_MEDIA_DIRECTORY=$dir
+export M2VMP2CUT_MEDIA_DIRECTORY
+
 #set -x
 cmd_$cmd "$@"
 exit

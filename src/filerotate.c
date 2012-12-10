@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Wed Oct 20 23:26:55 EEST 2004 too
- * Last modified: Fri May 09 20:01:08 EEST 2008 too
+ * Last modified: Wed 24 Oct 2012 18:01:51 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -32,16 +32,16 @@ int main(int argc, char ** argv)
   struct dirent * de;
   int i;
 
-  if (argc < 2)
-    xerrf("argc < 2\n");
+  if (argc < 3)
+    xerrf("Usage: %s <directory> <filenames...>\n", argv[0]);
 
   if (chdir(argv[1]) < 0)
-    xerrf("chdir(%s) failed:", argv[1]);
+    xerrf("chdir('%s') failed:", argv[1]);
 
   dir = opendir(".");
 
   if (dir == NULL)
-    xerrf("opendir(.) failed:");
+    xerrf("opendir('.') failed:");
 
   argc -= 2;
   argv += 2;

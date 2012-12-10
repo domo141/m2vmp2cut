@@ -7,23 +7,24 @@
 #	    All rights reserved
 #
 # Created: Sat May 03 22:23:46 EEST 2008 too
-# Last modified: Sun May 04 19:57:43 EEST 2008 too
+# Last modified: Mon 10 Dec 2012 13:02:20 EET too
+
+set -eu
 
 test -d config || mkdir config
 rm -f config/mpeg2.conf
 
-flags_only=`pkg-config --cflags --libs libmpeg2`
-flags_both=`pkg-config --cflags --libs libmpeg2 libmpeg2convert`
+flags_only=`pkg-config --cflags --libs libmpeg2 || :`
+flags_both=`pkg-config --cflags --libs libmpeg2 libmpeg2convert || :`
 
 case $flags_both in
-	'')
-	test -d /usr/include/mpeg2dec || exit 1
-	test -f /usr/lib/libmpeg2.a -o -f /usr/lib/libmpeg2.so || exit 1
-	test -f /usr/lib/libmpeg2convert.a -o -f /usr/lib/libmpeg2convert.so \
-	    || exit 1
+'')
+	test -d /usr/include/mpeg2dec
+	# this is showing its age -- /usr/lib is not so common anymore...
+	test -f /usr/lib/libmpeg2.a -o -f /usr/lib/libmpeg2.so
+	test -f /usr/lib/libmpeg2convert.a -o -f /usr/lib/libmpeg2convert.so
 	flags_only='-I /usr/include/mpeg2dec -lmpeg2'
 	flags_both='-I /usr/include/mpeg2dec -lmpeg2 -lmpeg2convert'
-	;;
 esac
 
 trap 'rm -f tstlibmpeg.c tstlibmpeg' 0
