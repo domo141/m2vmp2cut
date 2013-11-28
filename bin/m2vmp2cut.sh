@@ -7,13 +7,13 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Tue 06 Nov 2012 19:26:14 EET too
+# Last modified: Wed 27 Mar 2013 17:02:33 EET too
 
 set -eu
 case ${1-} in -x) set -x; shift; esac # debug help, passed thru wrapper.
 
 warn () { echo "$@" >&2; }
-die () { warn "$@"; warn; exit 1; }
+die ()  { echo; echo "$@"; echo; exit 1; } >&2
 needvar () { case ${1-} in '') shift 1; "$@"; esac; }
 
 usage () {
@@ -97,9 +97,17 @@ cmd_tmp ()
 	chkindexes .
 }
 
+runpjx ()
+{
+	x $pjx -ini "$dir"/X.ini -out "$dir" -name "$1" -demux "$2"
+}
+
 cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 {
 	case $file in '') die "demux reguires 'file' argument."; esac
+	for f in "$file" "$@"
+	do	test -f "$f" || die "'$f': no such file"
+	done
 	getcmds
 	chkpjx
 	needcmd mplex needed after cutting when multiplexing final image
@@ -112,7 +120,17 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 	echo 'SubtitlePanel.SubtitleExportFormat=SRT' > "$dir"/X.ini
 	echo 'SubtitlePanel.SubtitleExportFormat_2=SON' >> "$dir"/X.ini
 	echo 'SubtitlePanel.exportAsVobSub=1' >> "$dir"/X.ini
-	x $pjx -ini "$dir"/X.ini -out "$dir" -name in "$file" "$@"
+	runpjx 'in' "$file"
+	case $# in 0) ;; *) c=0; for f in "$@"; do
+		c=`expr $c + 1`
+		runpjx 'more-in'$c "$f"
+		done
+		echo 'More than one file was demuxed'
+		echo "Concatenate media files in '$dir'"
+		echo "Before issuing m2vmp2cut 'select' command"; exit 0
+	esac
+	## XXX all of these needs to be moved to place where select can do too
+	## XXX it seems some audio handling is going to gui tool already...
 	cd "$dir"
 	if test -f in.son
 	then

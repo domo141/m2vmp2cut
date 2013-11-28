@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Sat 03 Nov 2012 13:32:23 EET too
-# Last modified: Tue 06 Nov 2012 19:16:09 EET too
+# Last modified: Thu 15 Nov 2012 16:24:04 EET too
 
 # helper for assel gui
 
@@ -48,8 +48,8 @@ sub isave()
 	return 1 if $b =~ /\bin[.]/;
 	return $a cmp $b;
     }
-    save ((sort xs grep { -f $_ and $_ = "$_ n/a 1" } <in*.mp2>),
-      sort xs grep { -f $_ and $_ = "$_ n/a 1" } <in_sp/in*.suptime>);
+    save ((sort xs grep { -f $_ and $_ = "$_ und 1" } <in*.mp2>),
+      sort xs grep { -f $_ and $_ = "$_ und 1" } <in_sp/in*.suptime>);
 
 }
 
@@ -64,12 +64,12 @@ if ($cmd eq 'info')
 	my @l = split ' ';
 
 	if ($l[0] =~ /[.]mp2/) {
-	    push @l, 'n/a' unless @l > 1;
+	    push @l, 'und' unless @l > 1;
 	    push @l, '1' unless @l > 2;
 	    push @afiles, "a @l";
 	}
 	else { # well, expect suptime...
-	    push @l, 'n/a' unless @l > 1;
+	    push @l, 'und' unless @l > 1;
 	    push @l, '1' unless @l > 2;
 	    push @sfiles, "s @l";
 	}

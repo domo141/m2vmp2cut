@@ -7,33 +7,35 @@
 #	    All rights reserved
 #
 # Created: Sun Jul 20 19:41:17 EEST 2008 too
-# Last modified: Mon 10 Dec 2012 13:02:24 EET too
+# Last modified: Wed 13 Mar 2013 21:36:18 EET too
 
 # In case your system has old version of libmpeg2 libraries,
 # or it doesn't have it at all, please follow these instructions:
 #
 # Download libmpeg2-0.5.1.tar.gz (unless already done so)
-# (http://libmpeg2.sourceforge.net/files/libmpeg2-0.5.1.tar.gz ...).
+# ( http://libmpeg2.sourceforge.net/files/libmpeg2-0.5.1.tar.gz ...).
 #
 # Enter the path of libmpeg2-0.5.1.tar.gz as an argument for
-# './tools/buildlibmpeg-051.sh' to build and install internal copy
-# of libmpeg2 for use of some m2vmp2cut tools.
+# './tools/buildlibmpeg-051.sh' (other script than this!) to build
+# and use internal copy of libmpeg2 for use of some m2vmp2cut tools.
+
+set -eu
 
 die () { echo "$@" >&2; exit 1; }
 
-case $1 in '') die Usage: $0 rootdir ;; esac
+case $# in 0) die Usage: $0 libmpeg2-builtdir ;; esac
 
-test -d config \
-	|| die "Directory 'config' missing, probably wrong current directory"
+test -d config ||
+	die "Directory './config' missing, probably wrong current directory"
 
-dn0=`cd \`dirname "$0" \`; pwd` bn0=`basename "$0"`
+dn0=`cd \`dirname "$0" \` && pwd` bn0=`basename "$0"`
 
 dir=`cd "$1"; pwd`/libmpeg2-0.5.1-bin
 
 chkfile ()
 {
 	if test -f "$1"
-	then return 0
+	then	return 0
 	fi
 	echo "'$1' missing (ignore unless building libpeg2 from source).">&2
 	cut -d: -f2- >&2 <<.

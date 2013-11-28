@@ -1,17 +1,17 @@
 
 Keybindings:
 
-Left Arrow:  1 frame backward.
-Right Arrow: 1 frame forward.
+Left Arrow:  1 frame backward -- with shift: ~5 seconds backward
+Right Arrow: 1 frame forward  -- with shift: ~5 seconds forward
 
-Up Arrow:   1 gop (usually 1/2 sec) forward.
-Down Arrow: 1 gop (usually 1/2 sec) backward.
+Up Arrow:   1 gop backward -- with shift: ~1 minute forward
+Down Arrow: 1 gop forward  -- with shift: ~1 minute backward
 
-Page Up:   5 gops forward, after 20 jumps, 25 gops forward (*)
-Page Down: 5 gops backward, after 20 jumps, 25 gops forward (*)
+Page Up:   with shift: ~10 minutes forward
+Page Down: with shift:~10 minutes backward
 
-(*) Changing Page Up/Down "direction", first time continue 25 gop
-    jumps; after second change, go back to 5 gop jumps
+Page Up/Down: without shift, 256 gops (~2 min). After first Up/Down direction
+              change start halving jumps (128, 64, 32, 16, 8, 4, 2, 1 gops)
 
 1, 2 ... 9, 0: Jump to position 5%, 15% ... 85%, 95%
 

@@ -16,7 +16,7 @@ TOCCODE= m2vmp2cut.pl lvev6frames.pl \
 
 EGHDRS=$(TOCCODE:%=ghdrs/%.h)
 
-BINS=	m2vscan m2vfilter m2vstream fileparts filerotate \
+BINS=	m2vscan m2vfilter m2vstream fileparts filerotate merge-gui \
 	mp2cutpoints assel-gui m2vcut-gui m2vtoyuv textdisp pgssupout
 
 BINARIES= $(BINS:%=../bin/%)
@@ -93,6 +93,11 @@ OPTFLAGS=-s -O3
 ../bin/assel-gui: assel-gui.c
 	sh assel-gui.c $(OPTFLAGS)
 	mv assel-gui ../bin
+#	$(CC) $(CFLAGS) -c $< -o $@
+
+../bin/merge-gui: merge-gui.c
+	sh merge-gui.c $(OPTFLAGS)
+	mv merge-gui ../bin
 #	$(CC) $(CFLAGS) -c $< -o $@
 
 ../bin/m2vcut-gui: m2vcut-gui.c config/mpeg2.conf

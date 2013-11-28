@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Wed 24 Oct 2012 18:26:32 EEST too
- * Last modified: Fri 26 Oct 2012 20:27:28 EEST too
+ * Last modified: Mon 24 Jun 2013 23:17:55 EEST too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -39,7 +39,7 @@ int main(int argc, char ** argv)
 
     int asr = atoi(argv[1]);
 
-    if (asr <= 0 && argv[1][0] != '0')
+    if ( (asr <= 0 && argv[1][0] != '0') || argv[1][1] != '\0')
 	xerrf("Asr value '%s' incorrect.\n", argv[1]);
 
     int fd = open(argv[2], O_RDONLY);
@@ -90,6 +90,7 @@ static void s__stream(ZeroZeroOneBuf * zzob, BufWrite * bw, int tframes,
 		      int asr, char ** av) /* protoadd GCCATTR_NORETURN */
 {
     int tframenum = 0;
+    intmax_t movedbytes = 0;
 
     /* Ignore unknown aspect ratios... */
     if (asr > 4)
@@ -131,6 +132,7 @@ static void s__stream(ZeroZeroOneBuf * zzob, BufWrite * bw, int tframes,
 	static int video_fmt = -1;
 	// expect first iframe, prepare for skip... //
 	int skipframes = 0;
+	int cframenum = 0;
 	BB;
 	int havegob = 0;
 	while (zzob_data(zzob, false))
@@ -174,7 +176,8 @@ static void s__stream(ZeroZeroOneBuf * zzob, BufWrite * bw, int tframes,
 			zzob->data[4] = 0;
 			zzob->data[5] &= 0x3f;
 		    }
-		    tframenum = 1;
+		    tframenum++;
+		    cframenum = 1;
 
 		    if (! bufwrite(bw, zzob->data, zzob->len))
 			/* The value written below may not be exact */
@@ -246,6 +249,7 @@ static void s__stream(ZeroZeroOneBuf * zzob, BufWrite * bw, int tframes,
 		{
 		case 0x00: /* picture header */
 		    tframenum++;
+		    cframenum++;
 		    int t1 = (int)((intmax_t)tframenum * 100 / tframes);
 		    if (t1 != prevpc)
 		    {
@@ -260,7 +264,7 @@ static void s__stream(ZeroZeroOneBuf * zzob, BufWrite * bw, int tframes,
 			zzob->data[4] = (tsr >> 2);
 			zzob->data[5] = ((tsr & 0x03) << 6) | (d5 & 0x3f);
 		    }
-		    if (tframenum == tframes) {
+		    if (cframenum >= frames) {
 			if (! bufwrite(bw, zzob->data, zzob->len))
 			    /* The value written below may not be exact */
 			    xerrf(cs_mpg_vdff, (intmax_t)zzob->pos + zzob->len);
@@ -324,6 +328,7 @@ static void s__stream(ZeroZeroOneBuf * zzob, BufWrite * bw, int tframes,
 	}
 	xerrf("EOF too early.\n");
     _c7:
+	movedbytes += zzob->pos;
 	continue; // compiler requires something after label.
     }
     // add sequence end //
@@ -334,7 +339,7 @@ static void s__stream(ZeroZeroOneBuf * zzob, BufWrite * bw, int tframes,
 
     fprintf(stderr,
 	    "\rTransferred %d pictures, %jd bytes of mpeg video data.\n",
-	    tframenum, (intmax_t)zzob->pos);
+	    tframenum, movedbytes);
 
     exit(0);
 }

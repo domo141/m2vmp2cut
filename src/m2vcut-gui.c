@@ -22,7 +22,7 @@
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Wed 07 Nov 2012 18:12:08 EET too
+ * Last modified: Thu 28 Nov 2013 18:53:34 +0200 too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
@@ -1231,11 +1231,24 @@ void update_alevels(void)
 	if (abs (i) < 16)
 	    printf("%3d %02x %3d %3d\n", i, c, y1, y2);
 #endif
+	int rc, gc;
+	if ((unsigned int)i < 4)
+	{
+	    if (G.currentcutpoint & 1) {
+		rc = 0; gc = 80;
+	    }
+	    else {
+		rc = 80; gc = 0;
+	    }
+	}
+	else
+	    rc = gc = 0;
+
 	for (int h = 0; h < 30; h++) {
-	    _put_apixel (x0, h, 0, 0, h > y1? 255:0);
-	    _put_apixel (x1, h, 0, 0, h > y1? 255:0);
-	    _put_apixel (x2, h, 0, 0, h > y2? 255:0);
-	    _put_apixel (x3, h, 0, 0, h > y2? 255:0);
+	    _put_apixel (x0, h, rc, gc, h > y1? 255:0);
+	    _put_apixel (x1, h, rc, gc, h > y1? 255:0);
+	    _put_apixel (x2, h, rc, gc, h > y2? 255:0);
+	    _put_apixel (x3, h, rc, gc, h > y2? 255:0);
 	}
 	_put_apixel (x0, 30, 0, 128, 192);
 	_put_apixel (x1, 30, 0, 128, 192);
@@ -1493,6 +1506,14 @@ void update_image(void)
     draw_triangle();
 }
 
+void update_window(void)
+{
+    update_label();
+    update_alevels();
+    W.drawing = true;
+    gtk_widget_queue_draw(W.da);
+}
+
 void cut_here(void)
 {
     int i,j;
@@ -1522,7 +1543,7 @@ void cut_here(void)
     G.currentcutpoint = i;
     G.cutpoints++;
     update_image();
-    update_label();
+    update_window();
 }
 
 void merge_here(void)
@@ -1540,20 +1561,12 @@ void merge_here(void)
 		G.cutpoint[i] = G.cutpoint[i + 1];
 	    G.currentcutpoint--;
 	    update_image();
-	    update_label();
+	    update_window();
 	    return;
 	}
 	if (G.cutpoint[i].frameno > G.currentframe)
 	    return;
     }
-}
-
-void update_window(void)
-{
-    update_label();
-    update_alevels();
-    W.drawing = true;
-    gtk_widget_queue_draw(W.da);
 }
 
 void need_iframe(int index, bool force)
@@ -1911,7 +1924,7 @@ gboolean on_key_press(GtkWidget * w, GdkEventKey * k,
 		      gpointer user_data)
 {
     static int prevkey = 0;
-    static int keycount = 0;
+    static int pagestep = 256;
 
     (void)w; (void)user_data;
 
@@ -1932,36 +1945,53 @@ gboolean on_key_press(GtkWidget * w, GdkEventKey * k,
     // http://library.gnome.org/devel/gdk/stable/gdk-Event-Structures.html
     // ( .../#GdkEventKey to the above )
 
+    int shift = k->state & GDK_SHIFT_MASK; // XXX undocumented.
+
     switch (k->keyval)
     {
-    case GDK_Right: next_frame(); break;
-    case GDK_Left:  previous_frame(); break;
+    case GDK_Right: shift? next_gop(11): next_frame(); break;
+    case GDK_Left:  shift? previous_gop(11): previous_frame(); break;
 
-    case GDK_Up:   next_gop(1); break;
-    case GDK_Down: previous_gop(1); break;
+    case GDK_Up:   next_gop(shift? 122: 1); break;
+    case GDK_Down: previous_gop(shift? 122: 1); break;
 
     case GDK_Page_Up:
-	if (prevkey == GDK_Page_Up) {
-	    keycount++;
-	    next_gop(keycount > 20? 25: 5);
+	if (shift) {
+	    next_gop(1240);
+	    pagestep = 256;
 	    break;
 	}
-	else if (prevkey == GDK_Page_Down && keycount > 20) {
-	    keycount += 10 * 1000 * 1000;
-	    if (keycount < 20 * 1000 * 1000) { next_gop(25); break; }
+	if (prevkey == GDK_Page_Up && pagestep == 256) {
+	    next_gop(256);
+	    break;
 	}
-	keycount = 0; next_gop(5); break;
+	if (prevkey == GDK_Page_Up || prevkey == GDK_Page_Down) {
+	    if (pagestep > 1)
+		pagestep /= 2;
+	    next_gop(pagestep);
+	    break;
+	}
+	next_gop(pagestep = 256);
+	break;
+
     case GDK_Page_Down:
-	if (prevkey == GDK_Page_Down) {
-	    keycount++;
-	    previous_gop(keycount > 20? 25: 5);
+	if (shift) {
+	    previous_gop(1240);
+	    pagestep = 256;
 	    break;
 	}
-	else if (prevkey == GDK_Page_Up && keycount > 20) {
-	    keycount += 10 * 1000 * 1000;
-	    if (keycount < 20 * 1000 * 1000) { previous_gop(25); break; }
+	if (prevkey == GDK_Page_Down && pagestep == 256) {
+	    previous_gop(256);
+	    break;
 	}
-	keycount = 0; previous_gop(5); break;
+	if (prevkey == GDK_Page_Up || prevkey == GDK_Page_Down) {
+	    if (pagestep > 1)
+		pagestep /= 2;
+	    previous_gop(pagestep);
+	    break;
+	}
+	previous_gop(pagestep = 256);
+	break;
 
     case '.': next_cutpoint(); break;
     case ',': previous_cutpoint(); break;

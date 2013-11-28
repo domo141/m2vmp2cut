@@ -1,17 +1,17 @@
 
 Näppäimet:
 
-Vasen nuoli: 1 kuva taaksepäin
-Oikea nuoli: 1 kuva eteenpäin
+Vasen nuoli: 1 kuva taaksepäin -- shiftillä noin 5 sekuntia taaksepäin
+Oikea nuoli: 1 kuva eteenpäin  -- shiftillä noin 5 sekuntia eteenpäin
 
-Ylänuoli: 1 gop (yleensä puoli sekuntia) eteenpäin
-Alanuoli: 1 gop (yleensä puoli sekuntia) taaksepäin
+Ylänuoli: 1 gop taaksepäin -- shiftillä noin minuutti eteenpäin
+Alanuoli: 1 gop eteenpäin  -- shiftillä noin minuutti taaksepäin
 
-Page Up:    5 goppia eteenpäin, 20 hypyn jälkeen 25 goppia eteenpäin (*)
-Page Down:  5 goppia taaksepäin, 20 hypyn jälkeen 25 goppia taaksepäin (*)
+Page Up:    shiftillä noin 10 minuuttia eteenpäin
+Page Down:  shiftillä noin 10 minuuttia taaksepäin
 
-(*) Vaihtaessa Page Up/Down -suuntaa, ensimmäisellä kerralla jatka 25
-    gopin hyppyjä; toisen suunnan vaihdon jälkeen palaa 5 gopin hyppyihin
+Page Up/Down: ilman shiftiä 256 gopia (noin 2 min). Ensimmäisen Up/down
+              suunnanvaihdon jälkeen hypyt puolittuu (128, 64... 2, 1 gopia)
 
 1, 2 ... 9, 0: Hyppää kohtaan 5%, 15% ... 85%, 95%
 
@@ -26,4 +26,4 @@ qq: Lopeta, tallentaen leikkauspisteet tiedostoon
 
 t: Testaa tulos lähimmän leikkauspisteen kohdalta
 
-i: tietoa (lopullisesta tiedostokoosta)
+i: tietoa (arviota lopullisesta tiedostokoosta)

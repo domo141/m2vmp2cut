@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Sun Sep 26 13:23:29 EEST 2004 too
- * Last modified: Wed 24 Oct 2012 17:57:35 EEST too
+ * Last modified: Thu 28 Nov 2013 22:01:22 +0200 too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -30,6 +30,16 @@
 #include "bufwrite.h"
 
 #include "ghdrs/m2vscan_priv.h"
+
+#define BB {
+#define BE }
+
+#if 1
+#define ASSERT_EQ(a, b) do { if ((a) != (b)) \
+  xerrf("Assertion failed: " #a "(%d) != " #b "(%d)\n", (a), (b)); } while (0)
+#else
+#define ASSERT_EQ(a, b) do { } while (0)
+#endif
 
 int main(int argc, char ** argv)
 {
@@ -66,6 +76,7 @@ static void s__scan(int ifd, int ofd,
   FILE * ofh = fdopen(ofd, "w");
 
   int pictures = 0;
+  char pictypes[1025];
   int gops = -1;
   int goppic = 0;
   off_t seqpos = 0;
@@ -77,6 +88,7 @@ static void s__scan(int ifd, int ofd,
     int hour, minute, second, frame, closed, time;
   } gop = { 0, 0, 0, 0, 0, 0 };
   int printgopinfo = 0;
+  int discpicadj = 0;
 
   int prevpc = 0;
 
@@ -141,22 +153,25 @@ static void s__scan(int ifd, int ofd,
 		  gop.closed = data[7] & 0x40;
 		  /* int broken_gop_flag = data[7] & 0x20; */
 
-		  gop.time = (((gop.hour * 60 + gop.minute) * 60 + gop.second) * 25)
-		    + gop.frame;
-		  if (pictures)
-		    fprintf(ofh, "%d\n", pictures - goppic);
+		  gop.time = (((gop.hour * 60 + gop.minute)
+			       * 60 + gop.second) * 25) + gop.frame;
+		  if (pictures) {
+		    pictypes[pictures - goppic] = '\0';
+		    fprintf(ofh, "%3d  %s\n", pictures - goppic, pictypes);
+		    memset(pictypes, '_', sizeof pictypes);
+		  }
 		  else
 		    fprintf(ofh, "#fileoffset  gop  frame ts asr _ time _   "
 			    "c/o  # of frames ver2\n");
 
-		  if (gop.time != pictures)
+		  if (gop.time != pictures - discpicadj)
 		    {
-		      fprintf(stderr,"\nTimecode problem at filepos %jd ",
-			      (intmax_t)zzob.pos);
+		      fprintf(stderr,"\nWarning: timecode discontinuity at "
+			      "filepos %jd ", (intmax_t)zzob.pos);
 		      fprintf(stderr, " %02d:%02d:%02d.%02d -- ",
 			      gop.hour, gop.minute, gop.second, gop.frame);
 		      fprintf(stderr, "%d %d\n", gop.time, pictures);
-		      exit(1);
+		      discpicadj = pictures - gop.time;
 		    }
 		  printgopinfo = 1;
 
@@ -169,6 +184,8 @@ static void s__scan(int ifd, int ofd,
 		  int temperal_seq_number = (data[4] << 2) + ((data[5] & 0xc0) >> 6);
 		  int frame_type = ((data[5] & 0x38) >> 3);
 
+		  pictypes[temperal_seq_number] = "_IPBDXXX"[frame_type];
+
 		  if (printgopinfo)
 		    {
 		      char c;
@@ -177,7 +194,7 @@ static void s__scan(int ifd, int ofd,
 		      else
 			c = '-';
 		      goppic = pictures;
-		      fprintf(ofh, "%10jd %5d %6d %c  %d  %02d:%02d:%02d.%02d  %c  ",
+		      fprintf(ofh, "%10jd %5d %6d %c  %d  %02d:%02d:%02d.%02d  %c ",
 			      (intmax_t)seqpos, gops, goppic, c, asr,
 			      gop.hour, gop.minute, gop.second, gop.frame,
 			      gop.closed? 'c': 'o');
@@ -192,7 +209,8 @@ static void s__scan(int ifd, int ofd,
 
   long abr = pictures? (long)(zzob.pos / (pictures / 25) * 8): 0;
 
-  fprintf(ofh, "%d\n", pictures - goppic);
+  pictypes[pictures - goppic] = '\0';
+  fprintf(ofh, "%3d  %s\n", pictures - goppic, pictypes);
   fprintf(ofh, "end: size %jd frames %d gops %d abr %ld  w %d h %d\n",
 	  (intmax_t)zzob.pos, pictures, ++gops, abr, maxwidth, maxheight);
   printf("\r- Scanning video at %jd of %jd (100%%).\n",

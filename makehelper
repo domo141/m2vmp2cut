@@ -26,7 +26,7 @@ needvar ()
 
 getcmds ()
 {
-	cmds=`env which projectx java mplex 2>/dev/null | tr '\012' :`
+	cmds=`env which projectx java mplex mplayer 2>/dev/null | tr '\012' :`
 }
 needcmd ()
 {
@@ -56,6 +56,7 @@ cmd_install ()
 
 	getcmds
 	needcmd mplex needed for remuxing after cut
+	needcmd mplayer needed for checking media around cutpoints
 	if needvar PJXVAR
 	then
 		case $PJXJAR in /*) ;;
@@ -246,9 +247,13 @@ exit
 #,# bin/m2vmp2cut.pm
 #,# bin/m2vmp2cut.sh x
 #,# bin/m2v_somehdrinfo.py x
+#,# bin/merge.pl x
+#,# bin/pxsuptime.py x
 #,# bin/wrapper.sh x
 
 #,# contrib
+#,# contrib/ffgetyuv.pl x
+#,# contrib/icut.pl x
 #,# contrib/mpeg2.sh x
 #,# contrib/webm.sh x
 
@@ -269,9 +274,12 @@ exit
 #,# src/m2vcut-gui.c
 #,# src/m2vfilter.c
 #,# src/m2vscan.c
+#,# src/m2vstream.c
 #,# src/m2vtoyuv.c
 #,# src/Makefile
+#,# src/merge-gui.c
 #,# src/mp2cutpoints.c
+#,# src/pgssupout.c
 #,# src/textdisp.c
 #,# src/x.c
 #,# src/x.h

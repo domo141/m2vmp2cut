@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Fri 26 Oct 2012 18:55:56 EEST too
-# Last modified: Wed 31 Oct 2012 16:41:13 EET too
+# Last modified: Thu 28 Nov 2013 22:41:35 +0200 too
 
 use 5.8.1;
 use strict;
@@ -25,11 +25,14 @@ if (@ARGV == 0 or ($ARGV[0] ne '4:3' and $ARGV[0] ne '16:9')) {
     die "
  Usage: $0 [4:3|16:9] (note to self: add probe option)
 
- Cut without re-encoding. Start frames needs to be I-frames (checked)
- End frames should be I or P frames (this is not checked ATM), if not
- artifacts will appear. Note that the m2vmp2cut select tool ... XXX
+ Cut without re-encoding. Start frames needs to be I-frames
+ End frames must be I or P frames. If this is not the case
+ cut will not happen. Note that in current m2vcut gui tool
+ selecting end frames selects the start of cutout frames
+ i.e. end selection must be one-after the last included frame.
 
- FIXME: options for dvd/blu-ray subtitles.
+ FIXME: options for dvd/blu-ray subtitles (and also end cut
+        in m2vcut gui tool!)
 \n";
 }
 
@@ -52,9 +55,10 @@ foreach (@cutpoints)
 {
     my ($s, $e) = split('-');
 
+    my ($gop, $frametypes);
     while (<I>) {
-	#        offset   gop    frame iframe-pos asr   time c/0 num-of-frames
-	if (/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d)\s/) {
+	#        offset   gop   frame  iframe-pos asr ... frametypes
+	if (/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d)\s.*\s([BDIPX_]+)\s*$/) {
 	    my $ifn = $3 + $4;
 	    next if ($ifn < $s );
 	    if ($s == $ifn) {
@@ -62,11 +66,36 @@ foreach (@cutpoints)
 		push @cpargs, "$1,$frames";
 		last;
 	    }
-	    die "Frame $s not an iframe!\n";
+	    die "Frame #$s is not an I-frame (or $s slipped through)!\n";
 	}
     }
+    while (<I>) {
+	#        offset   gop   frame ... #of-frames  frametypes
+	if (/^\s*(\d+)\s+(\d+)\s+(\d+)\s.*?\s(\d+)\s+([BDIPX_]+)\s*$/) {
+	    my $lfn = $3 + $4;
+	    next if ($lfn < $e);
+	    my $off = $e - $3 - 1;
+	    die "Frame #$e slipped through!\n" if $off < 0;
+	    my @frametypes = split '', $5;
+	    my $ftype = $frametypes[$off];
+	    $e = '', last if $ftype eq 'I' or $ftype eq 'P';
+	    $e--;
+	    die "Frame #$e is not an I-frame or P-frame (is $ftype-frame)!\n";
+	}
+    }
+    die "Frame #$e not checked/found!\n" if $e;
 }
 close I;
+
+unless (@cpargs) {
+    die "
+ There was either no selections made to be cut or the video index file
+ was generated using older version of m2vmp2cut. If the latter is the
+ case, remove '$indexfile' and then execute
+ 'm2vmp2cut $dir select' again.
+ This will recreate new index file which is compatible with this tool.
+\n";
+}
 
 my ($videofifo, $audiofifo) = ( "fifo.video.$$", "fifo.audio.$$" );
 
@@ -82,7 +111,7 @@ unless (xfork) {
 
 unless (xfork) {
     open STDOUT, '>', $videofifo or die $!;
-    exec "$bindir/m2vstream", $ARGV[0], $videofile, @cpargs;
+    exec "$bindir/m2vstream", ($ARGV[0] eq "4:3"? 2: 3), $videofile, @cpargs;
 }
 
 system qw/mplex -f 8 -o out.mpg/, $videofifo, $audiofifo;
