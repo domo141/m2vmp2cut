@@ -22,7 +22,7 @@
  *	    All rights reserved
  *
  * Created: Sat 03 Nov 2012 13:32:07 EET too
- * Last modified: Thu 15 Nov 2012 16:36:48 EET too
+ * Last modified: Sun 09 Feb 2014 14:33:18 +0200 too
  */
 
 #ifndef _BSD_SOURCE
@@ -624,7 +624,7 @@ int main(int argc, char * argv[])
     else
 	w = abLabel("No audio content to mux");
 
-    addFrame(vbox, "Audio", w);
+    addFrame(vbox, "Audio (lang codes not in use yet..)", w);
 
     if (G.subtfc) {
 	GtkTable * table = GTK_TABLE(gtk_table_new(G.subtfc, 5, false));
@@ -646,7 +646,7 @@ int main(int argc, char * argv[])
     else
 	w = abLabel("No subtitle content to mux");
 
-    addFrame(vbox, "Subtitles", w);
+    addFrame(vbox, "Subtitles (not yet operational...)", w);
 
     GtkWidget * bbox = gtk_hbutton_box_new();
     gtk_box_pack_start(vbox, bbox, true, true, 2);

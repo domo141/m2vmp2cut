@@ -9,13 +9,16 @@
 #	    All rights reserved
 #
 # Created: Wed 19 Sep 2012 17:24:05 EEST too
-# Last modified: Wed 31 Oct 2012 16:50:16 EET too
+# Last modified: Sun 04 May 2014 22:03:22 +0300 too
 
 set -eu
 #set -x
 
 # LANG=C LC_ALL=C; export LANG LC_ALL
 #PATH='/sbin:/usr/sbin:/bin:/usr/bin'; export PATH
+
+saved_IFS=$IFS
+readonly saved_IFS
 
 warn () { echo "$@" >&2; }
 die () { echo "$@" >&2; exit 1; }
@@ -134,7 +137,26 @@ case $vframes in  '')
 ;; *)	vframes=-frames:v\ $vframes
 esac
 
-rmfifos () { rm -f fifo.video.$$ fifo.audio.$$; }
+RUNTIME_DIR=
+case ${XDG_RUNTIME_DIR-} in '' | *["$IFS"]*) ;; *)
+	if test -d $XDG_RUNTIME_DIR -a test -x $XDG_RUNTIME_DIR
+	then RUNTIME_DIR=$XDG_RUNTIME_DIR
+	fi
+esac
+case ${RUNTIME_DIR} in '')
+	uid () { uid=$2; }
+	IFS="=($IFS"
+	uid `/usr/bin/id`
+	IFS=$_saved_IFS
+	RUNTIME_DIR=/tmp/runtime-$uid
+	mkdir $RUNTIME_DIR 2>/dev/null || :
+	chmod 700 $RUNTIME_DIR
+esac
+
+fifo_video=$RUNTIME_DIR/fifo.video.$$
+fifo_audio=$RUNTIME_DIR/fifo.audio.$$
+
+rmfifos () { rm -f $fifo_video $fifo_audio; }
 exitrap () {
 	ev=$?
 	set +e
@@ -152,12 +174,12 @@ mkfifos ()
 }
 fifoaudio ()
 {
-	$m2vmp2cut_bindir/getmp2.sh "$src" > fifo.audio.$$ &
+	$m2vmp2cut_bindir/getmp2.sh "$src" > $fifo_audio &
 	apid=$!
 }
 fifovideo ()
 {
-	eval "$m2vmp2cut_cntdir/ffgetyuv.pl $filters" > fifo.video.$$ &
+	eval "$m2vmp2cut_cntdir/ffgetyuv.pl $filters" > $fifo_video &
 	vpid=$!
 }
 
@@ -172,18 +194,18 @@ eval `date "+sdate='%c' ss=%s"`
 echo
 echo '***' Starting pass1 at $sdate
 echo
-mkfifos fifo.video.$$
+mkfifos $fifo_video
 fifovideo
-x ffmpeg -i fifo.video.$$ -pass 1 $vopts -an -y "$of.wip"
+x ffmpeg -i $fifo_video -pass 1 $vopts -an -y "$of.wip"
 
 eval `date "+date='%c' ms=%s"`
 echo
 echo '***' Starting pass2 at $date
 echo
-mkfifos fifo.video.$$ fifo.audio.$$
+mkfifos $fifo_video $fifo_audio
 fifoaudio
 fifovideo
-x ffmpeg -i fifo.video.$$ -i fifo.audio.$$ -pass 2 $vopts $aopts -y "$of.wip"
+x ffmpeg -i $fifo_video -i $fifo_audio -pass 2 $vopts $aopts -y "$of.wip"
 
 eval `date "+date='%c' es=%s"`
 echo

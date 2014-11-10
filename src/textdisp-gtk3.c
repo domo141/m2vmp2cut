@@ -3,7 +3,7 @@
  WARN="-Wall -Wno-long-long -Wstrict-prototypes -pedantic"
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
- xo=`pkg-config --cflags --libs gtk+-2.0 cairo | sed 's/-I/-isystem /g'`
+ xo=`pkg-config --cflags --libs gtk+-3.0 | sed 's/-I/-isystem /g'`
  case ${1-} in '') set x -O2; shift; esac
  #case ${1-} in '') set x -ggdb; shift; esac
  set -x; exec ${CC:-gcc} -std=c99 $WARN "$@" -o "$trg" "$0" $xo
@@ -19,15 +19,11 @@
  *	    All rights reserved
  *
  * Created: Tue 25 Sep 2012 22:10:56 EEST too
- * Last modified: Tue 24 Jun 2014 15:09:43 +0300 too
+ * Last modified: Mon 10 Nov 2014 19:26:14 +0200 too
  */
 
-#ifndef _BSD_SOURCE
 #define _BSD_SOURCE
-#endif
-#ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,9 +42,6 @@
 
 #define null ((void*)0)
 
-// No internal defines. else not recommended.
-#define unless(x) if (!(x))
-
 // (variable) block begin/end -- explicit liveness...
 #define BB {
 #define BE }
@@ -58,21 +51,20 @@
 #define TCOLUMNS 80
 
 struct {
-    const char * progname;
     int cpid;
     int cfd;
     char hold;
     cairo_t * cr;
+    cairo_surface_t * surface;
     double top, advance, height; // these *should* be 14, 9 & 17
     double lineheight; // XXX document...
     int x, y;
     int drawstate;
 
-    GdkPixmap * pixmap;
     GtkWidget * image;
 } G;
 
-static void verrf(const char * format, va_list ap)
+static void warn(const char * format, va_list ap)
 {
     int error = errno; /* XXX is this too late ? */
     vfprintf(stderr, format, ap);
@@ -84,8 +76,7 @@ static void verrf(const char * format, va_list ap)
 
 void __attribute__((noreturn)) vdie(const char * format, va_list ap)
 {
-    fprintf(stderr, "%s: ", G.progname);
-    verrf(format, ap);
+    warn(format, ap);
     exit(1);
 }
 
@@ -151,12 +142,6 @@ gboolean key_press(void * w, GdkEventKey * k, void * d)
     return true;
 }
 
-void init_G(const char * progname)
-{
-    memset(&G, 0, sizeof G);
-    G.progname = progname;
-}
-
 gboolean read_process_input(GIOChannel * source,
 			    GIOCondition condition, gpointer data);
 
@@ -165,8 +150,6 @@ gboolean read_process_input(GIOChannel * source,
 
 int main(int argc, char * argv[])
 {
-    init_G(argv[0]);
-
     gtk_init(&argc, &argv);
 
     BB;
@@ -207,15 +190,17 @@ int main(int argc, char * argv[])
     gtk_widget_realize(window);
 
 #if 0
-    cairo_surface_t * pm = gdk_window_create_similar_surface
-	(window->window, CAIRO_CONTENT_COLOR, int 728, 548);
+    // this does not work :O -- and i just have no clue...
+    G.surface
+	= gdk_window_create_similar_surface(gtk_widget_get_window(window),
+					    CAIRO_CONTENT_COLOR, 728, 548);
+#else
+    G.surface = cairo_image_surface_create (CAIRO_FORMAT_RGB24, 728, 548);
 #endif
-    G.pixmap = gdk_pixmap_new(window->window, 728, 548, -1);
-    G.image = gtk_image_new_from_pixmap(G.pixmap, null);
+    G.cr = cairo_create(G.surface);
+    G.image = gtk_image_new_from_surface(G.surface);
 
     gtk_container_add(GTK_CONTAINER(window), G.image);
-
-    G.cr = gdk_cairo_create(G.pixmap);
 
     cairo_set_source_rgb(G.cr, 0.0, 0.0, 0.2);
     cairo_paint(G.cr);
@@ -318,7 +303,7 @@ void maybe_scroll(void)
 	// for data copying -- using deprecated function -- as attempting
 	// to play with window's GdkWindow is even more dangerous...
 	// let's see how scroll works... ;/ (overlapping surfaces...)
-	gdk_cairo_set_source_pixmap(G.cr, G.pixmap, 0.0, -G.lineheight);
+	cairo_set_source_surface(G.cr, G.surface, 0.0, -G.lineheight);
 
 	cairo_rectangle(G.cr, LBW, TBW, 720, 540 - G.lineheight);
 	cairo_fill(G.cr);
@@ -364,7 +349,7 @@ gboolean read_process_input(GIOChannel * source,
 
     int len = read(G.cfd, buf, sizeof buf);
     if (len <= 0) {
-	unless (G.hold)
+	if (! G.hold)
 	    gtk_main_quit();
 	/* no more data read -- and too shy to close fd */
 	return false;
@@ -373,7 +358,6 @@ gboolean read_process_input(GIOChannel * source,
     //printf("input text: len %d, text '%.*s'\n", len, len, buf);
 
     /* and now the fun begins -- render text to image */
-    /* utf8 counting not implemented -- yet */
     int x = G.x;
     char * p = buf;
     int o = 0;
@@ -399,6 +383,10 @@ gboolean read_process_input(GIOChannel * source,
 	    if (o != 0 || prevdrawstate != 2)
 		G.drawstate = 1;
 	    o = 0;
+	    continue;
+	}
+	if ((c & 0xe0) == 0xa0) { // utf-8 continuation char //
+	    o++;
 	    continue;
 	}
 	if (x < 79) {

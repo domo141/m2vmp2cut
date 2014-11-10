@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Tue Apr 22 19:10:35 EEST 2008 too
-# Last modified: Wed 24 Oct 2012 18:19:52 EEST too
+# Last modified: Sun 04 May 2014 19:00:44 +0300 too
 
 set -eu
 
@@ -73,16 +73,16 @@ case ${1-} in
 	exec_textdisp 'M2vCut Test' "$0" m2vcut_runtest "$@"
 	;;
     m2vcut_runtest)
-	vd=`dirname "$5"`
+	vd=`exec dirname "$5"`
 	test -f "$vd"/m2vcut-test/$2-$3 -a -f "$vd"/m2vcut-test/out.mpg || {
 	  rm -rf "$vd"/m2vcut-test
 	  to=--test=0
 	  case $2 in '') range= rx= to= ;;
-	   *) rs=`expr $2 - 200 ||:`; test $rs -ge 0 || rs=0; range=$rs-$2 rx=,
+	   *) rs=`exec expr $2 - 200` || :; test $rs -ge 0 || rs=0; range=$rs-$2 rx=,
 	  esac
 	  case $3 in '') to= ;; *) range="$range$rx$3-`expr $3 + 200`" ;; esac
 
-	  cwd=`cd "\`dirname "$0"\`"/; pwd`
+	  cwd=`cd "\`exec dirname "$0"\`"/; pwd`
 	  "$cwd"/m2vmp2cut.pl $to "$vd" -r $range -v "$5" -d m2vcut-test
 	  touch "$vd"/m2vcut-test/$2-$3
 	}

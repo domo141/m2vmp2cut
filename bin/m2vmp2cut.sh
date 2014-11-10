@@ -7,14 +7,23 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Wed 27 Mar 2013 17:02:33 EET too
+# Last modified: Wed 04 Jun 2014 23:42:55 +0300 too
 
 set -eu
 case ${1-} in -x) set -x; shift; esac # debug help, passed thru wrapper.
 
+case ~ in '~') exec >&2; echo
+	echo "Shell '/bin/sh' lacks some required modern shell functionality."
+	echo "Try 'ksh $0${1+ $*}', 'bash $0${1+ $*}'"
+	echo " or 'zsh $0${1+ $*}' instead."; echo
+	exit 1
+esac
+
+case ${BASH_VERSION-} in *.*) shopt -s xpg_echo; esac
+case ${ZSH_VERSION-} in *.*) emulate zsh; esac
+
 warn () { echo "$@" >&2; }
 die ()  { echo; echo "$@"; echo; exit 1; } >&2
-needvar () { case ${1-} in '') shift 1; "$@"; esac; }
 
 usage () {
 	warn; die Usage: m2vmp2cut '(file|directory)' $cmd "$@"
@@ -22,9 +31,9 @@ usage () {
 
 x () { echo + "$@" >&2; "$@"; }
 
-M2VMP2CUT_CMD_PATH=`cd \`dirname "$0"\`; pwd`
+M2VMP2CUT_CMD_PATH=`cd "\`dirname "$0"\`"; pwd`
 case $M2VMP2CUT_CMD_PATH in
-	*' '*) die "Path '$M2VMP2CUT_CMD_PATH' contains spaces!"; esac
+	*["$IFS"]*) die "Path '$M2VMP2CUT_CMD_PATH' contains spaces!"; esac
 export M2VMP2CUT_CMD_PATH
 
 #echo $M2VMP2CUT_CMD_PATH
@@ -44,13 +53,31 @@ cmd_lvev6frames () ## Legacy m2vmp2cut support; dig cutpoints from ~/.lve/*
 	$M2VMP2CUT_CMD_PATH/lvev6frames.pl
 }
 
+chkaudio ()
+{
+#	ac3=`exec ls *.ac3 2>/dev/null`
+	mp2=`echo *.mp2 || :` 2>/dev/null
+	case $mp2 in
+	 '')	warn "No audio files to process" ;;
+	 *'*'*)	warn "No audio files to process" ;;
+	 *' '*)	warn "More than one audio file: $mp2" ;;
+	  *)	ln -s $mp2 audio.mp2 ;;
+	esac
+}
+
+
 chkindexes ()
 {
 	test -s "$1/video.index" || {
 		$M2VMP2CUT_CMD_PATH/m2vscan "$1/video.m2v" "$1/video.index.wip"
 		mv "$1/video.index.wip" "$1/video.index"
 	}
-	test -f "$1/audio.mp2" || return
+	test -f "$1/audio.mp2" || {
+		case "$1" in '.') chkaudio
+		;;	*) warn No audio'!'
+		esac
+		return 1
+	}
 
 	test -s "$1/audio.scan" -a -s "$1/audio.levels" || {
 		$M2VMP2CUT_CMD_PATH/mp2cutpoints --scan \
@@ -59,29 +86,26 @@ chkindexes ()
 	}
 }
 
-getcmds ()
-{
-	cmds=`env which projectx java mplex 2>/dev/null | tr '\012' :`
-}
-
 needcmd ()
 {
-	case $cmds in */$1:) ;; *)
+	hash "$1" 2>/dev/null || {
 		c=$1; shift
 		die "Command '$c' missing ($*)"
-	esac
+	}
 }
 
 
-chkpjx () # getcmds run before
+chkpjx ()
 {
-	case $cmds in */projectx:*) pjx=projectx; return; esac
+	if hash projectx 2>/dev/null
+	then 	pjx=projectx; return
+	fi
 
 	test -h $M2VMP2CUT_CMD_PATH/ProjectX.jar || {
 	  warn "Symbolic link '$M2VMP2CUT_CMD_PATH/ProjectX.jar' does not exist"
 	  die 'Please provide link and try again'
 	}
-	pjxjar=`LC_ALL=C ls -l $M2VMP2CUT_CMD_PATH/ProjectX.jar | sed 's/.* //'`
+	pjxjar=`ls -l $M2VMP2CUT_CMD_PATH/ProjectX.jar | sed 's/.* //'`
 	test -f $pjxjar || {
 		warn "ProjectX jar file '$pjxjar' does not exist."
 		die "Fix this or it's symbolic link reference '$M2VMP2CUT_CMD_PATH/ProjectX.jar'."
@@ -108,7 +132,6 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 	for f in "$file" "$@"
 	do	test -f "$f" || die "'$f': no such file"
 	done
-	getcmds
 	chkpjx
 	needcmd mplex needed after cutting when multiplexing final image
 
@@ -122,7 +145,7 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 	echo 'SubtitlePanel.exportAsVobSub=1' >> "$dir"/X.ini
 	runpjx 'in' "$file"
 	case $# in 0) ;; *) c=0; for f in "$@"; do
-		c=`expr $c + 1`
+		c=`exec expr $c + 1`
 		runpjx 'more-in'$c "$f"
 		done
 		echo 'More than one file was demuxed'
@@ -142,35 +165,28 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 		  done )
 	fi
 
-#	ac3=`ls *.ac3 2>/dev/null`
-	mp2=`ls *.mp2 2>/dev/null`
-	mp2c=
-	for f in $mp2; do mp2c=$mp2c.; done
-	case $mp2c in
-	  '')	die "No audio files to process" ;;
-	  .)	ln -s $mp2 audio.mp2 ;;
-	esac
-	unset mp2c
 	ln -s in.m2v video.m2v
-
-	chkindexes .
+	chkaudio
+	chkindexes . && noaudio=false || noaudio=true
 	echo
 	echo "Files demuxed in '$dir'"
-	echo 'Next: select'
+	$noaudio || echo 'Next: select'
 }
 
 cmd_select () # Select parts from video with a graphical tool
 {
 	test -f "$dir/video.m2v" || die "'$dir/video.m2v' does not exist"
+	# currently do not run assel-gui is there is just one audio... (WIP)
+	test -f "$dir/audio.mp2" ||
 	x $M2VMP2CUT_CMD_PATH/assel-gui "$dir"
 	test -f "$dir/audio.mp2" ||
 		x $M2VMP2CUT_CMD_PATH/assel.pl "$dir" linkfirstaudio || :
-	chkindexes "$dir"
+	chkindexes "$dir" || :
 	x $M2VMP2CUT_CMD_PATH/m2vcut-gui "$dir/video.index" "$dir/video.m2v" \
 		"$dir/cutpoints" "$dir/audio.levels"
 	# append cutpoint history from backup file made by m2vcut-gui
 	if test -f "$dir/cutpoints.1"
-	then	case `wc "$dir/cutpoints"` in
+	then	case `exec wc "$dir/cutpoints"` in
 			*' '1' '*) cat "$dir/cutpoints.1" >> "$dir/cutpoints"
 		esac
 	fi
@@ -191,7 +207,7 @@ cmd_play () # Play resulting file with mplayer
 
 cmd_move () # Move final file to a new location (and name)
 {
-	needvar "${1-}" usage '<destfile>'
+	case $# in 1) ;; *) usage '<destfile>'; esac
 	f="$dir"/m2vmp2cut-work/out.mpg
 	test -f "$f" || die "'$f' does not exist"
 	x mv "$f" "$1"
@@ -211,7 +227,7 @@ cmd_getmp2 () # Get selected parts of mp2 audio
 
 cmd_contrib () # Contrib material, encoding scripts etc...
 {
-	M2VMP2CUT_CMD_DIRNAME=`dirname "$M2VMP2CUT_CMD_PATH"`
+	M2VMP2CUT_CMD_DIRNAME=`exec dirname "$M2VMP2CUT_CMD_PATH"`
 	M2VMP2CUT_CONTRIB_PATH=$M2VMP2CUT_CMD_DIRNAME/contrib
 	export M2VMP2CUT_CONTRIB_PATH
 	case ${1-} in '')
@@ -229,7 +245,7 @@ cmd_contrib () # Contrib material, encoding scripts etc...
 		echo; exit 0
 	esac
 	fp= ff=
-	for f in `ls -1 $M2VMP2CUT_CONTRIB_PATH`
+	for f in `exec ls -1 $M2VMP2CUT_CONTRIB_PATH`
 	do
 		case $f in *~) continue ;;
 		    $1) fp= ff=$1 fm=$1 break ;;
@@ -291,7 +307,7 @@ case ${1-} in --batch) batch=1; shift ;; *) batch= ;; esac
 case $# in 0)
 ;; 1)	set x '' one; shift
 ;; *)
-	#case $1 in *' '*) warn
+	#case $1 in *["$IFS"]*) warn
 	#	die "Support for spaces in '$1' may not have been implemented."
 	#esac
 	if test -f "$1"
@@ -303,6 +319,11 @@ case $# in 0)
 	then
 		file=
 		dir=$1
+		shift
+	elif test -d "$1"d
+	then
+		file=
+		dir=${1}d
 		shift
 	else
 		warn; die "'$1': no such file or directory."
@@ -339,7 +360,7 @@ cm=$1; shift
 # esac
 
 cc= cp=
-for m in `LC_ALL=C exec sed -n 's/^cmd_\([a-z0-9_]*\) (.*/\1/p' "$0"`
+for m in `exec sed -n 's/^cmd_\([a-z0-9_]*\) (.*/\1/p' "$0"`
 do
 	case $m in
 		$cm) cp= cc=1 cmd=$cm; break ;;

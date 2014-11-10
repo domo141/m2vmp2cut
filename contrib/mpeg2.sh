@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Mon Aug 18 18:54:24 EEST 2008 too
-# Last modified: Wed 31 Oct 2012 16:42:11 EET too
+# Last modified: Sun 04 May 2014 22:07:17 +0300 too
 
 
 case $1 in
@@ -30,6 +30,9 @@ case $1 in
 .
 exit 0 ;; esac
 
+saved_IFS=$IFS
+readonly saved_IFS
+
 src=$M2VMP2CUT_MEDIA_DIRECTORY
 
 denoisefilt=
@@ -37,14 +40,33 @@ deintfilter=
 
 filters="$denoisefilt $deintfilter"
 
-trap "rm -f fifo.video.$$ fifo.audio.$$" 0
-mkfifo fifo.video.$$ fifo.audio.$$
+RUNTIME_DIR=
+case ${XDG_RUNTIME_DIR-} in '' | *["$IFS"]*) ;; *)
+	if test -d $XDG_RUNTIME_DIR -a test -x $XDG_RUNTIME_DIR
+	then RUNTIME_DIR=$XDG_RUNTIME_DIR
+	fi
+esac
+case ${RUNTIME_DIR} in '')
+	uid () { uid=$2; }
+	IFS="=($IFS"
+	uid `/usr/bin/id`
+	IFS=$saved_IFS
+	RUNTIME_DIR=/tmp/runtime-$uid
+	mkdir $RUNTIME_DIR 2>/dev/null || :
+	chmod 700 $RUNTIME_DIR
+esac
 
-$M2VMP2CUT_CMD_PATH/getmp2.sh "$src" > fifo.audio.$$ &
+fifo_video=$RUNTIME_DIR/fifo.video.$$
+fifo_audio=$RUNTIME_DIR/fifo.audio.$$
+
+trap "rm -f $fifo_video $fifo_audio" 0
+mkfifo $fifo_video $fifo_audio
+
+$M2VMP2CUT_CMD_PATH/getmp2.sh "$src" > $fifo_audio &
 
 eval "$M2VMP2CUT_CONTRIB_PATH/ffgetyuv.pl $filters" | \
-	mpeg2enc -f 3 -a $a -b 2000 -R 2 -K kvcd -s -o fifo.video.$$ 2>&1 &
+	mpeg2enc -f 3 -a $a -b 2000 -R 2 -K kvcd -s -o $fifo_video 2>&1 &
 
-mplex -f 8 -o out.mpg fifo.video.$$ fifo.audio.$$
+mplex -f 8 -o out.mpg $fifo_video $fifo_audio
 
 echo result is in './out.mpg'

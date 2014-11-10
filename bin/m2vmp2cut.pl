@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Sun Sep 05 11:12:24 EEST 2004 too
-# Last modified: Wed 15 Feb 2012 18:56:36 EET too
+# Last modified: Sun 04 May 2014 22:03:40 +0300 too
 #
 # This program is licensed under the GPL v2. See file COPYING for details.
 
@@ -87,6 +87,9 @@ while (defined $ARGV[0] && $ARGV[0] =~ /^--/)
 	unless ($ARGV[0] =~ /^--help\b/);
     showdoc $rv, 'Usage';
 }
+
+die 'Author option disabled -- how does this vob file="command..." work !!!',
+    "\n" if $author;
 
 $nomux = 1 if ($aonly);
 $nomux = 1 if ($author);
@@ -258,10 +261,10 @@ chmod 0755, "$wd/do.sh";
 ## shbegin ##
 
 if  ( -f '/bin/bash')   {  print SH "#!/bin/bash\n";  }
+elsif ( -f '/bin/zsh')  {  print SH "#!/bin/zsh\n";   }
 elsif ( -f '/bin/ksh')  {  print SH "#!/bin/ksh\n";   }
-else
-{
-    die "Can not find supported shell, neither /bin/bash nor /bin/ksh.\n";
+else {
+    die "Can not find supported shell; /bin/bash, /bin/zsh nor /bin/ksh.\n";
 }
 
 print SH << "EOF";
@@ -279,20 +282,32 @@ _m2vtoyuv () { \"$m2vtoyuv\" "\$@"; }
 _catfiltered () { \"$catfiltered\" "\$@"; }
 
 # mpeg2enc comes also from mjpegtools
-case `env which mplex` in
-	*/*) : ;; *) die mplex does not exist. please install mjpegtools ;;
-esac
+hash mplex 2>/dev/null ||
+	die "'mplex' does not exist; please install mjpegtools."
 
-test -d "$wd" || die Directory \\'$wd\\' does not exist '(changed working directory?)'.
+test -d "$wd" || die "Directory '$wd' does not exist (changed working directory?)."
 vfile="$vfile"
 afile="$afile"
 for f in "\$vfile" "\$afile"
 do
-	test -f \$f || die File \\'\$f\\' does not exist.
+	test -f \$f || die "File '\$f' does not exist."
 done
+EOF
 
-mainpid=\$\$
-trap 'kill -USR1 0' 0
+my $RUNTIME_DIR = $ENV{XDG_RUNTIME_DIR} || 0;
+unless ($RUNTIME_DIR and -d $RUNTIME_DIR
+	and -x $RUNTIME_DIR and $RUNTIME_DIR !~ /\s/) {
+    $RUNTIME_DIR = "/tmp/runtime-$<";
+    mkdir $RUNTIME_DIR; # ignore if fail.
+    chmod 0700, $RUNTIME_DIR or die "Cannot chown '$RUNTIME_DIR': $!\n";
+}
+
+print SH << "EOF";
+
+rtwd=$RUNTIME_DIR/m2vmp2cut-$$
+
+trap 'rm -rf \$rtwd; kill -USR1 0' 0
+rm -rf \$rtwd; mkdir \$rtwd;
 
 '$m2vmp2cut_sh' . vermatch 6 \\\n\t|| die 'Tool version mismatch. Rerun!';
 
@@ -300,8 +315,8 @@ EOF
 
 if (! $nomux || $author)
 {
-    print SH "rm -f \"$wd/fifo-video\" \"$wd/fifo-audio\"\n",
-      "mkfifo \"$wd/fifo-video\" \"$wd/fifo-audio\"\n";
+    print SH qq'rm -f "\$rtwd/fifo-video" "\$rtwd/fifo-audio"\n',
+      qq'mkfifo "\$rtwd/fifo-video" "\$rtwd/fifo-audio"\n';
 }
 print SH << "EOF";
 
@@ -530,8 +545,8 @@ unless ($aonly)
     my $reqq = '';
     $reqq = "tcrequant -d 2 -f $requant |" if ($requant);
 
-    print SH ") | $reqq \"$m2vfilter\" $asr $frames ",
-      $author? "\"$wd/fifo-video\" &": $nomux? "\"$wd/incomplete.m2v\"": "\"$wd/fifo-video\" &", "\n";
+    print SH qq') | $reqq "$m2vfilter" $asr $frames ',
+      $author? qq'"\$rtwd/fifo-video" &': $nomux? qq'"$wd/incomplete.m2v"': qq'"\$rtwd/fifo-video" &', "\n";
 
     undef $reqq;
 }
@@ -546,20 +561,17 @@ print SH "\n\n";
 print SH "# audio timecodes: @timecodes,\n#\tcutfilepos: $audiocutfilepos\n";
 
 print SH "\n_fileparts $audiocutfilepos";
-print SH " \"\$afile\" > ", $author? "\"$wd/fifo-audio\" &": $nomux? "\"$wd/incomplete.mp2\"": "\"$wd/fifo-audio\" &", "\n";
+print SH qq' "\$afile" > ', $author? qq'"\$rtwd/fifo-audio" &': $nomux? q'"$wd/incomplete.mp2\"': qq'"\$rtwd/fifo-audio" &', "\n";
 
 
 unless ($nomux)
 {
-    print SH "\nmplex $mplexopts -o \"$wd/incomplete.mpg\" ",
-	"\"$wd/fifo-video\" \"$wd/fifo-audio\" > \"$wd/mplex.out\" 2>&1\n";
+    print SH qq'\nmplex $mplexopts -o "$wd/incomplete.mpg" ',
+	qq'"\$rtwd/fifo-video" "\$rtwd/fifo-audio" > "$wd/mplex.out" 2>&1\n';
 }
 
 if ($author)
 {
-    my $abs_path = `cd $wd && pwd`;
-    chomp($abs_path);
-
     open XML, '>', "$wd/dvdauthor.xml" || die "Can not create dvdauthor xml control file: $!\n";
     chmod 0644, "$wd/dvdauthor.xml";
 
@@ -569,7 +581,8 @@ if ($author)
         <titleset>
           <titles>
             <pgc>
-              <vob file=\"mplex $mplexopts -o /dev/stdout $abs_path/fifo-video $abs_path/fifo-audio |\"/>
+	    # XXX this is now borken -- \$rtwd cannot be fed there...
+              <vob file=\"mplex $mplexopts -o /dev/stdout \$rtwd/fifo-video \$rtwd/fifo-audio |\"/>
             </pgc>
           </titles>
         </titleset>
@@ -583,13 +596,13 @@ EOF
 # Final lines.
 #
 
-print SH "\n", "wait\n", "trap - 0\n";
+print SH "\n", "wait\n", "rm -rf \$rtwd; trap - 0\n";
 
 unless ($author)
 {
-	if ($nomux) { print SH "mv -f \"$wd/incomplete.m2v\" \"$wd/out.m2v\"\n",
-			"mv -f \"$wd/incomplete.mp2\" \"$wd/out.mp2\"\n"; }
-	else { print SH "mv -f \"$wd/incomplete.mpg\" \"$wd/out.mpg\"\n"; }
+	if ($nomux) { print SH qq'mv -f "$wd/incomplete.m2v" "$wd/out.m2v"\n',
+			qq'mv -f "$wd/incomplete.mp2" "$wd/out.mp2"\n'; }
+	else { print SH qq'mv -f "$wd/incomplete.mpg" "$wd/out.mpg"\n'; }
 }
 
 #print SH <<"EOF";

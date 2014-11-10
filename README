@@ -52,7 +52,7 @@ Java runtime    -- to run ProjectX (many non-sun vm:s work also)
 
 Perl            -- m2vmp2cut.pl (run frontend) is written in perl
 Python          -- some m2vmp2cut utilities are written in python
-Posix Shell     -- /bin/sh which has posix shell capabilities
+"Modern" Shell  -- /bin/sh which has modern shell capabilities
                    (not just Bourne) (this is usually the case)
 
 C compiler      -- there are some C utilities that needs to be compiled

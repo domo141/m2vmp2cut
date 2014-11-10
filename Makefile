@@ -32,11 +32,11 @@ TRG_DOCS = Examples m2vcut_help-default m2vcut_help-fi_FI Options Usage
 install: all
 	./makehelper install "$(TRG_BINS:%=bin/%)" "$(TRG_DOCS:%=doc/%)"
 
-release: tools/tarlisted32
+release:
 	./makehelper release
 	@echo Remember to do test build from the release archive.
 
-snapshot: tools/tarlisted32
+snapshot:
 	./makehelper snapshot
 	@echo Remember to do test build from the snapshot archive.
 
@@ -44,9 +44,6 @@ P =
 N =
 diffa:
 	./makehelper diffa $P $N
-
-tools/tarlisted32:
-	cd tools && sh tarlisted32.c
 
 clean: ALWAYS
 	rm -f *~

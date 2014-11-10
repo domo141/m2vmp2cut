@@ -24,15 +24,12 @@ needvar ()
 	return 0
 }
 
-getcmds ()
-{
-	cmds=`env which projectx java mplex mplayer 2>/dev/null | tr '\012' :`
-}
 needcmd ()
 {
-	case $cmds in */$1:*) return 0; esac
-	c=$1; shift
-	die "Command '$c' missing ($*)"
+	hash $1 2>/dev/null || {
+		c=$1; shift
+		die "Command '$c' missing ($*)"
+	}
 }
 
 getversion ()
@@ -54,7 +51,6 @@ cmd_install ()
 		exit 1
 	}
 
-	getcmds
 	needcmd mplex needed for remuxing after cut
 	needcmd mplayer needed for checking media around cutpoints
 	if needvar PJXVAR
@@ -79,7 +75,11 @@ cmd_install ()
 
 	case $VERSION in *wip*)
 		if test -d .git
-		then	VERSION=$VERSION-g`git log -1 --format=format:%h`
+		then
+			VERSION=$VERSION-g`git log -1 --format=format:%h`
+		else
+			x=`expr "\`pwd\`" : '.*\(-g[0-9a-f]*\)$' || :`
+			case $x in '') ;; *) VERSION=${VERSION}$x ;; esac
 		fi
 	esac
 
@@ -142,15 +142,20 @@ cmd_install ()
 
 makedist ()
 {
-	version=m2vmp2cut-$VERSION
-	{ echo 755 root root . $version /
-	  grep '^#,#' "$0" | while read _ f x; do p=755; d=$f
-		test -d $f && d=/ || {	test -f $d.mod && d=$d.mod
-					ne "$x" '' || p=644; }
-		echo $p root root . $version/$f $d; done
-	} | tools/tarlisted32 -VJ -o $version.tar.xz
-
-	echo Created $version.tar.xz
+	ct=`exec git --no-pager log -1 --pretty='%ct'`
+	grep '^#,#' "$0" | perl -anle '
+		use strict; use warnings; BEGIN {require "tools/tarlisted.pm";}
+		our ($f, @go);
+		BEGIN { $f = shift; tarlisted_open $f . ".tar.xz", "xz"; }
+		BEGIN { my $t = shift; @go = ( $t, 0, 0, "root", "root" ); }
+		BEGIN { &tarlisted_mkdir ($f, 0755, @go); }
+		&tarlisted_mkdir ("$f/$F[1]", 0755, @go), next if -d $F[1];
+		my $perm = (defined $F[2] and $F[2] eq "x")? 0755: 0644;
+		print "Adding $F[1]...";
+		tarlisted_cp $F[1], "$f/$F[1]", $perm, @go;
+		END { my $ev = $?; tarlisted_close; exit $ev; }
+	' m2vmp2cut-$VERSION $ct
+	echo Created m2vmp2cut-$VERSION.tar.xz
 
 }
 
@@ -290,6 +295,6 @@ exit
 #,# tools/buildlibmpeg-051.sh x
 #,# tools/chksyslibmpeg.sh x
 #,# tools/chklibmpeg-051.sh x
-#,# tools/tarlisted32.c x
+#,# tools/tarlisted.pm
 
 #EOF

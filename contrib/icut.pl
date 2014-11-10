@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Fri 26 Oct 2012 18:55:56 EEST too
-# Last modified: Thu 28 Nov 2013 22:41:35 +0200 too
+# Last modified: Thu 04 Sep 2014 22:29:27 +0300 too
 
 use 5.8.1;
 use strict;
@@ -20,10 +20,10 @@ BEGIN { $LIBPATH = abs_path($0); $LIBPATH =~ s|[^/]+/[^/]+$|bin|; }
 use lib $LIBPATH;
 use m2vmp2cut;
 
-if (@ARGV == 0 or ($ARGV[0] ne '4:3' and $ARGV[0] ne '16:9')) {
+if (@ARGV > 0 and (@ARGV > 1 or ($ARGV[0] ne '4:3' and $ARGV[0] ne '16:9'))) {
     $0 =~ s|.*/||;
     die "
- Usage: $0 [4:3|16:9] (note to self: add probe option)
+ Usage: $0 [4:3|16:9]
 
  Cut without re-encoding. Start frames needs to be I-frames
  End frames must be I or P frames. If this is not the case
@@ -51,6 +51,7 @@ getcutpoints $cutpoints, \@cutpoints;
 openI $indexfile;
 $" = ',';
 my @cpargs;
+my @asrs = (0,0,0,0,0); # we trust there is no asrs w/ value > 4
 foreach (@cutpoints)
 {
     my ($s, $e) = split('-');
@@ -58,25 +59,27 @@ foreach (@cutpoints)
     my ($gop, $frametypes);
     while (<I>) {
 	#        offset   gop   frame  iframe-pos asr ... frametypes
-	if (/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d)\s.*\s([BDIPX_]+)\s*$/) {
+	if (/^\s*(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d)\s.*\s[BDIPX_]+\s*$/) {
 	    my $ifn = $3 + $4;
 	    next if ($ifn < $s );
 	    if ($s == $ifn) {
 		my $frames = $e - $s;
 		push @cpargs, "$1,$frames";
+		$asrs[$5]++;
 		last;
 	    }
 	    die "Frame #$s is not an I-frame (or $s slipped through)!\n";
 	}
     }
     while (<I>) {
-	#        offset   gop   frame ... #of-frames  frametypes
-	if (/^\s*(\d+)\s+(\d+)\s+(\d+)\s.*?\s(\d+)\s+([BDIPX_]+)\s*$/) {
-	    my $lfn = $3 + $4;
-	    next if ($lfn < $e);
+	#        offset   gop    frame   ...   asr  #of-frames frametypes
+	if (/^\s*(\d+)\s+(\d+)\s+(\d+)\s+\d+\s+(\d).*?(\d+)\s+([BDIPX_]+)\s*$/)
+	{
+	    my $lfn = $3 + $5;
+	    $asrs[$4]++, next if ($lfn < $e);
 	    my $off = $e - $3 - 1;
 	    die "Frame #$e slipped through!\n" if $off < 0;
-	    my @frametypes = split '', $5;
+	    my @frametypes = split '', $6;
 	    my $ftype = $frametypes[$off];
 	    $e = '', last if $ftype eq 'I' or $ftype eq 'P';
 	    $e--;
@@ -97,7 +100,16 @@ unless (@cpargs) {
 \n";
 }
 
-my ($videofifo, $audiofifo) = ( "fifo.video.$$", "fifo.audio.$$" );
+my $RUNTIME_DIR = $ENV{XDG_RUNTIME_DIR} || 0;
+unless ($RUNTIME_DIR and -d $RUNTIME_DIR
+	and -x $RUNTIME_DIR and $RUNTIME_DIR !~ /\s/) {
+    $RUNTIME_DIR = "/tmp/runtime-$<";
+    mkdir $RUNTIME_DIR; # ignore if fail.
+    chmod 0700, $RUNTIME_DIR or die "Cannot chown '$RUNTIME_DIR': $!\n";
+}
+
+my ($videofifo, $audiofifo) = ( "$RUNTIME_DIR/icut-fifo.video.$$",
+				"$RUNTIME_DIR/icut-fifo.audio.$$" );
 
 eval 'END { unlink $videofifo, $audiofifo }';
 
@@ -109,9 +121,13 @@ unless (xfork) {
     exec "$bindir/getmp2.sh", $dir;
 }
 
+# XXX add printing of asr counts...
+my $asr = (@ARGV == 1? ($ARGV[0] eq '4:3'? 2: 3): ($asrs[2] > $asrs[3]? 2: 3));
+
 unless (xfork) {
+    warn "Executing m2vstream $asr $videofile @cpargs\n";
     open STDOUT, '>', $videofifo or die $!;
-    exec "$bindir/m2vstream", ($ARGV[0] eq "4:3"? 2: 3), $videofile, @cpargs;
+    exec "$bindir/m2vstream", $asr, $videofile, @cpargs;
 }
 
 system qw/mplex -f 8 -o out.mpg/, $videofifo, $audiofifo;
