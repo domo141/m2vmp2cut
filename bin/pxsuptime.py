@@ -14,7 +14,7 @@ def pts2ts(pts):
     return '%02d:%02d:%02d.%03d' % (h, m, s, ms)
 
 # Implementation matches at least with ProjecX 0.82.1.02
-def pxsubtime(supfile):
+def pxsuptime(supfile, base):
     """extract subtitles from ProjectX-generated .sup file. Picky!"""
     # Here thanks go to ProjetcX source, http://www.via.ecp.fr/~sam/doc/dvd/
     # and gtkspu program in gopchop distribution
@@ -24,7 +24,7 @@ def pxsubtime(supfile):
     if f.read(2) != 'SP':
         raise Exception, "Syncword missing. XXX bailing out."
 
-    image=0
+    image=1 # 1-based for feh(1) file number counting compatibility
     while True:
         # X.java reads 5 bytes of pts, SubPicture.java writes 4. With
         # 4 bytes 47721 seconds (13.25 hours) can be handled.
@@ -82,8 +82,13 @@ def pxsubtime(supfile):
 
         sptstr = pts2ts(pts)
 
-        print "image='%d' start='%s' end='%s' x='%d' y='%d'" % \
-            (image, sptstr, pts2ts(endpts), x1, y1)
+        width = x2 - x1 + 1
+        if width % 2 != 0:
+            print >> sys.stderr, \
+                "Image %d width (%d) is not divisible by 2." % (image, width),
+            print >> sys.stderr, "Check %s-%05d.bmp" % (base, image)
+        print "image='%d' start='%s' end='%s' x='%d' y='%d' w='%d' h='%d'" % \
+            (image, sptstr, pts2ts(endpts), x1, y1, width, y2 - y1 + 1)
         image = image + 1
 
         if f.read(2) != 'SP':
@@ -92,10 +97,11 @@ def pxsubtime(supfile):
 
 def main():
     if len(sys.argv) < 2:
-        print >> sys.stderr, "\nUsage: %s supfile" % sys.argv[0]
+        print >> sys.stderr, "\nUsage: %s supfile [base]" % sys.argv[0]
         sys.exit(1)
 
-    pxsubtime(sys.argv[1])
+    base = sys.argv[2] if len(sys.argv) > 2 else 'in*'
+    pxsuptime(sys.argv[1], base)
 
 # for pychecker(1)
 if __name__ == '__main__':

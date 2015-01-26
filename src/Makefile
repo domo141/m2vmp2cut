@@ -4,7 +4,7 @@
 # XXX mixed code from old & new system. to be fixed later (maybe)
 
 MSRCS=	m2vscan.c m2vfilter.c m2vstream.c fileparts.c mp2cutpoints.c \
-	zzob.c filerotate.c bufwrite.c x.c
+	eteen.c zzob.c filerotate.c bufwrite.c x.c
 
 SRCS=	$(MSRCS) #embeds.c
 
@@ -16,7 +16,7 @@ TOCCODE= m2vmp2cut.pl lvev6frames.pl \
 
 EGHDRS=$(TOCCODE:%=ghdrs/%.h)
 
-BINS=	m2vscan m2vfilter m2vstream fileparts filerotate merge-gui \
+BINS=	m2vscan m2vfilter m2vstream fileparts filerotate merge-gui eteen \
 	mp2cutpoints assel-gui m2vcut-gui m2vtoyuv textdisp pgssupout
 
 BINARIES= $(BINS:%=../bin/%)
@@ -122,6 +122,10 @@ OPTFLAGS=-s -O3
 ../bin/pgssupout: pgssupout.c
 	sh pgssupout.c $(OPTFLAGS)
 	mv pgssupout ../bin
+
+../bin/eteen: eteen.c
+	sh eteen.c $(OPTFLAGS)
+	mv eteen ../bin
 
 ../bin/libpreload_ffm2vtoyuv4mpeghax.so: libpreload_ffm2vtoyuv4mpeghax.c
 	sh $< $(OPTFLAGS)

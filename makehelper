@@ -4,29 +4,35 @@
 set -eu
 #set -x
 
+LANG=en_US.utf8 LC_ALL=en_US.utf8; export LANG LC_ALL
+
+case ~ in '~') exec >&2; echo
+	echo "Shell '/bin/sh' lacks some required modern shell functionality."
+	echo; exit 1
+esac
+
+case ${BASH_VERSION-} in *.*) PATH= shopt -s xpg_echo; esac
+case ${ZSH_VERSION-} in *.*) PATH= emulate ksh; set -eu; esac
+
 warn () { echo "$@" >&2; }
 disable_die () { die () { return 1; }; }
 enable_die () { die () { echo "$@" >&2; exit 1; }; }
 enable_die
 
-x () { echo "$@"; "$@"; }
-
-# Robust, fast (string) comparisons for all Bourne-derived shells.
-eq () { case $1 in $2) return 0; esac; return 1; }
-ne () { case $1 in $2) return 1; esac; return 0; }
+x () { echo + "$@" >&2; "$@"; }
 
 needvar ()
 {
 	eval v=\${$1-}
 	case $v in '') return 1
-	;;	*' '*)	die "'$1' value '$v' contains space[s]!"
+	;;	*["$IFS"]*) die "'$1' value '$v' contains whitespace!"
 	esac
 	return 0
 }
 
 needcmd ()
 {
-	hash $1 2>/dev/null || {
+	command -v $1 >/dev/null || {
 		c=$1; shift
 		die "Command '$c' missing ($*)"
 	}
@@ -41,6 +47,12 @@ getversion ()
 		[0-9][0-9.][0-9.][0-9.][0-9.][0-9] ) ;;
 		*) die "Strange VERSION '$VERSION' string"
 	esac
+}
+
+gitwipsuffix ()
+{
+	git log -1 --abbrev=7 --format=format:'%cd-g%h' --date=short |
+		sed 's/..//; s/-\(..\)-/\1/'
 }
 
 cmd_install ()
@@ -76,14 +88,14 @@ cmd_install ()
 	case $VERSION in *wip*)
 		if test -d .git
 		then
-			VERSION=$VERSION-g`git log -1 --format=format:%h`
+			VERSION=$VERSION-`gitwipsuffix`
 		else
-			x=`expr "\`pwd\`" : '.*\(-g[0-9a-f]*\)$' || :`
+			x=`expr "$PWD" : '.*\(-[0-9]*-g[0-9a-f]*\)$' || :`
 			case $x in '') ;; *) VERSION=${VERSION}$x ;; esac
 		fi
 	esac
 
-	if ne "${LIBEXECDIR-}" ''
+	if test -n "${LIBEXECDIR-}"
 	then
 		needvar LIBEXECDIR # variable content check (spaces...)
 		M2VMP2CUTDIR=$LIBEXECDIR/m2vmp2cut-$VERSION
@@ -94,7 +106,7 @@ cmd_install ()
 	fi
 	unset LIBEXECDIR
 
-	if ne "${DATAROOTDIR-}" ''
+	if test -n "${DATAROOTDIR-}"
 	then
 		needvar DATAROOTDIR # variable content check (spaces...)
 		DATADIR=$DATAROOTDIR/m2vmp2cut-$VERSION
@@ -120,8 +132,9 @@ cmd_install ()
 	x cp $1 "$D_M2VMP2CUTDIR"/bin
 	x cp $2 "$D_DATADIR"
 	x cp contrib/* "$D_M2VMP2CUTDIR"/contrib
-	case $VERSION in wip) verinfo="$VERSION (installed `date +%Y-%m-%d`)"
-	;;	*) verinfo=$VERSION
+	case $VERSION in *-wip-*)
+		verinfo="$VERSION (installed `date +%Y-%m-%d`)"
+	 ;; *)	verinfo=$VERSION
 	esac
 	exec 3> "$D_PREFIX"/bin/m2vmp2cut.wip
 	echo '#!/bin/sh' >&3
@@ -133,9 +146,9 @@ cmd_install ()
 	mv "$D_PREFIX"/bin/m2vmp2cut.wip "$D_PREFIX"/bin/m2vmp2cut
 	echo wrote $PREFIX/bin/m2vmp2cut
 
-	if ne "${PJXJAR-}" ''
+	if test -n "${PJXJAR-}"
 	then
-		x ln -s $PJXJAR "$D_M2VMP2CUTDIR"/bin/ProjectX.jar
+		x ln -s $PJXJAR "$D_M2VMP2CUTDIR"/ProjectX.jar
 	fi
 	echo; echo Installation done.; echo
 }
@@ -165,7 +178,7 @@ cmd_snapshot ()
 	test -d .git || die "Snapshotting only from git working copies"
 	VERSION=`sed 's/^m2vmp2cut *//; s/ .*//; q' NEWS`
 	case $VERSION in 'wip') VERSION=`date +"snap-%Y%m%d-%H"` ;;
-		*-wip) VERSION=$VERSION-g`git log -1 --format=format:%h` ;;
+		*-wip) VERSION=$VERSION-`gitwipsuffix` ;;
 		*) die "Snapshotting only 'wip' versions"
 	esac
 	makedist
@@ -244,7 +257,7 @@ exit
 
 #,# bin
 #,# bin/assel.pl x
-#,# bin/getmp2.sh x
+#,# bin/demux-pp.pl x
 #,# bin/getyuv.pl x
 #,# bin/lvev6frames.pl x
 #,# bin/m2v_catfiltered.py x
@@ -254,11 +267,13 @@ exit
 #,# bin/m2v_somehdrinfo.py x
 #,# bin/merge.pl x
 #,# bin/pxsuptime.py x
+#,# bin/supcut.pl x
 #,# bin/wrapper.sh x
 
 #,# contrib
 #,# contrib/ffgetyuv.pl x
 #,# contrib/icut.pl x
+#,# contrib/imkvcut.pl x
 #,# contrib/mpeg2.sh x
 #,# contrib/webm.sh x
 
@@ -273,6 +288,7 @@ exit
 #,# src/assel-gui.c
 #,# src/bufwrite.c
 #,# src/bufwrite.h
+#,# src/eteen.c
 #,# src/fileparts.c
 #,# src/filerotate.c
 #,# src/libpreload_ffm2vtoyuv4mpeghax.c

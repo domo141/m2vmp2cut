@@ -12,7 +12,7 @@
  *	    All rights reserved
  *
  * Created: Thu Oct 20 19:32:21 EEST 2005 too
- * Last modified: Fri 28 Sep 2012 21:00:01 EEST too
+ * Last modified: Mon 12 Jan 2015 21:32:46 +0200 too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -391,7 +391,10 @@ void scan(char * ifile, char * sfile, char * levelfile)
 
     mp2_init(&mp2);
     memset(&fls, 0, sizeof fls);
-    fls.fd = wopen(levelfile);
+    if (levelfile[0] != '\0')
+	fls.fd = wopen(levelfile);
+    else
+	fls.fd = -1;
 
     fdprintf(sfd, "#offset msec fnum brate srate - time\n");
 
@@ -424,8 +427,10 @@ void scan(char * ifile, char * sfile, char * levelfile)
 
 	if (mp2get(&m2i) > 0)
 	{
-	    mp2_decode_frame(&mp2, &m2i, xmonopcm);
-	    update_frame_levels(&fls, xmonopcm, m2i.ms);
+	    if (fls.fd >= 0) {
+		mp2_decode_frame(&mp2, &m2i, xmonopcm);
+		update_frame_levels(&fls, xmonopcm, m2i.ms);
+	    }
 
 	    if (m2i.bitrate != pbr || m2i.samplerate != psr)
 	    {
@@ -450,7 +455,8 @@ void scan(char * ifile, char * sfile, char * levelfile)
 	else
 	    simplefilebuf_unusedbytes(&sfb, 3);
     }
-    finish_frame_levels(&fls);
+    if (fls.fd > 0)
+	finish_frame_levels(&fls);
 }
 
 void cutpoints(char * timespec, char * ifile, char * ofile, char * sfile)
@@ -645,7 +651,7 @@ void cutpoints(char * timespec, char * ifile, char * ofile, char * sfile)
 int main(int argc, char ** argv)
 {
     if (argc < 4)
-	xerrf("Usage: %s --scan ifile ofile levelfile\n"
+	xerrf("Usage: %s --scan ifile ofile (levelfile | '')\n"
 	      "  or   %s timespec ifile ofile sfile\n", argv[0], argv[0]);
 
     if (strcmp(argv[1], "--scan") == 0)

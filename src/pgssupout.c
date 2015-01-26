@@ -18,7 +18,7 @@
  *	    All rights reserved
  *
  * Created: Sun 28 Oct 2012 09:58:21 EET too
- * Last modified: Thu 01 Nov 2012 22:47:17 EET too
+ * Last modified: Wed 07 Jan 2015 22:30:01 +0200 too
  */
 
 #include <unistd.h>
@@ -34,6 +34,10 @@
 #include <fcntl.h>
 
 #define null ((void*)0)
+
+// (variable) block begin/end -- explicit liveness...
+#define BB {
+#define BE }
 
 #define DBG 0
 
@@ -341,9 +345,17 @@ uf32_t tc2pts(char * tc)
 
 int main(int argc, char * argv[])
 {
-    if (argc != 5)
-	die("Usage: %s vwidth vheight datafile file_fmt_str", argv[0]);
-
+    if (argc != 6)
+	die("\nUsage: %s vwidth vheight datafile file_fmt_str outfile\n\n" \
+	    "datafile line format:\n      image='%%d' start='hh:mm:ss.mmm' " \
+	    "end='hh:mm:ss.mmm' x='%%d' y='%%d'\n", argv[0]);
+#if 0
+    BB;
+    struct stat st;
+    if (stat(argv[5], &st) == 0)
+	die("Output file '%s' exists\n", argv[5]);
+    BE;
+#endif
     int v_width = atoi(argv[1]);
     int v_height = atoi(argv[2]);
 
@@ -353,7 +365,15 @@ int main(int argc, char * argv[])
 
     FILE * datafile = fopen(argv[3], "r");
     if (datafile == null)
-	die("Opening %s failed:", argv[3]);
+	die("Opening '%s' failed:", argv[3]);
+
+    BB;
+    int fd = open(argv[5], O_WRONLY|O_CREAT|O_TRUNC, 0644);
+    if (fd < 0)
+	die("Opening '%s' for writing failed:", argv[5]);
+    dup2(fd, 1);
+    close(fd);
+    BE;
 
     char buf[128];
     int ln = 0;

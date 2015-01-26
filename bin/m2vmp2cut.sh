@@ -7,10 +7,9 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Wed 04 Jun 2014 23:42:55 +0300 too
+# Last modified: Thu 22 Jan 2015 22:52:27 +0200 too
 
 set -eu
-case ${1-} in -x) set -x; shift; esac # debug help, passed thru wrapper.
 
 case ~ in '~') exec >&2; echo
 	echo "Shell '/bin/sh' lacks some required modern shell functionality."
@@ -19,8 +18,10 @@ case ~ in '~') exec >&2; echo
 	exit 1
 esac
 
+set +f
+
 case ${BASH_VERSION-} in *.*) shopt -s xpg_echo; esac
-case ${ZSH_VERSION-} in *.*) emulate zsh; esac
+case ${ZSH_VERSION-} in *.*) emulate zsh; set -eu; esac
 
 warn () { echo "$@" >&2; }
 die ()  { echo; echo "$@"; echo; exit 1; } >&2
@@ -30,10 +31,12 @@ usage () {
 }
 
 x () { echo + "$@" >&2; "$@"; }
+xcd () { echo + cd "$1" >&2; cd "$1"; }
 
-M2VMP2CUT_CMD_PATH=`cd "\`dirname "$0"\`"; pwd`
+M2VMP2CUT_CMD_PATH=`case $0 in */*) cd "${0%/*}"; esac; pwd`
 case $M2VMP2CUT_CMD_PATH in
-	*["$IFS"]*) die "Path '$M2VMP2CUT_CMD_PATH' contains spaces!"; esac
+	*["$IFS"]*) die "Path '$M2VMP2CUT_CMD_PATH' contains spaces!"
+esac
 export M2VMP2CUT_CMD_PATH
 
 #echo $M2VMP2CUT_CMD_PATH
@@ -53,18 +56,22 @@ cmd_lvev6frames () ## Legacy m2vmp2cut support; dig cutpoints from ~/.lve/*
 	$M2VMP2CUT_CMD_PATH/lvev6frames.pl
 }
 
-chkaudio ()
+linkaudio ()
 {
-#	ac3=`exec ls *.ac3 2>/dev/null`
-	mp2=`echo *.mp2 || :` 2>/dev/null
-	case $mp2 in
-	 '')	warn "No audio files to process" ;;
-	 *'*'*)	warn "No audio files to process" ;;
-	 *' '*)	warn "More than one audio file: $mp2" ;;
-	  *)	ln -s $mp2 audio.mp2 ;;
+	# ac3=`exec ls *.ac3 2>/dev/null`
+	# note: ls in pipeline below may fail, sort may not, so no need to \
+	mp2s=`ls -1 *.mp2 | sort -k 2 -t - -n` # protect against nonzero exit
+	case $mp2s in
+		'')	warn "No audio files to process"; return 0 ;;
+		*'*'*)	warn "No audio files to process"; return 0 ;;
 	esac
+	perl -e 'my ($maxl, $maxn) = (-1, "");
+		foreach (@ARGV) {
+			next if $_ eq "audio.mp2";
+			if (-s $_ > $maxl) { $maxl = -s $_, $maxn = $_; }
+		}
+		symlink $maxn, "audio.mp2";' $mp2s
 }
-
 
 chkindexes ()
 {
@@ -73,44 +80,84 @@ chkindexes ()
 		mv "$1/video.index.wip" "$1/video.index"
 	}
 	test -f "$1/audio.mp2" || {
-		case "$1" in '.') chkaudio
+		case "$1" in '.') linkaudio
 		;;	*) warn No audio'!'
 		esac
 		return 1
 	}
 
-	test -s "$1/audio.scan" -a -s "$1/audio.levels" || {
-		$M2VMP2CUT_CMD_PATH/mp2cutpoints --scan \
-			"$1/audio.mp2" "$1/audio.scan.wip" "$1/audio.levels"
-		mv "$1/audio.scan.wip" "$1/audio.scan"
+	test -h "$1/audio.mp2" || {
+		warn "'$1/audio.mp2' not symlink -- skipping audio scans"
+		return 1
 	}
+
+	test -s "$1/audio.levels" || (
+		xcd "$1"
+		lna=`ls -l "audio.mp2" | sed 's/.* //'`
+		alevels=
+		for f in *.mp2
+		do	ap=${f%.mp2}
+			case $f in audio.mp2) continue
+				;; "$lna") alevels=$ap.levels.wip
+			esac
+			x $M2VMP2CUT_CMD_PATH/mp2cutpoints --scan \
+				"$f" "$ap.scan.wip" "$alevels"
+			case $alevels in '') ;; *)
+				mv -f "$alevels" "$ap.levels"
+				ln -sf "$ap.levels" audio.levels.wip
+				alevels=
+				ln -sf "$ap.scan" audio.scan
+			esac
+			mv -f "$ap.scan.wip" "$ap.scan"
+		done
+		exec mv -f audio.levels.wip audio.levels
+	)
 }
 
 needcmd ()
 {
-	hash "$1" 2>/dev/null || {
+	command -v "$1" >/dev/null || {
 		c=$1; shift
 		die "Command '$c' missing ($*)"
+	}
+}
+
+xneedfile () {
+	test -f "$1" || {
+		case $1
+		in /*) warn "'$1' does not exist"
+		;; *)  warn "'$PWD/$1' does not exist"
+		esac
+		sleep 2
+		exit 1
 	}
 }
 
 
 chkpjx ()
 {
-	if hash projectx 2>/dev/null
-	then 	pjx=projectx; return
+	if (	cd "$M2VMP2CUT_CMD_PATH"/..
+		test -f ProjectX.jar || exit 1
+		test -h ProjectX.jar || {
+			xneedfile lib/commons-net-1.3.0.jar
+			xneedfile lib/jakarta-oro-2.0.8.jar
+			exit 0
+		}
+		pjx=`ls -l ProjectX.jar | sed 's/.* //'`
+		xneedfile "$pjx"
+		case $pjx in */*) cd "${pjx%/*}"; esac
+		xneedfile lib/commons-net-1.3.0.jar
+		xneedfile lib/jakarta-oro-2.0.8.jar
+		exit 0 )
+	then
+		pjx="java -jar $pjxjar"
+		return 0
 	fi
-
-	test -h $M2VMP2CUT_CMD_PATH/ProjectX.jar || {
-	  warn "Symbolic link '$M2VMP2CUT_CMD_PATH/ProjectX.jar' does not exist"
-	  die 'Please provide link and try again'
-	}
-	pjxjar=`ls -l $M2VMP2CUT_CMD_PATH/ProjectX.jar | sed 's/.* //'`
-	test -f $pjxjar || {
-		warn "ProjectX jar file '$pjxjar' does not exist."
-		die "Fix this or it's symbolic link reference '$M2VMP2CUT_CMD_PATH/ProjectX.jar'."
-	}
-	pjx="java -jar $pjxjar"
+	if command -v projectx >/dev/null
+	then 	pjx=projectx
+		return 0
+	fi
+	die "Cannot find 'projectx' tool"
 }
 
 
@@ -121,9 +168,17 @@ cmd_tmp ()
 	chkindexes .
 }
 
-runpjx ()
+dodemux ()
 {
-	x $pjx -ini "$dir"/X.ini -out "$dir" -name "$1" -demux "$2"
+	mkdir "$dir"/"$1"
+	x $pjx -ini "$dir"/X.ini -out "$dir/$1" -name "$1" -demux "$2"
+	x $M2VMP2CUT_CMD_PATH/demux-pp.pl "$dir" "$1"
+	for f in "$dir/$1"/*.sup
+	do	b=${f%.sup}; b=st${b##*/sp}
+		x $M2VMP2CUT_CMD_PATH/pxsuptime.py "$f" "$1/$b" \
+		  > "$dir"/$b.suptime
+	done
+
 }
 
 cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
@@ -133,20 +188,36 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 	do	test -f "$f" || die "'$f': no such file"
 	done
 	chkpjx
-	needcmd mplex needed after cutting when multiplexing final image
+	#needcmd mplex needed after cutting when multiplexing final image
 
 	if test -d "$dir"
 	then	die "Directory '$dir' is on the way (demuxed already)?"
 	fi
+
+	x () {
+		exec 8>$dir/demux.log
+		x () { $M2VMP2CUT_CMD_PATH/eteen + 8/ "$@"; }
+		x "$@"
+	}
+	xcd () { echo + cd "$1" >&8; echo + cd "$1" >&2; cd "$1"; }
+
 	mkdir "$dir"
-	# for future use, perhaps...
-	echo 'SubtitlePanel.SubtitleExportFormat=SRT' > "$dir"/X.ini
-	echo 'SubtitlePanel.SubtitleExportFormat_2=SON' >> "$dir"/X.ini
-	echo 'SubtitlePanel.exportAsVobSub=1' >> "$dir"/X.ini
-	runpjx 'in' "$file"
-	case $# in 0) ;; *) c=0; for f in "$@"; do
-		c=`exec expr $c + 1`
-		runpjx 'more-in'$c "$f"
+	exec 3>&1 1> "$dir"/X.ini
+	echo Application.Language=en
+	echo ExternPanel.appendLangToFileName=1
+	echo SubtitlePanel.SubtitleExportFormat=SRT
+	echo SubtitlePanel.SubtitleExportFormat_2=SON
+	# get *.sup.idx (someone may find purpose in the future)
+	echo SubtitlePanel.exportAsVobSub=1
+	# these 3 doesn't seem to make much of a difference
+	echo SubtitlePanel.SubpictureColorModel='(2) 256 colours'
+	echo SubtitlePanel.enableHDSub=1
+	echo SubtitlePanel.keepColourTable=1
+	exec 1>&3 3>&-
+	dodemux 'in1' "$file"
+	case $# in 0) ;; *) c=1; for f in "$@"; do
+			c=$((c + 1))
+			dodemux 'in'$c "$f"
 		done
 		echo 'More than one file was demuxed'
 		echo "Concatenate media files in '$dir'"
@@ -154,35 +225,31 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 	esac
 	## XXX all of these needs to be moved to place where select can do too
 	## XXX it seems some audio handling is going to gui tool already...
-	cd "$dir"
-	if test -f in.son
-	then
-		mkdir in_sp
-		mv *.son *.sup *.sup.* *.spf *.bmp in_sp 2>/dev/null || :
-		( cd in_sp
-		  for f in *.sup
-		  do $M2VMP2CUT_CMD_PATH/pxsuptime.py $f > ${f}time
-		  done )
-	fi
-
-	ln -s in.m2v video.m2v
-	chkaudio
+	xcd "$dir"
+	ln -s video1.m2v video.m2v
+	linkaudio
 	chkindexes . && noaudio=false || noaudio=true
 	echo
 	echo "Files demuxed in '$dir'"
+	echo "See also '$dir/demux.log'"
+	grep -v '^[+]' 'demux.log' || :
+	echo >&8 "+ : See also $dir/in*/*_log.txt"
+	exec 8>&-
 	$noaudio || echo 'Next: select'
+	exit
 }
 
 cmd_select () # Select parts from video with a graphical tool
 {
-	test -f "$dir/video.m2v" || die "'$dir/video.m2v' does not exist"
-	# currently do not run assel-gui is there is just one audio... (WIP)
-	test -f "$dir/audio.mp2" ||
-	x $M2VMP2CUT_CMD_PATH/assel-gui "$dir"
-	test -f "$dir/audio.mp2" ||
+	test -f "$dir/video1.m2v" || die "'$dir/video1.m2v' does not exist"
+	# xxx "$dir/in1/audio1-2.mp2" does not check audio2-2.mp2 in case...
+	if test -f "$dir/in1/sp1-1.sup" || test -f "$dir/in1/audio1-2.mp2"
+	then
+		x $M2VMP2CUT_CMD_PATH/assel-gui "$dir"
 		x $M2VMP2CUT_CMD_PATH/assel.pl "$dir" linkfirstaudio || :
+	fi
 	chkindexes "$dir" || :
-	x $M2VMP2CUT_CMD_PATH/m2vcut-gui "$dir/video.index" "$dir/video.m2v" \
+	x $M2VMP2CUT_CMD_PATH/m2vcut-gui "$dir/video.index" "$dir/video1.m2v" \
 		"$dir/cutpoints" "$dir/audio.levels"
 	# append cutpoint history from backup file made by m2vcut-gui
 	if test -f "$dir/cutpoints.1"
@@ -299,7 +366,20 @@ cmd_example () # Simple example commands
 .
 }
 
+cmd_source () # check source of given '$0' command or function
+{
+	set +x
+	case ${1-} in '') die $0 $cmd cmd-prefix ;; esac
+	echo
+	exec sed -n "/^cmd_$1/,/^}/p; /^$1/,/^}/p" "$0"
+	#exec sed -n "/cmd_$1.*(/,/^}/p" "$0"
+}
+
 # ---
+
+unset setx
+case ${1-} in -x) setx=t; shift
+esac
 
 # no interactive behaviour in batch mode... (if ever implemented).
 case ${1-} in --batch) batch=1; shift ;; *) batch= ;; esac
@@ -377,7 +457,9 @@ unset cc cp cm
 M2VMP2CUT_MEDIA_DIRECTORY=$dir
 export M2VMP2CUT_MEDIA_DIRECTORY
 
-#set -x
+readonly cmd
+case ${setx-} in t) unset setx; set -x
+esac
 cmd_$cmd "$@"
 exit
 

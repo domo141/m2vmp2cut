@@ -22,7 +22,7 @@
  *	    All rights reserved
  *
  * Created: Sat 03 Nov 2012 13:32:07 EET too
- * Last modified: Sun 09 Feb 2014 14:33:18 +0200 too
+ * Last modified: Tue 27 Jan 2015 00:31:27 +0200 too
  */
 
 #ifndef _BSD_SOURCE
@@ -42,6 +42,8 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <sys/wait.h>
 #include <signal.h>
@@ -107,6 +109,7 @@ struct {
     struct {
 	char * name;
 	GtkWidget * lw;
+	GtkWidget * sw;
 	GtkWidget * tw; // could be dropped if done like lw //
 	GtkWidget * lang;
 	GtkWidget * enabled;
@@ -224,16 +227,54 @@ void init_G(const char * srcdir)
     sigaction(SIGCHLD, &action, NULL);
 }
 
-void swap_contents(char ** n1, GtkWidget * l1, GtkWidget * b1, GtkWidget * e1,
-		   char ** n2, GtkWidget * l2, GtkWidget * b2, GtkWidget * e2)
+// XXX here we do a bit differently as not asking from assel.pl
+char * getfilesize_s(char * name)
+{
+    char fn[1024];
+    snprintf(fn, sizeof fn, "%s/%s", G.srcdir, name);
+    struct stat st;
+    static char size[32];
+    if (stat(fn, &st) < 0) {
+	memcpy(size, "-1", 3);
+	return size;
+    }
+    if (st.st_size == 0) {
+	memcpy(size, "0", 2);
+	return size;
+    }
+    char * p = size + sizeof size - 1;
+    int c = 2;
+    do {
+	*--p = (st.st_size % 10) + '0';
+	st.st_size /= 10;
+	if (st.st_size == 0)
+	    break;
+	if (c == 0 && p > size + 3) {
+//	    *--p = ' '; *p = '\'';
+//	    *--p = '\257'; *--p = '\200'; *--p = '\342'; // U+20af narrow nbsp
+	    *--p = '\211'; *--p = '\200'; *--p = '\342'; // U+2009 thin space
+	    c = 2;
+	}
+	else c--;
+    } while (p > size);
+    return p;
+}
+
+void swap_labels(GtkWidget * l1, GtkWidget * l2)
 {
     char * text = strdup(gtk_label_get_text(GTK_LABEL(l1)));
-    int enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b1));
-    char * etxt = strdup(gtk_entry_get_text(GTK_ENTRY(e1)));
-
     gtk_label_set_text(GTK_LABEL(l1), gtk_label_get_text(GTK_LABEL(l2)));
     gtk_label_set_text(GTK_LABEL(l2), text);
     g_free(text);
+}
+
+void swap_contents(char ** n1, GtkWidget * l1, GtkWidget * b1, GtkWidget * e1,
+		   char ** n2, GtkWidget * l2, GtkWidget * b2, GtkWidget * e2)
+{
+    int enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b1));
+    char * etxt = strdup(gtk_entry_get_text(GTK_ENTRY(e1)));
+
+    swap_labels(l1, l2);
     gtk_toggle_button_set_active
 	(GTK_TOGGLE_BUTTON(b1),
 	 gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b2)));
@@ -275,6 +316,7 @@ void up_atable(GtkWidget * w, void * p)
     char ** inp = &G.adata[i].name;
     swap_contents(hnp, G.adata[h].lw, G.adata[h].enabled, G.adata[h].lang,
 		  inp, G.adata[i].lw, G.adata[i].enabled, G.adata[i].lang);
+    swap_labels(G.adata[h].sw, G.adata[i].sw);
 }
 
 
@@ -295,13 +337,13 @@ GtkWidget * aLabel(const char * label)
     return gtk_label_new(label);
 }
 
-GtkWidget * aaLabel(const char * label, GtkWidget ** lwp)
+GtkWidget * aaLabel(const char * label, GtkWidget ** lwp, gfloat xalign)
 {
-    GtkWidget * aw = gtk_alignment_new(0, 0, 0, 0);
+    GtkWidget * aw = gtk_alignment_new(xalign, 0, 0, 0);
     GtkWidget * lw = gtk_label_new(label);
 
     gtk_container_add(GTK_CONTAINER(aw), lw);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(aw), 0, 0, 2, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(aw), 0, 0, 2, 2);
     *lwp = lw;
     return aw;
 }
@@ -412,6 +454,8 @@ void read_info(void)
 void main_quit(GtkWidget * w, void * p)
 {
     (void)w; (void)p;
+    if (G.childpid)
+	kill(G.childpid, 15);
     gtk_main_quit();
 }
 
@@ -554,7 +598,10 @@ void lorpClicked(const char * cmd, void * p)
 {
     if (G.childpid)
 	return;
-    close(run_ipipe(G.assel_pl, G.srcdir, cmd, (char *)p, null));
+    int i = GPOINTER_TO_INT(p);
+    // XXX a bit hairy to use 'look'/'play' value //
+    char * name = (cmd[0] == 'l')? G.sdata[i].name: G.adata[i].name;
+    close(run_ipipe(G.assel_pl, G.srcdir, cmd, name, null));
 }
 void lookClicked(GtkWidget * w, void * p) { (void)w; lorpClicked("look", p); }
 void playClicked(GtkWidget * w, void * p) { (void)w; lorpClicked("play", p); }
@@ -605,26 +652,28 @@ int main(int argc, char * argv[])
     gtk_box_pack_start(vbox, aLabel(helptext), true, true, 2);
     GtkWidget * w;
     if (G.audiofc) {
-	GtkTable * table = GTK_TABLE(gtk_table_new(G.audiofc, 5, false));
+	GtkTable * table = GTK_TABLE(gtk_table_new(G.audiofc, 6, false));
 	gtk_container_set_border_width(GTK_CONTAINER (table), 2);
 	gtk_table_set_col_spacings(table, 4);
 	for (int i = 0; i < G.audiofc; i++) {
 	    char * name = G.adata[i].name;
 	    int c = 0;
-	    toTable(table, aaLabel(name, &G.adata[i].lw), c++, i, 1);
+	    char * size = getfilesize_s(name);
+	    toTable(table, aaLabel(name, &G.adata[i].lw, 0), c++, i, 1);
+	    toTable(table, aaLabel(size, &G.adata[i].sw, 1), c++, i, 0);
 	    if (i)
 		toTable(table, amButton(i, 0), c, i, 0);
 	    c++;
 	    toTable(table, G.adata[i].enabled, c++, i, 0);
 	    toTable(table, G.adata[i].tw, c++, i, 0);
-	    toTable(table, playButton(name), c++, i, 0);
+	    toTable(table, playButton(GINT_TO_POINTER(i)), c++, i, 0);
 	}
 	w = G.atable = GTK_WIDGET(table);
     }
     else
 	w = abLabel("No audio content to mux");
 
-    addFrame(vbox, "Audio (lang codes not in use yet..)", w);
+    addFrame(vbox, "Audio", w);
 
     if (G.subtfc) {
 	GtkTable * table = GTK_TABLE(gtk_table_new(G.subtfc, 5, false));
@@ -633,20 +682,20 @@ int main(int argc, char * argv[])
 	for (int i = 0; i < G.subtfc; i++) {
 	    char * name = G.sdata[i].name;
 	    int c = 0;
-	    toTable(table, aaLabel(name, &G.sdata[i].lw), c++, i, 1);
+	    toTable(table, aaLabel(name, &G.sdata[i].lw, 0), c++, i, 1);
 	    if (i)
 		toTable(table, amButton(i, 1), c, i, 0);
 	    c++;
 	    toTable(table, G.sdata[i].enabled, c++, i, 0);
 	    toTable(table, G.sdata[i].tw, c++, i, 0);
-	    toTable(table, lookButton(name), c++, i, 0);
+	    toTable(table, lookButton(GINT_TO_POINTER(i)), c++, i, 0);
 	}
 	w = G.stable = GTK_WIDGET(table);
     }
     else
 	w = abLabel("No subtitle content to mux");
 
-    addFrame(vbox, "Subtitles (not yet operational...)", w);
+    addFrame(vbox, "Subtitles", w);
 
     GtkWidget * bbox = gtk_hbutton_box_new();
     gtk_box_pack_start(vbox, bbox, true, true, 2);

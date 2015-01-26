@@ -8,11 +8,11 @@
 #	    All rights reserved
 #
 # Created: Sat 03 Nov 2012 13:32:23 EET too
-# Last modified: Thu 15 Nov 2012 16:24:04 EET too
+# Last modified: Mon 26 Jan 2015 23:20:43 +0200 too
 
 # helper for assel gui
 
-use 5.8.1;
+use 5.14.1;
 use strict;
 use warnings;
 
@@ -43,14 +43,13 @@ sub save(@)
 
 sub isave()
 {
-    sub xs {
-	return -1 if $a =~ /\bin[.]/;
-	return 1 if $b =~ /\bin[.]/;
-	return $a cmp $b;
+    sub xs { # audio1-...1... etc.
+	my $av = ( $a =~ tr/[0-9]//cdr); my $bv = ($b =~ tr/[0-9]//cdr);
+	#warn "$av cmp $bv\n";
+	return $av <=> $bv
     }
-    save ((sort xs grep { -f $_ and $_ = "$_ und 1" } <in*.mp2>),
-      sort xs grep { -f $_ and $_ = "$_ und 1" } <in_sp/in*.suptime>);
-
+    save ( (grep { -f $_ and $_ = "$_ und 1" } sort xs <audio[0-9]*.mp2>),
+	   (grep { -f $_ and $_ = "$_ und 1" } <st*.suptime>));
 }
 
 if ($cmd eq 'info')
@@ -89,12 +88,11 @@ if ($cmd eq 'play')
 
 if ($cmd eq 'look')
 {
-    my $stf = $ARGV[0];
-    my $ipfx = $stf; $ipfx =~ s/[.]suptime$//;
+    $ARGV[0] =~ /(\d+)-(\d+).suptime$/ or
+      die "'$ARGV[0]': not '.suptime' file\n";
+    my $ipfx = "in$1/st$1-$2";
 
-    die "'$stf': not '.suptime' file\n" if $stf eq $ipfx;
-
-    xopenI $stf;
+    xopenI $ARGV[0];
     eval 'END { exec qw/rm -rf test-st/; }';
     unless (mkdir 'test-st') {
 	system qw/rm -rf test-st/;
@@ -104,16 +102,18 @@ if ($cmd eq 'look')
     while (<I>) {
 	next unless /image='(\d+)'\s+start='(\S+)'\s+end='(\S+)'\s+x='(\d+)'\s+y='(\d+)'/;
 	my ($image, $start, $end, $x, $y) = ($1, $2, $3, $4, $5);
-	my $if = sprintf "${ipfx}_st%05dp1.bmp", $image;
+	my $if = sprintf "${ipfx}-%05d.bmp", $image;
 	symlink "../$if", "test-st/$start" if -f $if;
     }
-    unless (fork) {
+    my $pid;
+    unless ($pid = fork) {
 	## need to have change running without stdout redirection...
 	open STDOUT, '>&', \*STDERR;
 	chdir 'test-st' or die $!;
 	exec qw/feh -q --draw-tinted -^/, '%f %u/%l', <*>;
 	exit 1;
     }
+    $SIG{TERM} = sub { kill 'TERM', $pid; };
     wait;
     exit $?;
 }

@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Wed 31 Oct 2012 17:29:30 EET too
-# Last modified: Wed 31 Oct 2012 19:05:04 EET too
+# Last modified: Thu 22 Jan 2015 18:42:29 +0200 too
 
 use 5.8.1;
 use strict;
@@ -50,7 +50,7 @@ sub ms2tc($)
     return sprintf "%02d:%02d:%02d.%03d", $h, $m, $s, $ms;
 }
 
-foreach (<$ARGV[0]/in_sp/*.suptime>) {
+foreach (<$ARGV[0]/*.suptime>) {
     my $fn = $_;
     my @at = @timeadjust;
     my ($sms, $ems, $dist) = @{$at[0]};
