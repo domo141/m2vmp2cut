@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Wed 21 Jan 2015 21:45:28 EET too
-# Last modified: Mon 26 Jan 2015 23:20:12 +0200 too
+# Last modified: Thu 12 Feb 2015 16:54:23 +0200 too
 
 # postprocess directory after m2vmp2cut.sh demux
 
@@ -87,8 +87,9 @@ foreach (@mp2s) {
     s/^in(\w*).*/audio$1/;
     $c += 1;
     my $of = "$_-$c.mp2";
-    rename $s, "$of";
-    symlink "$id/$of", "$dd/$of";
+    rename $s, "$dd/$of";
+    #rename $s, "$of";
+    #symlink "$id/$of", "$dd/$of";
 }
 
 # just one .m2v supported
@@ -96,5 +97,6 @@ my @v = <*.m2v>;
 die "Video files '@v' -- not just one file\n" unless @v == 1;
 $v[0] =~ /^in(\d+)/;
 $of = "video$1.m2v";
-rename $v[0], $of;
-symlink "$id/$of", "$dd/$of";
+rename $v[0], "$dd/$of";
+#rename $v[0], $of;
+#symlink "$id/$of", "$dd/$of";
