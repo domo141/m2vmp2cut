@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed 28 Jan 2015 18:01:46 EET too
-# Last modified: Sun 08 Feb 2015 10:42:13 +0200 too
+# Last modified: Thu 12 Feb 2015 17:29:21 +0200 too
 
 import os
 import sys
@@ -70,7 +70,7 @@ def dobmp(infile, outfile):
 
     # skip creating output file in case bitmap width is even
     if not bitmap_width & 1:
-        return
+        return 0
 
     bitmap_height = struct.unpack('<L', pread(f, l, 4))[0]
     if struct.unpack('<H', pread(f, l, 2))[0] != 1:
@@ -125,19 +125,50 @@ def dobmp(infile, outfile):
     except EOFError:
         pass
 
-    pass  # pylint: disable=W0107
+    return 1
 
+def visrename(old, new):
+    print "renaming '{}' to '{}'"
+    os.rename(old, new)
+    pass
+
+def yesno(text):
+    while True:
+        sys.stdout.write(text + " (yes/no)? ")
+        ans = sys.stdin.readline()
+        if ans.startswith("yes"): return 1
+        if ans.startswith("no"): return 0
+        print "Please answer 'yes' or 'no'\n"
+        pass
+    pass
 
 if __name__ == '__main__':
+    feh = 0
+    if len(sys.argv) > 1 and sys.argv[1] == 'feh':
+        # a hax (good enough for the time being)
+        feh = sys.argv[0]
+        sys.argv = sys.argv[1:]
+        sys.argv[0] = feh
+        feh = 1
+        pass
     if len(sys.argv) != 2:
-        raise Die("Usage: %s {directory}", sys.argv[0])
+        raise Die("Usage: %s [feh] {directory}", sys.argv[0])
     os.chdir(sys.argv[1])
     for fn in glob.iglob("*.bmp"):
-        if fn.endswith("-mod.bmp"):
+        if fn.endswith("-mod.bmp") or fn.endswith("-old.bmp"):
             print "Skipping '%s'" % fn
             continue
         try:
-            dobmp(fn, fn.replace(".bmp", "-mod.bmp"))
+            nfn = fn.replace(".bmp", "-mod.bmp")
+            if dobmp(fn, nfn) and feh:
+                print "Press 'q' on top of feh window to close the picture window"
+                os.spawnlp(os.P_WAIT, "feh", "feh", fn)
+                os.spawnlp(os.P_WAIT, "feh", "feh", nfn)
+                if yesno("Do you want to replace the first one "
+                         "with the second"):
+                    visrename(fn, fn.replace(".bmp", "-old.bmp"))
+                    visrename(nfn, fn)
+                    pass
         except Skip:
             pass
 
