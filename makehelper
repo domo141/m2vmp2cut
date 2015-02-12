@@ -258,6 +258,7 @@ exit
 #,# bin
 #,# bin/assel.pl x
 #,# bin/demux-pp.pl x
+#,# bin/fix-odd-bmp.py x
 #,# bin/getyuv.pl x
 #,# bin/lvev6frames.pl x
 #,# bin/m2v_catfiltered.py x
