@@ -37,9 +37,9 @@ by something else than m2vmp2cut.
 After selection of cutpoints are done, the 'cut' command will create new
 mpeg2 file from the selected contents, re-encoding some video frames to
 achieve frame accuracy. Audio frames don't require any re-encoding.
-Alternatively, there are some scripts in 'contrib' directory which can
-re-encode the selected material to other formats. The 'contrib' command
-will show available contrib scripts.
+Additionally, there are some scripts in 'xbon' directory which can e.g.
+re-encode the selected material to other formats. The 'x' command
+will show available additional scripts.
 
 
 REQUIREMENTS:

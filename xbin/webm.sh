@@ -9,7 +9,7 @@
 #	    All rights reserved
 #
 # Created: Wed 19 Sep 2012 17:24:05 EEST too
-# Last modified: Sun 04 May 2014 22:03:22 +0300 too
+# Last modified: Fri 13 Feb 2015 19:32:15 +0200 too
 
 set -eu
 #set -x
@@ -66,7 +66,7 @@ do shift; done
 case $vf in example) echo "
 Overlay text from 'textfile' to video, over 100 first frames.
 
-m2vmp2cut <dir> contrib webm 16:9 vf='drawtext=fontfile=/usr/share/fonts/dejavu/DejaVuSans-BoldOblique.ttf:textfile=textfile:fontsize=24:fontcolor=royalblue:shadowx=3:shadowy=3:x=30:y=100:draw=lte(n\,100)'
+m2vmp2cut <dir> x webm 16:9 vf='drawtext=fontfile=/usr/share/fonts/dejavu/DejaVuSans-BoldOblique.ttf:textfile=textfile:fontsize=24:fontcolor=royalblue:shadowx=3:shadowy=3:x=30:y=100:draw=lte(n\,100)'
 "
 	exit
 esac
@@ -122,7 +122,7 @@ printtimediff ()
 }
 
 m2vmp2cut_bindir=$M2VMP2CUT_CMD_PATH
-m2vmp2cut_cntdir=$M2VMP2CUT_CONTRIB_PATH
+m2vmp2cut_cntdir=$M2VMP2CUT_X_PATH
 
 denoisefilt='| yuvdenoise'
 #deintfilter='| yuvdeinterlace -s1' # m2vtoyuv provides "full" frames...

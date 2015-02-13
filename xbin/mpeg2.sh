@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Mon Aug 18 18:54:24 EEST 2008 too
-# Last modified: Sun 04 May 2014 22:07:17 +0300 too
+# Last modified: Fri 13 Feb 2015 19:32:32 +0200 too
 
 
 case $1 in
@@ -64,7 +64,7 @@ mkfifo $fifo_video $fifo_audio
 
 $M2VMP2CUT_CMD_PATH/getmp2.sh "$src" > $fifo_audio &
 
-eval "$M2VMP2CUT_CONTRIB_PATH/ffgetyuv.pl $filters" | \
+eval "$M2VMP2CUT_X_PATH/ffgetyuv.pl $filters" | \
 	mpeg2enc -f 3 -a $a -b 2000 -R 2 -K kvcd -s -o $fifo_video 2>&1 &
 
 mplex -f 8 -o out.mpg $fifo_video $fifo_audio

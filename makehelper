@@ -125,13 +125,13 @@ cmd_install ()
 	test -d "$D_PREFIX" || x mkdir -m 755 -p "$D_PREFIX"
 
 	test -d "$D_PREFIX"/bin || x mkdir -m 755 "$D_PREFIX"/bin
-	x mkdir -m 755 "$D_M2VMP2CUTDIR"/bin "$D_M2VMP2CUTDIR"/contrib
+	x mkdir -m 755 "$D_M2VMP2CUTDIR"/bin "$D_M2VMP2CUTDIR"/xbin
 
 	x mkdir -m 755 -p "$D_DATADIR" # no test as datadir seldom exists...
 	test -d "$D_M2VMP2CUTDIR"/doc || x ln -s "$DATADIR" "$D_M2VMP2CUTDIR"/doc
 	x cp $1 "$D_M2VMP2CUTDIR"/bin
 	x cp $2 "$D_DATADIR"
-	x cp contrib/* "$D_M2VMP2CUTDIR"/contrib
+	x cp xbin/* "$D_M2VMP2CUTDIR"/xbin
 	case $VERSION in *-wip-*)
 		verinfo="$VERSION (installed `date +%Y-%m-%d`)"
 	 ;; *)	verinfo=$VERSION
@@ -271,12 +271,12 @@ exit
 #,# bin/supcut.pl x
 #,# bin/wrapper.sh x
 
-#,# contrib
-#,# contrib/ffgetyuv.pl x
-#,# contrib/icut.pl x
-#,# contrib/imkvcut.pl x
-#,# contrib/mpeg2.sh x
-#,# contrib/webm.sh x
+#,# xbin
+#,# xbin/ffgetyuv.pl x
+#,# xbin/icut.pl x
+#,# xbin/imkvcut.pl x
+#,# xbin/mpeg2.sh x
+#,# xbin/webm.sh x
 
 #,# doc
 #,# doc/Examples

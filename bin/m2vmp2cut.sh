@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Thu 22 Jan 2015 22:52:27 +0200 too
+# Last modified: Fri 13 Feb 2015 19:34:18 +0200 too
 
 set -eu
 
@@ -257,7 +257,7 @@ cmd_select () # Select parts from video with a graphical tool
 			*' '1' '*) cat "$dir/cutpoints.1" >> "$dir/cutpoints"
 		esac
 	fi
-	echo 'Next: cut, contrib, ...'
+	echo 'Next: cut, x, ...'
 }
 
 cmd_cut () # Cut using m2vmp2cut.pl for the work...
@@ -292,17 +292,17 @@ cmd_getmp2 () # Get selected parts of mp2 audio
 	x exec $M2VMP2CUT_CMD_PATH/getmp2.sh "$dir"
 }
 
-cmd_contrib () # Contrib material, encoding scripts etc...
+cmd_x () # Additional tools, encoding scripts etc...
 {
 	M2VMP2CUT_CMD_DIRNAME=`exec dirname "$M2VMP2CUT_CMD_PATH"`
-	M2VMP2CUT_CONTRIB_PATH=$M2VMP2CUT_CMD_DIRNAME/contrib
-	export M2VMP2CUT_CONTRIB_PATH
+	M2VMP2CUT_X_PATH=$M2VMP2CUT_CMD_DIRNAME/xbin
+	export M2VMP2CUT_X_PATH
 	case ${1-} in '')
 		echo
 		echo Append one of these to your command line to continue.
 		echo The choice can be abbreviated to any unambiguous prefix.
 		echo
-		cd $M2VMP2CUT_CONTRIB_PATH
+		cd $M2VMP2CUT_X_PATH
 		ls -1 | while read line
 		do
 			case $line in *~) continue; esac
@@ -312,7 +312,7 @@ cmd_contrib () # Contrib material, encoding scripts etc...
 		echo; exit 0
 	esac
 	fp= ff=
-	for f in `exec ls -1 $M2VMP2CUT_CONTRIB_PATH`
+	for f in `exec ls -1 $M2VMP2CUT_X_PATH`
 	do
 		case $f in *~) continue ;;
 		    $1) fp= ff=$1 fm=$1 break ;;
@@ -320,9 +320,9 @@ cmd_contrib () # Contrib material, encoding scripts etc...
 		esac
 	done
 	case $ff in '') die "'$1': not found." ;; esac
-	case $fp in '') ;; *) die "contrib: ambiquous match: $ff." ;; esac
+	case $fp in '') ;; *) die "x: ambiquous match: $ff." ;; esac
 	shift
-	x exec $M2VMP2CUT_CONTRIB_PATH/$fm "$@"
+	x exec $M2VMP2CUT_X_PATH/$fm "$@"
 }
 
 cmd_help () # Help of all or some of the commands above
@@ -524,10 +524,7 @@ exit
 #h getmp2: If examples argument is given this command provides example output.
 #h getmp2:
 
-#h contrib: contrib
-#h contrib:
-#h contrib: Contribution material. Mostly encoding scripts. The command line
-#h contrib: interface of the programs these scripts invoke may change over
-#h contrib: time -- there is less quarantees that these work in future than
-#h contrib: other m2vmp2cut functionality, in short term period...
-#h contrib:
+#h x: x
+#h x:
+#h x: Additional tools. Encoding scripts etc...
+#h x:
