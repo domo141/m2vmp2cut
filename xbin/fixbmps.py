@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Wed 28 Jan 2015 18:01:46 EET too
-# Last modified: Sat 14 Feb 2015 12:13:27 +0200 too
+# Last modified: Sat 14 Feb 2015 12:51:28 +0200 too
 
 import os
 import sys
@@ -27,12 +27,16 @@ class Die(Exception):
 skip_pfx = ''
 class Skip(Exception):
     def __init__(self, *_list):
-        global skip_pfx
-        if len(skip_pfx):
-            print >> sys.stderr, skip_pfx,
-            skip_pfx = ''
-        print >> sys.stderr, _list[0] % _list[1:],
-        print >> sys.stderr, "Skipping."
+        if _list[0] is not None:
+            global skip_pfx
+            if len(skip_pfx):
+                print >> sys.stderr, skip_pfx,
+                skip_pfx = ''
+                print >> sys.stderr, _list[0] % _list[1:],
+                print >> sys.stderr, "Skipping."
+                pass
+            pass
+        pass
     pass
 
 def pread(f, l, n):
@@ -71,7 +75,7 @@ def dobmp(infile, outfile):
 
     # skip creating output file in case bitmap width is even
     if not bitmap_width & 1:
-        return 0
+        raise Skip(None)
 
     bitmap_height = struct.unpack('<L', pread(f, l, 4))[0]
     if struct.unpack('<H', pread(f, l, 2))[0] != 1:
@@ -126,7 +130,7 @@ def dobmp(infile, outfile):
     except EOFError:
         pass
 
-    return 1
+    return bitmap_width, bitmap_height
 
 def visrename(old, new):
     print "Renaming '{}' to '{}'".format(old, new)
@@ -161,19 +165,27 @@ if __name__ == '__main__':
     os.chdir(sys.argv[1])
     for fn in glob.iglob("*.bmp"):
         if fn.endswith("-mod.bmp") or fn.endswith("-old.bmp"):
-            print "Skipping '%s'" % fn
+            if not feh: print "Skipping '%s'" % fn
             continue
         try:
             nfn = fn.replace(".bmp", "-mod.bmp")
-            if dobmp(fn, nfn) and feh:
-                print "Press 'q' on top of feh window to close the picture window"
-                os.spawnlp(os.P_WAIT, "feh", "feh", fn)
-                os.spawnlp(os.P_WAIT, "feh", "feh", nfn)
-                if yesno("Do you want to replace the first one "
-                         "with the second"):
+            width, height = dobmp(fn, nfn)
+            if feh:
+                pid = os.spawnlp(os.P_NOWAIT, "feh", "feh", "-m",
+                                 "--title", "orig < - > new",
+                                 "-E", str(height + 2), "-y",  str(width + 2),
+                                 "-W", str(width * 2 + 6), fn, nfn)
+                #os.spawnlp(os.P_WAIT, "feh", "feh", fn)
+                #os.spawnlp(os.P_WAIT, "feh", "feh", nfn)
+                if yesno("Do you want to replace the original "
+                         "with the new"):
                     visrename(fn, fn.replace(".bmp", "-old.bmp"))
                     visrename(nfn, fn)
                     pass
+                try: os.kill(pid, 15)
+                except OSError: pass
+                try: os.wait()
+                except OSError: pass
         except Skip:
             pass
 
