@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# cut without re-encoding anything, cutpoint restrictions apply
+# cut to mkv w/o re-encoding anything, cutpoint restrictions apply
 # -*- cperl -*-
 #
 # Author: Tomi Ollila -- too ät iki piste fi
@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Fri 26 Oct 2012 18:55:56 EEST too
-# Last modified: Thu 22 Jan 2015 18:41:51 +0200 too
+# Last modified: Sat 14 Feb 2015 10:29:31 +0200 too
 
 use 5.8.1;
 use strict;
@@ -43,7 +43,19 @@ my $videofile = "$dir/video.m2v"; needfile $videofile;
 my $indexfile = "$dir/video.index"; needfile $indexfile;
 my $cutpoints = "$dir/cutpoints"; needfile $cutpoints;
 
-needfile "$dir/audio.mp2";
+my (@afiles, @sfiles);
+openI "$dir/a+st.conf";
+while (<I>) {
+    if (/(\S+.mp2)\s+(\w+)\s+1\s*$/) {
+	needfile $dir .'/'. $1;
+	push @afiles, [ $1, $2 ];
+    }
+    elsif (/(\S+.suptime)\s+(\w+)\s+1\s*$/) {
+	needfile $dir .'/'. $1;
+	push @sfiles, [ $1, $2 ];
+    }
+}
+close I;
 
 my @cutpoints;
 getcutpoints $cutpoints, \@cutpoints;
@@ -103,68 +115,55 @@ unless (@cpargs) {
 # XXX add printing of asr counts...
 my $asr = (@ARGV == 1? ($ARGV[0] eq '4:3'? 2: 3): ($asrs[2] > $asrs[3]? 2: 3));
 
-# XXX work in progress...
-my $subtitlefile = "$dir/subtitle.sup";
-if (-f "$dir/sp1-1.suptime") {
-    system "$bindir/supcut.pl", $dir;
-    die "exit code $?\n" if $?;
-    system "$bindir/pgssupout", qw/720 576/, "$dir/sp1-1.supcut",
-#      "$dir/in_sp/in_st%05dp$ps.bmp", $subtitlefile;
-      "$dir/in1/st1-1-%05d.bmp", $subtitlefile;
-    die "exit code $?\n" if $?;
-}
-
-if (-s $subtitlefile)
-{
-    # unfortunately mkvmerge cannot take input from fifos, so in this case
-    # just write temporary video and audio files that are to be deleted
-    # at the end...
-
-    eval "END { unlink '$dir/tmp.mp2', '$dir/tmp.m2v' }";
-
-    unless (xfork) {
-	warn "Executing getmp2.sh $dir ...\n";
-	open STDOUT, '>', "$dir/tmp.mp2" or die $!;
-	system  "$bindir/getmp2.sh", $dir;
-	exit $? if $?;
-	warn "Executing m2vstream $asr $videofile @cpargs ...\n";
-	open STDOUT, '>', "$dir/tmp.m2v" or die $!;
-	exec "$bindir/m2vstream", $asr, $videofile, @cpargs;
-    }
-    while (1) {
-	last if wait < 0;
+if (@sfiles) {
+    system "$bindir/supcut.pl", $dir;  # this will do *.suptime -> *.supcut
+    foreach (@sfiles) {
+	my $fmtx = $_->[0]; $fmtx =~ s/.suptime//;
+	my $of = $_->[0]; $of =~ s/time$//; $of = $dir .'/'. $of;
+	print "Creating $of\n";
+	# XXX fixed size (720x576)
+	system "$bindir/pgssupout", qw/720 576/, $of . 'cut',
+		"$dir/in1/$fmtx-%05d.bmp", $of;
 	die "exit code $?\n" if $?;
+	$_->[0] = $of;
     }
-    system qw/mkvmerge -o out.mkv/, "$dir/tmp.m2v", "$dir/tmp.mp2", $subtitlefile;
-    exit;
-}
-# else
-
-my $RUNTIME_DIR = $ENV{XDG_RUNTIME_DIR} || 0;
-unless ($RUNTIME_DIR and -d $RUNTIME_DIR
-	and -x $RUNTIME_DIR and $RUNTIME_DIR !~ /\s/) {
-    $RUNTIME_DIR = "/tmp/runtime-$<";
-    mkdir $RUNTIME_DIR; # ignore if fail.
-    chmod 0700, $RUNTIME_DIR or die "Cannot chown '$RUNTIME_DIR': $!\n";
 }
 
-my ($videofifo, $audiofifo) = ( "$RUNTIME_DIR/icut-fifo.video.$$",
-				"$RUNTIME_DIR/icut-fifo.audio.$$" );
 
-eval 'END { unlink $videofifo, $audiofifo }';
+# unfortunately mkvmerge cannot take input from fifos, so in this case
+# just write temporary video and audio files that are to be deleted
+# at the end...
 
-system 'mkfifo', $videofifo;
-system 'mkfifo', $audiofifo;
+eval "END { unlink <$dir/audio*.mp2x>, '$dir/vcut.m2v' }";
 
 unless (xfork) {
-    open STDOUT, '>', $audiofifo or die $!;
-    exec "$bindir/getmp2.sh", $dir;
-}
-
-unless (xfork) {
-    warn "Executing m2vstream $asr $videofile @cpargs\n";
-    open STDOUT, '>', $videofifo or die $!;
+    foreach (@afiles) {
+	warn "Executing getmp2.sh $dir/$_->[0] ...\n";
+	my $of = $dir .'/'. $_->[0] .'x';
+	open STDOUT, '>', $of or die $!;
+	system "$bindir/getmp2.sh", "$dir/$_->[0]";
+	if ($?) {
+	    exit ($? >> 8) unless ($? & 0xff);
+	    exit $?;
+	}
+    }
+    warn "Executing m2vstream $asr $videofile @cpargs ...\n";
+    open STDOUT, '>', "$dir/vcut.m2v" or die $!;
     exec "$bindir/m2vstream", $asr, $videofile, @cpargs;
 }
+while (1) {
+    last if wait < 0;
+    die "exit code $?\n" if $?;
+}
 
-system qw/mplex -f 8 -o out.mpg/, $videofifo, $audiofifo;
+my @args = ( qw/mkvmerge -o out.mkv/, "$dir/vcut.m2v" );
+foreach (@afiles) {
+    push @args, '--language', '0:' . $_->[1], $dir .'/'. $_->[0] .'x';
+}
+foreach (@sfiles) {
+    my $of = $_->[0]; $of =~ s/time$//;
+    push @args, '--language', '0:' . $_->[1], $_->[0];
+}
+$" = ' ';
+print "Executing @args\n";
+system @args;
