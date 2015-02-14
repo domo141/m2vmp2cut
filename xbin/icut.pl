@@ -1,6 +1,6 @@
 #!/usr/bin/perl
-# cut without re-encoding anything, cutpoint restrictions apply
 # -*- cperl -*-
+# cut without re-encoding anything; cutpoint restrictions apply
 #
 # Author: Tomi Ollila -- too ät iki piste fi
 #
@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Fri 26 Oct 2012 18:55:56 EEST too
-# Last modified: Thu 04 Sep 2014 22:29:27 +0300 too
+# Last modified: Sat 14 Feb 2015 12:08:56 +0200 too
 
 use 5.8.1;
 use strict;

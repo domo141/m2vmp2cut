@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# bmps with odd width may have "tilted" content; fix w/ user help
 #
 # Author: Tomi Ollila -- too ät iki piste fi
 #
@@ -7,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Wed 28 Jan 2015 18:01:46 EET too
-# Last modified: Thu 12 Feb 2015 17:29:21 +0200 too
+# Last modified: Sat 14 Feb 2015 12:13:27 +0200 too
 
 import os
 import sys
@@ -128,7 +129,7 @@ def dobmp(infile, outfile):
     return 1
 
 def visrename(old, new):
-    print "renaming '{}' to '{}'"
+    print "Renaming '{}' to '{}'".format(old, new)
     os.rename(old, new)
     pass
 
@@ -136,14 +137,18 @@ def yesno(text):
     while True:
         sys.stdout.write(text + " (yes/no)? ")
         ans = sys.stdin.readline()
-        if ans.startswith("yes"): return 1
-        if ans.startswith("no"): return 0
+        if ans.lower() == "yes\n": return 1
+        if ans.lower() == "no\n": return 0
         print "Please answer 'yes' or 'no'\n"
         pass
     pass
 
 if __name__ == '__main__':
-    feh = 0
+    feh = os.environ.get("M2VMP2CUT_MEDIA_DIRECTORY", 0)
+    if feh:
+        # more hax (done after the hax below...)
+        sys.argv = [ sys.argv[0], 'feh', feh + '/in1' ]
+        pass
     if len(sys.argv) > 1 and sys.argv[1] == 'feh':
         # a hax (good enough for the time being)
         feh = sys.argv[0]

@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Fri 13 Feb 2015 19:34:18 +0200 too
+# Last modified: Sat 14 Feb 2015 12:09:31 +0200 too
 
 set -eu
 
@@ -306,7 +306,7 @@ cmd_x () # Additional tools, encoding scripts etc...
 		ls -1 | while read line
 		do
 			case $line in *~) continue; esac
-			sed -n '2 { s/./ '"$line"'                    /
+			sed -n '3 { s/./ '"$line"'                    /
 				    s/\(.\{15\}\) */\1/p; q; }' $line
 		done
 		echo; exit 0

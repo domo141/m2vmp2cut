@@ -1,6 +1,6 @@
 #!/usr/bin/perl
-# cut to mkv w/o re-encoding anything, cutpoint restrictions apply
 # -*- cperl -*-
+# cut to mkv w/o re-encoding anything; cutpoint restrictions apply
 #
 # Author: Tomi Ollila -- too ät iki piste fi
 #
@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Fri 26 Oct 2012 18:55:56 EEST too
-# Last modified: Sat 14 Feb 2015 10:29:31 +0200 too
+# Last modified: Sat 14 Feb 2015 12:08:34 +0200 too
 
 use 5.8.1;
 use strict;

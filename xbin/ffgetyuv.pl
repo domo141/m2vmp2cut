@@ -1,19 +1,21 @@
 #!/usr/bin/env perl
+# -*- cperl -*-#
 # getyuv where m2v is decoding done by ffmpeg
+#
 # Author: Tomi Ollila -- tomi.ollila ät iki piste fi
 #
 #	Copyright (c) 2012 Tomi Ollila
 #	    All rights reserved
 #
 # Created: Sun Aug 03 20:11:33 EEST 2008 too (as getyuv.pl)
-# Last modified: Wed 31 Oct 2012 16:41:41 EET too
+# Last modified: Sat 14 Feb 2015 12:08:40 +0200 too
 #
 
 use 5.8.1;
 use strict;
 use warnings;
 
-my $LIBPATH; 
+my $LIBPATH;
 use Cwd 'abs_path';
 BEGIN { $LIBPATH = abs_path($0); $LIBPATH =~ s|[^/]+/[^/]+$|bin|; }
 use lib $LIBPATH;

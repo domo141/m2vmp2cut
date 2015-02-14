@@ -1,4 +1,5 @@
 #!/bin/sh
+#
 # re-encode mpeg2 video using mpeg2enc, with original mp2 audio
 #
 # Author: Tomi Ollila -- too ät iki piste fi
@@ -7,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Mon Aug 18 18:54:24 EEST 2008 too
-# Last modified: Fri 13 Feb 2015 19:32:32 +0200 too
+# Last modified: Sat 14 Feb 2015 12:09:02 +0200 too
 
 
 case $1 in

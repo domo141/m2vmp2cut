@@ -1,7 +1,6 @@
 #!/bin/sh
-# encode to vp8 video and vorbis audio into webm container
 # -*- mode: shell-script; sh-basic-offset: 8; tab-width: 8 -*-
-# $ webm.sh $
+# encode to vp8 video and vorbis audio into webm container
 #
 # Author: Tomi Ollila -- too ät iki piste fi
 #
@@ -9,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Wed 19 Sep 2012 17:24:05 EEST too
-# Last modified: Fri 13 Feb 2015 19:32:15 +0200 too
+# Last modified: Sat 14 Feb 2015 12:09:11 +0200 too
 
 set -eu
 #set -x

@@ -258,7 +258,6 @@ exit
 #,# bin
 #,# bin/assel.pl x
 #,# bin/demux-pp.pl x
-#,# bin/fix-odd-bmp.py x
 #,# bin/getyuv.pl x
 #,# bin/lvev6frames.pl x
 #,# bin/m2v_catfiltered.py x
@@ -273,6 +272,7 @@ exit
 
 #,# xbin
 #,# xbin/ffgetyuv.pl x
+#,# xbin/fixbmps.py x
 #,# xbin/icut.pl x
 #,# xbin/imkvcut.pl x
 #,# xbin/mpeg2.sh x

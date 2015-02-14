@@ -25,7 +25,7 @@ TRG_BINS = m2vcut-gui m2vfilter m2vscan m2vtoyuv mp2cutpoints m2vstream \
 	libpreload_ffm2vtoyuv4mpeghax.so merge-gui \
 	m2vmp2cut.pl m2vmp2cut.sh m2v_catfiltered.py m2v_somehdrinfo.py \
 	wrapper.sh lvev6frames.pl getyuv.pl getmp2.sh m2vmp2cut.pm \
-	pxsuptime.py supcut.pl assel.pl merge.pl demux-pp.pl fix-odd-bmp.py
+	pxsuptime.py supcut.pl assel.pl merge.pl demux-pp.pl
 
 TRG_DOCS = Examples m2vcut_help-default m2vcut_help-fi_FI Options Usage
 
