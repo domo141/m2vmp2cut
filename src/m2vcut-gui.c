@@ -23,18 +23,15 @@
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Sat 14 Feb 2015 23:29:23 +0200 too
+ * Last modified: Mon 16 Feb 2015 19:05:50 +0200 too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
 //       and esc-bs...
 
-#ifndef _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #define _BSD_SOURCE
-#endif
-#ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
-#endif
 
 // In unix-like system I've never seen execvp() fail with const argv
 #define execvp(a,b) xexecvp(a,b)

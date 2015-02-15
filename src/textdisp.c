@@ -20,15 +20,12 @@
  *	    All rights reserved
  *
  * Created: Tue 25 Sep 2012 22:10:56 EEST too
- * Last modified: Sat 14 Feb 2015 22:59:37 +0200 too
+ * Last modified: Mon 16 Feb 2015 19:09:17 +0200 too
  */
 
-#ifndef _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #define _BSD_SOURCE
-#endif
-#ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -7,17 +7,16 @@
  *	    All rights reserved
  *
  * Created: Sun Sep 26 13:23:29 EEST 2004 too
- * Last modified: Thu 28 Nov 2013 22:01:22 +0200 too
+ * Last modified: Mon 16 Feb 2015 19:10:22 +0200 too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
 
-#ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
-#endif
 
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/types.h>

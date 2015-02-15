@@ -22,16 +22,12 @@
  *	    All rights reserved
  *
  * Created: Fri 29 Mar 2013 13:59:17 EET too
- * Last modified: Sat 14 Feb 2015 23:01:48 +0200 too
+ * Last modified: Mon 16 Feb 2015 19:08:49 +0200 too
  */
 
-#ifndef _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #define _BSD_SOURCE
-#endif
-
-#ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
-#endif
 
 #define execvp xexecvp
 

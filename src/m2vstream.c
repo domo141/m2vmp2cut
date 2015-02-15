@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Wed 24 Oct 2012 18:26:32 EEST too
- * Last modified: Mon 24 Jun 2013 23:17:55 EEST too
+ * Last modified: Sun 15 Feb 2015 20:44:49 +0200 too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -129,7 +129,7 @@ static void s__stream(ZeroZeroOneBuf * zzob, BufWrite * bw, int tframes,
 	xerrf("EOF too early (before first sequence header).\n");
     _c1:
 	do {} while (0);
-	static int video_fmt = -1;
+	// static int video_fmt = -1; in #if 0 block...
 	// expect first iframe, prepare for skip... //
 	int skipframes = 0;
 	int cframenum = 0;

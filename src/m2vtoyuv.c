@@ -21,7 +21,7 @@
  *	    All rights reserved
  *
  * Created: Fri Feb 08 17:16:45 EET 2008 too
- * Last modified: Sat 14 Feb 2015 23:29:11 +0200 too
+ * Last modified: Mon 16 Feb 2015 19:08:29 +0200 too
  */
 
 /* this program is originally based on:
@@ -60,9 +60,8 @@
  + distribution ('man yuv4mpeg' may work if you have mjpegtools installed).
  */
 
-#ifndef _BSD_SOURCE
+#define _DEFAULT_SOURCE
 #define _BSD_SOURCE
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -477,7 +476,7 @@ static int args_next(Args * args)
 static FILE * testargs_getfile(Args * args)
 {
     int type;
-    int start = 0;
+    //int start = 0;
     int end = 0;
     char * filename = null;
     int seeks = 0;
@@ -487,7 +486,7 @@ static FILE * testargs_getfile(Args * args)
 	{
 	case ARG_SEEK:
 	    d0(("seek %jd\n", (intmax_t)args->o.offset));
-	    start = end = 0;
+	    /*start =*/ end = 0;
 	    seeks = 1;
 	    break;
 	case ARG_RANGE:
@@ -498,7 +497,7 @@ static FILE * testargs_getfile(Args * args)
 		rangedie(args, "start value %d >= end (%d)",
 			 args->o.r.start, args->o.r.end);
 
-	    start = args->o.r.start; end = args->o.r.end;
+	    /*start = args->o.r.start;*/ end = args->o.r.end;
 	    d0(("range %d %d\n", start, end));
 	    break;
 	case ARG_PLAIN:
