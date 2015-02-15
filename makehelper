@@ -25,7 +25,7 @@ needvar ()
 {
 	eval v=\${$1-}
 	case $v in '') return 1
-	;;	*["$IFS"]*) die "'$1' value '$v' contains whitespace!"
+		;; *["$IFS"]*) die "'$1' value '$v' contains whitespace!"
 	esac
 	return 0
 }
@@ -102,15 +102,16 @@ cmd_install ()
 		M2VMP2CUTDIR=$LIBEXECDIR/m2vmp2cut-$VERSION
 	else
 		case $PREFIX in /usr|/usr/|/usr/local|/usr/local/) lib=libexec
+			;; $HOME | $HOME/ ) lib=${XDG_DATA_HOME:-.local/share}
 			;; *) lib=lib; esac
-		M2VMP2CUTDIR=$PREFIX/$lib/m2vmp2cut-$VERSION
+		M2VMP2CUTDIR=$PREFIX/$lib/m2vmp2cut/$VERSION
 	fi
 	unset LIBEXECDIR
 
 	if test -n "${DATAROOTDIR-}"
 	then
 		needvar DATAROOTDIR # variable content check (spaces...)
-		DATADIR=$DATAROOTDIR/m2vmp2cut-$VERSION
+		DATADIR=$DATAROOTDIR/m2vmp2cut/$VERSION
 	else
 		DATADIR=$M2VMP2CUTDIR/doc
 	fi
@@ -140,7 +141,9 @@ cmd_install ()
 	esac
 	exec 3> "$D_PREFIX"/bin/m2vmp2cut.wip
 	echo '#!/bin/sh' >&3
-	echo 'case ${1-} in'" '') echo; echo 'm2vmp2cut version $verinfo'" >&3
+	echo >&3
+	echo 'case ${1-} in'" '') echo" >&3
+	echo "    echo 'm2vmp2cut version $verinfo'" >&3
 	echo 'esac' >&3
 	echo "exec $M2VMP2CUTDIR/bin/m2vmp2cut.sh"' "$@"' >&3
 	exec 3>&-
