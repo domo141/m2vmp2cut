@@ -8,7 +8,9 @@
 #	    All rights reserved
 #
 # Created: Fri 26 Oct 2012 18:55:56 EEST too
-# Last modified: Sat 14 Feb 2015 12:08:56 +0200 too
+# Last modified: Sun 15 Feb 2015 20:26:19 +0200 too
+
+# FIXME: quite a few duplicate lines with imkvcut.pl (unify or something)...
 
 use 5.8.1;
 use strict;
@@ -30,9 +32,6 @@ if (@ARGV > 0 and (@ARGV > 1 or ($ARGV[0] ne '4:3' and $ARGV[0] ne '16:9'))) {
  cut will not happen. Note that in current m2vcut gui tool
  selecting end frames selects the start of cutout frames
  i.e. end selection must be one-after the last included frame.
-
- FIXME: options for dvd/blu-ray subtitles (and also end cut
-        in m2vcut gui tool!)
 \n";
 }
 
@@ -43,7 +42,22 @@ my $videofile = "$dir/video.m2v"; needfile $videofile;
 my $indexfile = "$dir/video.index"; needfile $indexfile;
 my $cutpoints = "$dir/cutpoints"; needfile $cutpoints;
 
-needfile "$dir/audio.mp2";
+my @afiles;
+openI "$dir/mux.conf";
+while (<I>) {
+    if (/(\S+.mp2)\s+(\w+)\s+1\s*$/) {
+	needfile $dir .'/'. $1;
+	push @afiles, [ $1, $2 ];
+    }
+    elsif (/(\S+.suptime)\s+(\w+)\s+1\s*$/) {
+	die "\nSubtitle files (currently) not supported when",
+	  " muxing to mpg file.\n", "Redo 'select', disable all",
+	  " subtitle files and then try again.\n\n";
+	#needfile $dir .'/'. $1;
+	#push @sfiles, [ $1, $2 ];
+    }
+}
+close I;
 
 my @cutpoints;
 getcutpoints $cutpoints, \@cutpoints;
@@ -108,17 +122,26 @@ unless ($RUNTIME_DIR and -d $RUNTIME_DIR
     chmod 0700, $RUNTIME_DIR or die "Cannot chown '$RUNTIME_DIR': $!\n";
 }
 
-my ($videofifo, $audiofifo) = ( "$RUNTIME_DIR/icut-fifo.video.$$",
-				"$RUNTIME_DIR/icut-fifo.audio.$$" );
-
-eval 'END { unlink $videofifo, $audiofifo }';
-
+my $videofifo = "$RUNTIME_DIR/icut-fifo.video.$$";
+my @audiofifos;
+{
+    my $c = 0;
+    foreach (@afiles) {
+	$c++;
+	push @audiofifos, "$RUNTIME_DIR/icut-fifo.audio.$c.$$";
+    }
+}
+eval 'END { unlink $videofifo, @audiofifos }';
 system 'mkfifo', $videofifo;
-system 'mkfifo', $audiofifo;
+system 'mkfifo', $_ foreach (@audiofifos);
 
-unless (xfork) {
-    open STDOUT, '>', $audiofifo or die $!;
-    exec "$bindir/getmp2.sh", $dir;
+my @aft = @audiofifos;
+foreach (@afiles) {
+    my $fifo = shift @aft;
+    unless (xfork) {
+	open STDOUT, '>', $fifo or die $!;
+	exec "$bindir/getmp2.sh", $dir .'/'. $_->[0];
+    }
 }
 
 # XXX add printing of asr counts...
@@ -130,4 +153,4 @@ unless (xfork) {
     exec "$bindir/m2vstream", $asr, $videofile, @cpargs;
 }
 
-system qw/mplex -f 8 -o out.mpg/, $videofifo, $audiofifo;
+system qw/mplex -f 8 -o out.mpg/, $videofifo, @audiofifos;

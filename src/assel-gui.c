@@ -22,7 +22,7 @@
  *	    All rights reserved
  *
  * Created: Sat 03 Nov 2012 13:32:07 EET too
- * Last modified: Sat 14 Feb 2015 23:02:03 +0200 too
+ * Last modified: Sun 15 Feb 2015 20:59:37 +0200 too
  */
 
 #ifndef _BSD_SOURCE
@@ -625,8 +625,8 @@ const char * helptext =
     ".\n" "Language info is useful when muxing to mkv (with `x imkvcut.pl`)"
     ".\n" "To know supported languages execute `mkvmerge --list-languages`"
     ".\n\n"
-    "Currently only  imkvcut.pl  uses the configuration set here"
-    ".\n\n"
+    "Currently only  x imkvcut.pl and x icut.pl  uses the configuration set "
+    "here.\n\n"
     "Audio test play can be finished by pressing 'q' in terminal window\n"
     "(check mplayer manual page for other keys).";
 

@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Sat 03 Nov 2012 13:32:23 EET too
-# Last modified: Mon 26 Jan 2015 23:20:43 +0200 too
+# Last modified: Sun 15 Feb 2015 19:56:31 +0200 too
 
 # helper for assel gui
 
@@ -31,14 +31,14 @@ sub xopenI($)
 
 sub save(@)
 {
-    open O, '>', 'a+st.conf.wip' or die $!;
+    open O, '>', 'mux.conf.wip' or die $!;
     print O "# file  lang  enabled\n";
     foreach (@_) {
 	my @l = split ' ';
 	print O "$l[0]  $l[1]  $l[2]\n";
     }
     close O;
-    return rename 'a+st.conf.wip', 'a+st.conf';
+    return rename 'mux.conf.wip', 'mux.conf';
 }
 
 sub isave()
@@ -54,10 +54,10 @@ sub isave()
 
 if ($cmd eq 'info')
 {
-    isave unless -f 'a+st.conf';
+    isave unless -f 'mux.conf';
 
     my (@afiles, @sfiles);
-    xopenI 'a+st.conf';
+    xopenI 'mux.conf';
     while (<I>) {
 	next if /^\s*#/;
 	my @l = split ' ';
@@ -125,7 +125,7 @@ if ($cmd eq 'save')
 
 if ($cmd eq 'linkfirstaudio')
 {
-    xopenI 'a+st.conf';
+    xopenI 'mux.conf';
     while (<I>) {
 	next if /^\s*#/;
 	my @l = split ' ';

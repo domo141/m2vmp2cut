@@ -8,7 +8,9 @@
 #	    All rights reserved
 #
 # Created: Fri 26 Oct 2012 18:55:56 EEST too
-# Last modified: Sat 14 Feb 2015 17:02:47 +0200 too
+# Last modified: Sun 15 Feb 2015 20:26:11 +0200 too
+
+# FIXME: quite a few duplicate lines with icut.pl (unify or something)...
 
 use 5.8.1;
 use strict;
@@ -30,9 +32,6 @@ if (@ARGV > 0 and (@ARGV > 1 or ($ARGV[0] ne '4:3' and $ARGV[0] ne '16:9'))) {
  cut will not happen. Note that in current m2vcut gui tool
  selecting end frames selects the start of cutout frames
  i.e. end selection must be one-after the last included frame.
-
- FIXME: options for dvd/blu-ray subtitles (and also end cut
-        in m2vcut gui tool!)
 \n";
 }
 
@@ -44,7 +43,7 @@ my $indexfile = "$dir/video.index"; needfile $indexfile;
 my $cutpoints = "$dir/cutpoints"; needfile $cutpoints;
 
 my (@afiles, @sfiles);
-openI "$dir/a+st.conf";
+openI "$dir/mux.conf";
 while (<I>) {
     if (/(\S+.mp2)\s+(\w+)\s+1\s*$/) {
 	needfile $dir .'/'. $1;
@@ -122,7 +121,12 @@ if (@sfiles) {
 	my $of = $_->[0]; $of =~ s/time$//; $of = $dir .'/'. $of;
 	print "Creating $of\n";
 	# XXX fixed size (720x576)
-	system "$bindir/pgssupout", qw/720 576/, $of . 'cut',
+	my $cf = $of . 'cut';
+	die "Subtitle definition file '$cf' not found.\n",
+	  "The probable cause is that none of the subtitles were in the\n",
+	  "cut range in that file. Redo 'select', disable corresponding\n",
+	  "subtitle and then try again.\n\n" unless -f $cf;
+	system "$bindir/pgssupout", qw/720 576/, $cf,
 		"$dir/in1/$fmtx-%05d.bmp", $of;
 	die "exit code $?\n" if $?;
 	$_->[0] = $of;
