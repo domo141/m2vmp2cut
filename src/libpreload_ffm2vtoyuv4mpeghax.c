@@ -1,16 +1,18 @@
 #if 0 /*
 	archos=`uname -s -m | awk '{ print tolower($2) "-" tolower($1) }'`
 	libc_so=`ldd /usr/bin/env | awk '/libc.so/ { print $3 }'`
-	bn=`basename "$0" .c`; lbn=$bn #lbn=$bn-$archos dlbn=$bn-dbg-$archos
-	trap 'rm -f $bn.o' 0
+	case $1 in -o) imf=$2.o trg=$2; shift 2
+		;; *)  imf=`basename "$0" .c`; trg=$imf.so imf=$imf.o ;; esac
+	trap "rm -f '$imf'" 0
 	WARN="-Wall -Wstrict-prototypes -pedantic -Wno-long-long"
 	WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
 	WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
 	set -xeu
 	case ${1-} in '') set x -O2; shift; esac
-	gcc -fPIC -rdynamic -std=c99 "$@" -c $WARN "$0" -o "$bn.o" -DDBG=0 \
+	gcc -fPIC -rdynamic -std=c99 "$@" -c $WARN "$0" -o "$imf" -DDBG=0 \
 		-DARCHOS="\"$archos\"" -DLIBC_SO="\"$libc_so\""
-	gcc -shared -Wl,-soname,$lbn.so -o $lbn.so $bn.o -lc -ldl
+	gcc -shared -Wl,-soname,"$trg" -o "$trg" "$imf" -lc -ldl
+	chmod 644 "$trg"
 	#gcc -fPIC -rdynamic -g -c $WARN "$0" -o "$bn.o" -DDBG=1 \
 	#	-DARCHOS="\"$archos\"" -DLIBC_SO="\"$libc_so\""
 	#gcc -shared -Wl,-soname,$dlbn.so -o $dlbn.so $bn.o -lc -ldl
@@ -26,7 +28,7 @@
  *	    All rights reserved
  *
  * Created: Tue 09 Oct 2012 17:19:48 EEST too
- * Last modified: Mon 15 Oct 2012 16:28:18 EEST too
+ * Last modified: Sat 14 Feb 2015 23:25:20 +0200 too
  */
 /*
  * Compile this as: sh libpreload_ffm2vtoyuv4mpeghax.c

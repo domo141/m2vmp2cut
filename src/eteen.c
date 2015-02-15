@@ -1,5 +1,6 @@
 #if 0 /* -*- mode: c; c-file-style: "stroustrup"; tab-width: 8; -*-
- set -eu; trg=`basename "$0" .c`; rm -f "$trg"
+ set -eu; case $1 in -o) trg=$2; shift 2
+        ;;      *) trg=`exec basename "$0" .c` ;; esac; rm -f "$trg"
  WARN="-Wall -Wno-long-long -Wstrict-prototypes -pedantic"
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
@@ -18,7 +19,7 @@
  *          All rights reserved
  *
  * Created: Thu 22 Jan 2015 21:06:55 EET too
- * Last modified: Thu 22 Jan 2015 22:30:01 +0200 too
+ * Last modified: Sat 14 Feb 2015 23:03:04 +0200 too
  */
 
 #include <unistd.h>

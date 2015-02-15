@@ -1,15 +1,16 @@
 #if 0 /* -*- mode: c; c-file-style: "stroustrup"; tab-width: 8; -*-
- set -e; TRG=`basename $0 .c`; rm -f "$TRG"
+ set -eu; case $1 in -o) trg=$2; shift 2
+	;;	*) trg=`exec basename "$0" .c` ;; esac; rm -f "$trg"
  WARN="-Wall -Wstrict-prototypes -pedantic -Wno-long-long"
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
- eval `cat config/mpeg2.conf`
+ eval `exec cat ../_build/config/mpeg2.conf` # XXX
  xo=`pkg-config --cflags --libs gtk+-2.0 | sed 's/-I/-isystem /g'`
  xo="$xo -lutil $mpeg2_both -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE"
  case $1 in '') set x -ggdb
  #case $1 in '') set x -O2
 	shift; esac
- set -x; exec ${CC:-gcc} -std=c99 $WARN "$@" -o "$TRG" "$0" $xo
+ set -x; exec ${CC:-gcc} -std=c99 $WARN "$@" -o "$trg" "$0" $xo
  exit 0
  */
 #endif
@@ -22,7 +23,7 @@
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Thu 28 Nov 2013 18:53:34 +0200 too
+ * Last modified: Sat 14 Feb 2015 23:29:23 +0200 too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))

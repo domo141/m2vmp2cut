@@ -14,14 +14,20 @@ TOCCODE= m2vmp2cut.pl lvev6frames.pl \
 	mpg_somehdrinfo.py  mpg_catfiltered.py
 #	mpg_somehdrinfo.pyc mpg_catfiltered.pyc
 
-EGHDRS=$(TOCCODE:%=ghdrs/%.h)
+EGHDRS=$(TOCCODE:%=$(GD)/%.h)
 
 BINS=	m2vscan m2vfilter m2vstream fileparts filerotate merge-gui eteen \
 	mp2cutpoints assel-gui m2vcut-gui m2vtoyuv textdisp pgssupout
 
-BINARIES= $(BINS:%=../bin/%)
+CD=	../_build/config
+BD=	../_build/bin
+OD=	../_build/obj_b
+MD=	../_build/obj_m
+GD=	../_build/ghdrs
 
-PRELOADS= ../bin/libpreload_ffm2vtoyuv4mpeghax.so
+BINARIES= $(BINS:%=$(BD)/%)
+
+PRELOADS= $(BD)/libpreload_ffm2vtoyuv4mpeghax.so
 
 all:	$(BINARIES) $(PRELOADS)
 
@@ -29,37 +35,44 @@ all:	$(BINARIES) $(PRELOADS)
 
 TXTS= Usage Options Examples
 
-obj_b/showdoc.o obj_m/showdoc.o: $(TXTS:%=ghdrs/%.txtgz.h)
+obj_b/showdoc.o obj_m/showdoc.o: $(TXTS:%=$(GD)/%.txtgz.h)
 
 # To get less warnings (some probably unnecessary), enter `make WARN1=   ...'
 
 WARN0=	-Wall -Wstrict-prototypes -pedantic -Wno-long-long \
 	-Wcast-align -Wpointer-arith #-Wfloat-equal #-Werror
-WARN1?= -W -Wwrite-strings -Wcast-qual -Wshadow #-Wconversion
+WARN1?=	-W -Wwrite-strings -Wcast-qual -Wshadow #-Wconversion
 
 WOPTS=	$(WARN0) $(WARN1)
 
-PGHDRS= $(SRCS:%.c=ghdrs/%_priv.h)
-GHDRS=	$(PGHDRS) $(EGHDRS) ghdrs/version.h
+PGHDRS=	$(SRCS:%.c=$(GD)/%_priv.h)
+GHDRS=	$(PGHDRS) $(EGHDRS) $(GD)/version.h
 
-MOBJS= $(MSRCS:%.c=obj_m/%.o)
-OBJS= $(SRCS:%.c=obj_b/%.o)
+MOBJS=	$(MSRCS:%.c=$(OM)/%.o)
+OBJS=	$(SRCS:%.c=$(OD)/%.o)
 
 # Any of the headers change, let's compile all objs, for sure.
-$(MOBJS) $(OBJS):  $(HDRS) ghdrs/version.h Makefile
+$(MOBJS) $(OBJS):  make-dirs $(HDRS) $(GD)/version.h Makefile
 
-ghdrs/version.h: Makefile
+.PHONY:	make-dirs
+make-dirs:
+	set -x; test -d ../_build || mkdir -p ../_build; \
+	test -d $(BD) || mkdir $(BD); \
+	test -d $(OD) || mkdir $(OD); \
+	test -d $(GD) || mkdir $(GD)
+
+$(GD)/version.h: Makefile
 	sed 's/^/const unsigned char version[] = "/; s/$$/";/; q' ../NEWS > $@
 
 # Touching file to required directories which modification time does
 # not change unlike the directory itself.
-$(MOBJS): obj_m/.dx
-$(OBJS): obj_b/.dx
-$(GHDRS): ghdrs/.dx
+#$(MOBJS): obj_m/.dx
+#$(OBJS): $(OD)/.dx
+#$(GHDRS): $(GD)/.dx
 
-obj_m/.dx obj_b/.dx ghdrs/.dx:
-	d=`dirname $@`; test -d $$d || mkdir $$d
-	touch $@
+#obj_m/.dx $(OD)/.dx $(GD)/.dx:
+#	d=`dirname $@`; test -d $$d || mkdir $$d
+#	touch $@
 
 CC=gcc
 
@@ -69,80 +82,69 @@ CFLAGS=	-std=c99 $(OPTFLAGS) $(LF_OPTS) $(WOPTS) $(INCLS)
 
 OPTFLAGS=-s -O3
 
-../bin/m2vmp2cut.bin: $(OBJS)
-	$(CC) -o $@ $(OBJS)
+#$(BD)/m2vmp2cut.bin: $(OBJS)
+#	$(CC) -o $@ $(OBJS)
 
-../bin/m2vscan: $(OBJS)
-	$(CC) -o $@ obj_b/m2vscan.o obj_b/zzob.o obj_b/x.o
+$(BD)/m2vscan: $(OBJS)
+	$(CC) -o $@ $(OD)/m2vscan.o $(OD)/zzob.o $(OD)/x.o
 
-../bin/m2vfilter: $(OBJS)
-	$(CC) -o $@ obj_b/m2vfilter.o obj_b/zzob.o obj_b/x.o obj_b/bufwrite.o
+$(BD)/m2vfilter: $(OBJS)
+	$(CC) -o $@ $(OD)/m2vfilter.o $(OD)/zzob.o $(OD)/x.o $(OD)/bufwrite.o
 
-../bin/m2vstream: $(OBJS)
-	$(CC) -o $@ obj_b/m2vstream.o obj_b/zzob.o obj_b/x.o obj_b/bufwrite.o
+$(BD)/m2vstream: $(OBJS)
+	$(CC) -o $@ $(OD)/m2vstream.o $(OD)/zzob.o $(OD)/x.o $(OD)/bufwrite.o
 
-../bin/mp2cutpoints: $(OBJS)
-	$(CC) -o $@ obj_b/mp2cutpoints.o obj_b/x.o -lm
+$(BD)/mp2cutpoints: $(OBJS)
+	$(CC) -o $@ $(OD)/mp2cutpoints.o $(OD)/x.o -lm
 
-../bin/fileparts: $(OBJS)
-	$(CC) -o $@ obj_b/fileparts.o obj_b/zzob.o obj_b/x.o
+$(BD)/fileparts: $(OBJS)
+	$(CC) -o $@ $(OD)/fileparts.o $(OD)/zzob.o $(OD)/x.o
 
-../bin/filerotate: $(OBJS)
-	$(CC) -o $@ obj_b/filerotate.o obj_b/x.o
+$(BD)/filerotate: $(OBJS)
+	$(CC) -o $@ $(OD)/filerotate.o $(OD)/x.o
 
-../bin/assel-gui: assel-gui.c
-	sh assel-gui.c $(OPTFLAGS)
-	mv assel-gui ../bin
-#	$(CC) $(CFLAGS) -c $< -o $@
+$(BD)/assel-gui: assel-gui.c
+	sh $< -o $@ $(OPTFLAGS)
 
-../bin/merge-gui: merge-gui.c
-	sh merge-gui.c $(OPTFLAGS)
-	mv merge-gui ../bin
-#	$(CC) $(CFLAGS) -c $< -o $@
+$(BD)/merge-gui: merge-gui.c
+	sh $< -o $@ $(OPTFLAGS)
 
-../bin/m2vcut-gui: m2vcut-gui.c config/mpeg2.conf
-	sh m2vcut-gui.c $(OPTFLAGS)
-	mv m2vcut-gui ../bin
-#	$(CC) $(CFLAGS) -c $< -o $@
+$(BD)/m2vcut-gui: m2vcut-gui.c $(CD)/mpeg2.conf
+	sh $< -o $@ $(OPTFLAGS)
 
-#../bin/wavgraph: wavgraph.c obj_b/x.o
-#	sh wavgraph.c && mv wavgraph ../bin
+#$(BD)/wavgraph: wavgraph.c $(OD)/x.o
+#	sh wavgraph.c && mv wavgraph $(BD)
 
-../bin/m2vtoyuv: m2vtoyuv.c config/mpeg2.conf
-	sh m2vtoyuv.c $(OPTFLAGS)
-	mv m2vtoyuv ../bin
+$(BD)/m2vtoyuv: m2vtoyuv.c $(CD)/mpeg2.conf
+	sh $< -o $@ $(OPTFLAGS)
 
-#../bin/warpxpointer: warpxpointer.c
-#	sh warpxpointer.c && mv warpxpointer ../bin
+#$(BD)/warpxpointer: warpxpointer.c
+#	sh warpxpointer.c && mv warpxpointer $(BD)
 
-../bin/textdisp: textdisp.c
-	sh textdisp.c $(OPTFLAGS)
-	mv textdisp ../bin
+$(BD)/textdisp: textdisp.c
+	sh $< -o $@ $(OPTFLAGS)
 
-../bin/pgssupout: pgssupout.c
-	sh pgssupout.c $(OPTFLAGS)
-	mv pgssupout ../bin
+$(BD)/pgssupout: pgssupout.c
+	sh $< -o $@ $(OPTFLAGS)
 
-../bin/eteen: eteen.c
-	sh eteen.c $(OPTFLAGS)
-	mv eteen ../bin
+$(BD)/eteen: eteen.c
+	sh $< -o $@ $(OPTFLAGS)
 
-../bin/libpreload_ffm2vtoyuv4mpeghax.so: libpreload_ffm2vtoyuv4mpeghax.c
-	sh $< $(OPTFLAGS)
-	chmod 644 libpreload_ffm2vtoyuv4mpeghax.so
-	mv libpreload_ffm2vtoyuv4mpeghax.so ../bin
+$(BD)/libpreload_ffm2vtoyuv4mpeghax.so: libpreload_ffm2vtoyuv4mpeghax.c
+	sh $< -o $@ $(OPTFLAGS)
 
-config/mpeg2.conf: ../tools/chksyslibmpeg.sh ../tools/chklibmpeg-051.sh
+$(CD)/mpeg2.conf: make-dirs ../tools/chksyslibmpeg.sh ../tools/chklibmpeg-051.sh
+	cd ../_build; \
 	../tools/chksyslibmpeg.sh || ../tools/chklibmpeg-051.sh ..
 
-ghdrs/%_priv.h: %.c
+$(GD)/%_priv.h: %.c
 	perl -x Makefile $< > $@
 
-obj_b/%.o: %.c ghdrs/%_priv.h
-	$(CC) $(CFLAGS) -c $< -o $@
+$(OD)/%.o: %.c $(GD)/%_priv.h
+	$(CC) $(CFLAGS) -I../_build -c $< -o $@
 
-obj_m/%.o: %.c ghdrs/%_priv.h
-	$(CC) $(CFLAGS) -DMINI -c $< -o $@
+#obj_m/%.o: %.c $(GD)/%_priv.h
+#	$(CC) $(CFLAGS) -DMINI -c $< -o $@
 
 
 #.py.pyc:  # probably SUFFIXES modification would be needed for this/these.
@@ -156,15 +158,15 @@ obj_m/%.o: %.c ghdrs/%_priv.h
 #	@sed -n '/^file2code.sh:/,/^ *$$/ p' Makefile | tail -n +3 \
 #		| sh -es -- $@ $<
 
-ghdrs/%.py.h: ../%.py Makefile
+$(GD)/%.py.h: ../%.py Makefile
 	@sed -n '/^file2code.sh:/,/^ *$$/ p' Makefile | tail -n +3 \
 		| sh -es -- $@ $<
 
-ghdrs/%.pl.h: ../%.pl Makefile
+$(GD)/%.pl.h: ../%.pl Makefile
 	@sed -n '/^file2code.sh:/,/^ *$$/ p' Makefile | tail -n +3 \
 		| sh -es -- $@ $<
 
-ghdrs/%.txtgz.h: ../%
+$(GD)/%.txtgz.h: ../%
 	@sed -n '/^file2txtgz.sh:/,/^ *$$/ p' Makefile | tail -n +3 \
 		| sh -es -- $@ $<
 
@@ -174,7 +176,7 @@ filelist:
 	@echo $(FILES:%=$(DIR)%)
 
 clean:
-	rm -rf *~ *.o ghdrs obj_m obj_b config
+	rm -rf *~ *.o ../_build
 
 distclean: clean
 	rm -f $(BINARIES) $(PRELOADS) libmpeg2-svn-trunk

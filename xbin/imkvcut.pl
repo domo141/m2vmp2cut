@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Fri 26 Oct 2012 18:55:56 EEST too
-# Last modified: Sat 14 Feb 2015 12:08:34 +0200 too
+# Last modified: Sat 14 Feb 2015 17:02:47 +0200 too
 
 use 5.8.1;
 use strict;
@@ -130,16 +130,16 @@ if (@sfiles) {
 }
 
 
-# unfortunately mkvmerge cannot take input from fifos, so in this case
-# just write temporary video and audio files that are to be deleted
-# at the end...
+# mkvmerge cannot take input from fifos, so in this case just write
+# temporary video and audio files which are to be deleted at the end.
+# investigate whether ffmpeg can be used in the future...)
 
-eval "END { unlink <$dir/audio*.mp2x>, '$dir/vcut.m2v' }";
+eval "END { unlink <$dir/audio*.mp2c>, '$dir/video.m2vc' }";
 
 unless (xfork) {
     foreach (@afiles) {
 	warn "Executing getmp2.sh $dir/$_->[0] ...\n";
-	my $of = $dir .'/'. $_->[0] .'x';
+	my $of = $dir .'/'. $_->[0] .'c';
 	open STDOUT, '>', $of or die $!;
 	system "$bindir/getmp2.sh", "$dir/$_->[0]";
 	if ($?) {
@@ -148,7 +148,7 @@ unless (xfork) {
 	}
     }
     warn "Executing m2vstream $asr $videofile @cpargs ...\n";
-    open STDOUT, '>', "$dir/vcut.m2v" or die $!;
+    open STDOUT, '>', "$dir/video.m2vc" or die $!;
     exec "$bindir/m2vstream", $asr, $videofile, @cpargs;
 }
 while (1) {
@@ -156,9 +156,9 @@ while (1) {
     die "exit code $?\n" if $?;
 }
 
-my @args = ( qw/mkvmerge -o out.mkv/, "$dir/vcut.m2v" );
+my @args = ( qw/mkvmerge -o out.mkv/, "$dir/video.m2vc" );
 foreach (@afiles) {
-    push @args, '--language', '0:' . $_->[1], $dir .'/'. $_->[0] .'x';
+    push @args, '--language', '0:' . $_->[1], $dir .'/'. $_->[0] .'c';
 }
 foreach (@sfiles) {
     my $of = $_->[0]; $of =~ s/time$//;

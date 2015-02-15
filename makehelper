@@ -65,6 +65,7 @@ cmd_install ()
 
 	needcmd mplex needed for remuxing after cut
 	needcmd mplayer needed for checking media around cutpoints
+	needcmd feh needed for loooking subtitle pictures
 	if needvar PJXVAR
 	then
 		case $PJXJAR in /*) ;;
@@ -130,7 +131,8 @@ cmd_install ()
 	x mkdir -m 755 -p "$D_DATADIR" # no test as datadir seldom exists...
 	test -d "$D_M2VMP2CUTDIR"/doc || x ln -s "$DATADIR" "$D_M2VMP2CUTDIR"/doc
 	x cp $1 "$D_M2VMP2CUTDIR"/bin
-	x cp $2 "$D_DATADIR"
+	x cp $2 "$D_M2VMP2CUTDIR"/bin
+	x cp $3 "$D_DATADIR"
 	x cp xbin/* "$D_M2VMP2CUTDIR"/xbin
 	case $VERSION in *-wip-*)
 		verinfo="$VERSION (installed `date +%Y-%m-%d`)"

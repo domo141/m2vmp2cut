@@ -1,15 +1,15 @@
 #if 0 /* -*- mode: c; c-file-style: "stroustrup"; tab-width: 8; -*-
- set -e; TRG=`basename $0 .c`; rm -f "$TRG"
+ set -eu; case $1 in -o) trg=$2; shift 2
+	;;	*) trg=`exec basename "$0" .c` ;; esac; rm -f "$trg"
  WARN="-Wall -Wstrict-prototypes -pedantic -Wno-long-long"
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
- eval `cat config/mpeg2.conf`
  xo=`pkg-config --cflags --libs gtk+-2.0 | sed 's/-I/-isystem /g'`
- xo="$xo -lutil $mpeg2_both -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE"
+ xo="$xo -lutil -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE"
  case $1 in '') set x -ggdb
  #case $1 in '') set x -O2
 	shift; esac
- set -x; exec ${CC:-gcc} -std=c99 $WARN "$@" -o "$TRG" "$0" $xo
+ set -x; exec ${CC:-gcc} -std=c99 $WARN "$@" -o "$trg" "$0" $xo
  exit 0
  */
 #endif
@@ -22,7 +22,7 @@
  *	    All rights reserved
  *
  * Created: Fri 29 Mar 2013 13:59:17 EET too
- * Last modified: Fri 29 Mar 2013 14:01:41 EET too
+ * Last modified: Sat 14 Feb 2015 23:01:48 +0200 too
  */
 
 #ifndef _BSD_SOURCE

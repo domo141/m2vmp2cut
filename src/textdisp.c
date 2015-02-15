@@ -1,5 +1,6 @@
 #if 0 /* -*- mode: c; c-file-style: "stroustrup"; tab-width: 8; -*-
- set -eu; trg=`basename "$0" .c`; rm -f "$trg"
+ set -eu; case $1 in -o) trg=$2; shift 2
+	;;	*) trg=`exec basename "$0" .c` ;; esac; rm -f "$trg"
  WARN="-Wall -Wno-long-long -Wstrict-prototypes -pedantic"
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
@@ -19,7 +20,7 @@
  *	    All rights reserved
  *
  * Created: Tue 25 Sep 2012 22:10:56 EEST too
- * Last modified: Tue 24 Jun 2014 15:09:43 +0300 too
+ * Last modified: Sat 14 Feb 2015 22:59:37 +0200 too
  */
 
 #ifndef _BSD_SOURCE

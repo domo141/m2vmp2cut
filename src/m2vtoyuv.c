@@ -1,13 +1,14 @@
 #if 0 /*
-set -e; TRG=`basename $0 .c`; rm -f "$TRG"
+ set -eu; case $1 in -o) trg=$2; shift 2
+	;;	*) trg=`exec basename "$0" .c` ;; esac; rm -f "$trg"
  WARN=-Wall' -Wstrict-prototypes -pedantic -Wno-long-long'
  WARN=$WARN' -Wcast-align -Wpointer-arith' # -Wfloat-equl #-Werror
  WARN=$WARN' -W -Wwrite-strings -Wcast-qual -Wshadow' # -Wconversion
- eval `cat config/mpeg2.conf`
- XF="$mpeg2_only -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+ eval `exec cat ../_build/config/mpeg2.conf` # XXX
+ xf="$mpeg2_only -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
  case ${1-} in '') set x -O2; shift; esac
  #case ${1-} in '') set x -ggdb; shift; esac
- set -x; exec ${CC:-gcc} --std=c99 $WARN "$@" -o "$TRG" "$0" $XF
+ set -x; exec ${CC:-gcc} --std=c99 $WARN "$@" -o "$trg" "$0" $xf
  exit 0
  */
 #endif
@@ -20,7 +21,7 @@ set -e; TRG=`basename $0 .c`; rm -f "$TRG"
  *	    All rights reserved
  *
  * Created: Fri Feb 08 17:16:45 EET 2008 too
- * Last modified: Mon 15 Oct 2012 16:25:01 EEST too
+ * Last modified: Sat 14 Feb 2015 23:29:11 +0200 too
  */
 
 /* this program is originally based on:

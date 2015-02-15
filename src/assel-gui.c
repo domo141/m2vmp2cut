@@ -1,15 +1,15 @@
 #if 0 /* -*- mode: c; c-file-style: "stroustrup"; tab-width: 8; -*-
- set -e; TRG=`basename $0 .c`; rm -f "$TRG"
+ set -eu; case $1 in -o) trg=$2; shift 2
+	;;	*) trg=`exec basename "$0" .c` ;; esac; rm -f "$trg"
  WARN="-Wall -Wstrict-prototypes -pedantic -Wno-long-long"
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
- eval `cat config/mpeg2.conf`
  xo=`pkg-config --cflags --libs gtk+-2.0 | sed 's/-I/-isystem /g'`
- xo="$xo -lutil $mpeg2_both -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE"
+ xo="$xo -lutil -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE"
  case $1 in '') set x -ggdb
  #case $1 in '') set x -O2
 	shift; esac
- set -x; exec ${CC:-gcc} -std=c99 $WARN "$@" -o "$TRG" "$0" $xo
+ set -x; exec ${CC:-gcc} -std=c99 $WARN "$@" -o "$trg" "$0" $xo
  exit 0
  */
 #endif
@@ -22,7 +22,7 @@
  *	    All rights reserved
  *
  * Created: Sat 03 Nov 2012 13:32:07 EET too
- * Last modified: Tue 27 Jan 2015 00:31:27 +0200 too
+ * Last modified: Sat 14 Feb 2015 23:02:03 +0200 too
  */
 
 #ifndef _BSD_SOURCE
@@ -622,11 +622,11 @@ GtkWidget * playButton(void * p) { return lorpButton(play, playClicked, p); }
 
 const char * helptext =
     "Select audio and/or subtitle content to be included and their muxing order"
-    ".\n" "Language info is not much useful atm; mkv muxing will use it, though"
+    ".\n" "Language info is useful when muxing to mkv (with `x imkvcut.pl`)"
+    ".\n" "To know supported languages execute `mkvmerge --list-languages`"
     ".\n\n"
-    "If there are more than one audio file is listed below, audio level "
-    " scanning\nis not done yet. "
-    "In this case the first one in list below will be scanned.\n\n"
+    "Currently only  imkvcut.pl  uses the configuration set here"
+    ".\n\n"
     "Audio test play can be finished by pressing 'q' in terminal window\n"
     "(check mplayer manual page for other keys).";
 
