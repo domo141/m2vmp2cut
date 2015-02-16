@@ -23,7 +23,7 @@
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Mon 16 Feb 2015 19:05:50 +0200 too
+ * Last modified: Mon 16 Feb 2015 19:43:35 +0200 too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
@@ -1514,8 +1514,6 @@ void update_window(void)
 
 void cut_here(void)
 {
-    int i,j;
-
     if (G.cutpoints == sizeof G.cutpoint / sizeof G.cutpoint[0])
 	return;
 #if 1
@@ -1529,12 +1527,12 @@ void cut_here(void)
 #else
     if (G.cutpoint[G.currentcutpoint].frameno == G.currentframe) return;
 #endif
-    i = G.currentcutpoint + 1;
+    int i = G.currentcutpoint + 1;
 
     if (i & 1)
 	G.redsum += G.currentframe - G.cutpoint[G.currentcutpoint].frameno;
 
-    for (j = G.cutpoints; j > i; j--)
+    for (int j = G.cutpoints; j > i; j--)
 	G.cutpoint[j] = G.cutpoint[j - 1];
     G.cutpoint[i].frameno = G.currentframe;
     G.cutpoint[i].index = G.currentindex;
@@ -1546,9 +1544,7 @@ void cut_here(void)
 
 void merge_here(void)
 {
-    int i;
-
-    for (i = 0; i < G.cutpoints; i++)
+    for (int i = 0; i < G.cutpoints; i++)
     {
 	if (G.cutpoint[i].frameno == G.currentframe)
 	{
