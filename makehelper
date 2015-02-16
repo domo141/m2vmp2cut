@@ -99,7 +99,7 @@ cmd_install ()
 	if test -n "${LIBEXECDIR-}"
 	then
 		needvar LIBEXECDIR # variable content check (spaces...)
-		M2VMP2CUTDIR=$LIBEXECDIR/m2vmp2cut-$VERSION
+		M2VMP2CUTDIR=$LIBEXECDIR/m2vmp2cut/$VERSION
 	else
 		case $PREFIX in /usr|/usr/|/usr/local|/usr/local/) lib=libexec
 			;; $HOME | $HOME/ ) lib=${XDG_DATA_HOME:-.local/share}
@@ -135,17 +135,16 @@ cmd_install ()
 	x cp $2 "$D_M2VMP2CUTDIR"/bin
 	x cp $3 "$D_DATADIR"
 	x cp xbin/* "$D_M2VMP2CUTDIR"/xbin
-	case $VERSION in *-wip-*)
-		verinfo="$VERSION (installed `date +%Y-%m-%d`)"
-	 ;; *)	verinfo=$VERSION
-	esac
+	x ln -sfT $VERSION $D_M2VMP2CUTDIR/../current
+	_PDIR=${M2VMP2CUTDIR%/*}
 	exec 3> "$D_PREFIX"/bin/m2vmp2cut.wip
 	echo '#!/bin/sh' >&3
 	echo >&3
+	echo "dir='$_PDIR/current'" >&3
 	echo 'case ${1-} in'" '') echo" >&3
-	echo "    echo 'm2vmp2cut version $verinfo'" >&3
+	echo "    echo m2vmp2cut version \`exec readlink \"\$dir\"\`" >&3
 	echo 'esac' >&3
-	echo "exec $M2VMP2CUTDIR/bin/m2vmp2cut.sh"' "$@"' >&3
+	echo "exec \"\$dir\"/bin/m2vmp2cut.sh"' "$@"' >&3
 	exec 3>&-
 	chmod 755 "$D_PREFIX"/bin/m2vmp2cut.wip
 	mv "$D_PREFIX"/bin/m2vmp2cut.wip "$D_PREFIX"/bin/m2vmp2cut
