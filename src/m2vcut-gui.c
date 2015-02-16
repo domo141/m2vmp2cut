@@ -23,7 +23,7 @@
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Mon 16 Feb 2015 19:43:35 +0200 too
+ * Last modified: Mon 16 Feb 2015 21:01:04 +0200 too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
@@ -79,19 +79,22 @@ typedef unsigned int u_int; // c99 blocks this definition in <sys/types.h>
 
 #if 0
 #define DEBUG 1
-#define d2(x) do { printf("%d ", __LINE__); printf x; printf("\n"); } while (0)
 #define d1(x) do { printf("%d ", __LINE__); printf x; printf("\n"); } while (0)
 //#define d1(x) do {} while (0)
 #define d0(x) do {} while (0)
 #define dx(x) do { x; } while (0)
 #else
 #define DEBUG 0
-#define d2(x) do {} while (0)
 #define d1(x) do {} while (0)
 #define d0(x) do {} while (0)
 #define dx(x) do {} while (0)
 #endif
 
+#if 0
+#define d2(x) do { printf("%d ", __LINE__); printf x; printf("\n"); } while (0)
+#else
+#define d2(x) do {} while (0)
+#endif
 
 #if (__GNUC__ >= 4)
 #define GCCATTR_SENTINEL __attribute ((sentinel))
@@ -1233,10 +1236,10 @@ void update_alevels(void)
 	if ((unsigned int)i < 4)
 	{
 	    if (G.currentcutpoint & 1) {
-		rc = 0; gc = 80;
+		rc = 0; gc = 112;
 	    }
 	    else {
-		rc = 80; gc = 0;
+		rc = 112; gc = 0;
 	    }
 	}
 	else
@@ -1256,6 +1259,11 @@ void update_alevels(void)
     }
     for (i = 0; i < 31; i += 3)
 	_put_apixel(middle, i, 160,160,255);
+
+    _put_apixel(middle + 15, 0, 160,160,255);
+    //_put_apixel(middle + 15, 3, 160,160,255);
+    //_put_apixel(middle + 15, 27, 160,160,255);
+    _put_apixel(middle + 15, 30, 160,160,255);
 
     for (i = 16; i < middle; i += 16) {
 	_put_apixel(middle - i, 15, 160,160,255);
@@ -1512,10 +1520,18 @@ void update_window(void)
     gtk_widget_queue_draw(W.da);
 }
 
+// cut change to include endpoint was done by localized hack inside
+// cut_here() & merge_here() 2015-02-16...
 void cut_here(void)
 {
     if (G.cutpoints == sizeof G.cutpoint / sizeof G.cutpoint[0])
 	return;
+
+    int cutframe = G.currentframe + (G.currentcutpoint & 1);
+
+    if (cutframe >= G.lastframe)
+	return;
+
 #if 1
     if (G.currentcutpoint
 	&& G.currentindex - G.cutpoint[G.currentcutpoint].index < 4)
@@ -1525,18 +1541,18 @@ void cut_here(void)
 	&& G.cutpoint[G.currentcutpoint + 1].index - G.currentindex < 4)
 	return;
 #else
-    if (G.cutpoint[G.currentcutpoint].frameno == G.currentframe) return;
+    if (G.cutpoint[G.currentcutpoint].frameno == cutframe) return;
 #endif
     int i = G.currentcutpoint + 1;
 
-    if (i & 1)
-	G.redsum += G.currentframe - G.cutpoint[G.currentcutpoint].frameno;
-
+    if (i & 1) {
+	G.redsum += cutframe - G.cutpoint[G.currentcutpoint].frameno;
+	G.currentcutpoint = i; // moved 2015-02-16 / see similar below
+    }
     for (int j = G.cutpoints; j > i; j--)
 	G.cutpoint[j] = G.cutpoint[j - 1];
-    G.cutpoint[i].frameno = G.currentframe;
+    G.cutpoint[i].frameno = cutframe;
     G.cutpoint[i].index = G.currentindex;
-    G.currentcutpoint = i;
     G.cutpoints++;
     update_image();
     update_window();
@@ -1546,20 +1562,23 @@ void merge_here(void)
 {
     for (int i = 0; i < G.cutpoints; i++)
     {
-	if (G.cutpoint[i].frameno == G.currentframe)
-	{
-	    if (i & 1)
-		G.redsum -= G.currentframe - G.cutpoint[i - 1].frameno;
-	    G.cutpoints--;
-	    for (; i < G.cutpoints; i++)
-		G.cutpoint[i] = G.cutpoint[i + 1];
-	    G.currentcutpoint--;
-	    update_image();
-	    update_window();
-	    return;
+	int cutframe = G.currentframe;
+	if (G.cutpoint[i].frameno != cutframe &&
+	    G.cutpoint[i].frameno != ++cutframe) {
+	    //if (G.cutpoint[i].frameno > G.currentframe)
+	    //	break;
+	    continue;
 	}
-	if (G.cutpoint[i].frameno > G.currentframe)
-	    return;
+	if (i & 1)
+	    G.redsum -= cutframe - G.cutpoint[i - 1].frameno;
+	G.cutpoints--;
+	for (; i < G.cutpoints; i++)
+	    G.cutpoint[i] = G.cutpoint[i + 1];
+	if (cutframe == G.currentframe) // added 2015-02-16 / see similar above
+	    G.currentcutpoint--;
+	update_image();
+	update_window();
+	break;
     }
 }
 
