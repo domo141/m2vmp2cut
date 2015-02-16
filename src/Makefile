@@ -19,6 +19,7 @@ EGHDRS=$(TOCCODE:%=$(GD)/%.h)
 BINS=	m2vscan m2vfilter m2vstream fileparts filerotate merge-gui eteen \
 	mp2cutpoints assel-gui m2vcut-gui m2vtoyuv textdisp pgssupout
 
+BSTMP=	../_build/.stamp
 CD=	../_build/config
 BD=	../_build/bin
 OD=	../_build/obj_b
@@ -52,14 +53,11 @@ MOBJS=	$(MSRCS:%.c=$(OM)/%.o)
 OBJS=	$(SRCS:%.c=$(OD)/%.o)
 
 # Any of the headers change, let's compile all objs, for sure.
-$(MOBJS) $(OBJS):  make-dirs $(HDRS) $(GD)/version.h Makefile
+$(MOBJS) $(OBJS):  $(BSTMP) $(HDRS) $(GD)/version.h Makefile
 
-.PHONY:	make-dirs
-make-dirs:
-	set -x; test -d ../_build || mkdir -p ../_build; \
-	test -d $(BD) || mkdir $(BD); \
-	test -d $(OD) || mkdir $(OD); \
-	test -d $(GD) || mkdir $(GD)
+$(BSTMP):
+	mkdir -p ../_build $(BD) $(OD) $(GD)
+	touch $@
 
 $(GD)/version.h: Makefile
 	sed 's/^/const unsigned char version[] = "/; s/$$/";/; q' ../NEWS > $@
@@ -133,9 +131,8 @@ $(BD)/eteen: eteen.c
 $(BD)/libpreload_ffm2vtoyuv4mpeghax.so: libpreload_ffm2vtoyuv4mpeghax.c
 	sh $< -o $@ $(OPTFLAGS)
 
-$(CD)/mpeg2.conf: make-dirs ../tools/chksyslibmpeg.sh ../tools/chklibmpeg-051.sh
-	cd ../_build; \
-	../tools/chksyslibmpeg.sh || ../tools/chklibmpeg-051.sh ..
+$(CD)/mpeg2.conf: $(BSTMP) ../tools/chksyslibmpeg.sh ../tools/chklibmpeg-051.sh
+	cd ../_build;../tools/chksyslibmpeg.sh || ../tools/chklibmpeg-051.sh ..
 
 $(GD)/%_priv.h: %.c
 	perl -x Makefile $< > $@

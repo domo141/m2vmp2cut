@@ -127,14 +127,14 @@ cmd_install ()
 	test -d "$D_PREFIX" || x mkdir -m 755 -p "$D_PREFIX"
 
 	test -d "$D_PREFIX"/bin || x mkdir -m 755 "$D_PREFIX"/bin
-	x mkdir -m 755 "$D_M2VMP2CUTDIR"/bin "$D_M2VMP2CUTDIR"/xbin
+	x mkdir -m 755 "$D_M2VMP2CUTDIR"/bin "$D_M2VMP2CUTDIR"/ppbin
 
 	x mkdir -m 755 -p "$D_DATADIR" # no test as datadir seldom exists...
 	test -d "$D_M2VMP2CUTDIR"/doc || x ln -s "$DATADIR" "$D_M2VMP2CUTDIR"/doc
 	x cp $1 "$D_M2VMP2CUTDIR"/bin
 	x cp $2 "$D_M2VMP2CUTDIR"/bin
 	x cp $3 "$D_DATADIR"
-	x cp xbin/* "$D_M2VMP2CUTDIR"/xbin
+	x cp ppbin/* "$D_M2VMP2CUTDIR"/ppbin
 	x ln -sfT $VERSION $D_M2VMP2CUTDIR/../current
 	_PDIR=${M2VMP2CUTDIR%/*}
 	exec 3> "$D_PREFIX"/bin/m2vmp2cut.wip
@@ -262,6 +262,7 @@ exit
 #,# bin
 #,# bin/assel.pl x
 #,# bin/demux-pp.pl x
+#,# bin/getmp2.sh x
 #,# bin/getyuv.pl x
 #,# bin/lvev6frames.pl x
 #,# bin/m2v_catfiltered.py x
@@ -274,13 +275,13 @@ exit
 #,# bin/supcut.pl x
 #,# bin/wrapper.sh x
 
-#,# xbin
-#,# xbin/ffgetyuv.pl x
-#,# xbin/fixbmps.py x
-#,# xbin/icut.pl x
-#,# xbin/imkvcut.pl x
-#,# xbin/mpeg2.sh x
-#,# xbin/webm.sh x
+#,# ppbin
+#,# ppbin/ffgetyuv.pl x
+#,# ppbin/fixbmps.py x
+#,# ppbin/icut.pl x
+#,# ppbin/imkvcut.pl x
+#,# ppbin/mpeg2.sh x
+#,# ppbin/webm.sh x
 
 #,# doc
 #,# doc/Examples

@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Wed 19 Sep 2012 17:24:05 EEST too
-# Last modified: Sat 14 Feb 2015 12:09:11 +0200 too
+# Last modified: Tue 17 Feb 2015 18:19:41 +0200 too
 
 set -eu
 #set -x
@@ -121,7 +121,7 @@ printtimediff ()
 }
 
 m2vmp2cut_bindir=$M2VMP2CUT_CMD_PATH
-m2vmp2cut_cntdir=$M2VMP2CUT_X_PATH
+m2vmp2cut_cntdir=$M2VMP2CUT_PP_PATH
 
 denoisefilt='| yuvdenoise'
 #deintfilter='| yuvdeinterlace -s1' # m2vtoyuv provides "full" frames...

@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Sat 14 Feb 2015 12:09:31 +0200 too
+# Last modified: Tue 17 Feb 2015 18:22:20 +0200 too
 
 set -eu
 
@@ -257,10 +257,43 @@ cmd_select () # Select parts from video with a graphical tool
 			*' '1' '*) cat "$dir/cutpoints.1" >> "$dir/cutpoints"
 		esac
 	fi
-	echo 'Next: cut, x, ...'
+	echo 'Next: pp ... or cut'
 }
 
-cmd_cut () # Cut using m2vmp2cut.pl for the work...
+cmd_pp () # The new post-processing tools (with various quality)
+{
+	M2VMP2CUT_DIR=${M2VMP2CUT_CMD_PATH%/*}
+	M2VMP2CUT_PP_PATH=$M2VMP2CUT_DIR/ppbin
+	export M2VMP2CUT_PP_PATH
+	case ${1-} in '')
+		echo
+		echo Append one of these to your command line to continue.
+		echo The choice can be abbreviated to any unambiguous prefix.
+		echo
+		cd $M2VMP2CUT_PP_PATH
+		ls -1 | while read line
+		do
+			case $line in *~) continue; esac
+			sed -n '3 { s/./ '"$line"'                    /
+				    s/\(.\{14\}\) */\1/p; q; }' $line
+		done
+		echo; exit 0
+	esac
+	fp= ff=
+	for f in `exec ls -1 $M2VMP2CUT_PP_PATH`
+	do
+		case $f in *~) continue ;;
+		    $1) fp= ff=$1 fm=$1 break ;;
+		    $1*) fp=$ff; ff="$f $ff"; fm=$f ;;
+		esac
+	done
+	case $ff in '') die "'$1': not found." ;; esac
+	case $fp in '') ;; *) die "x: ambiquous match: $ff." ;; esac
+	shift
+	x exec $M2VMP2CUT_PP_PATH/$fm "$@"
+}
+
+cmd_cut () # The old cut using m2vmp2cut.pl for the work...
 {
 	x exec $M2VMP2CUT_CMD_PATH/m2vmp2cut.pl --dir="$dir" "$@"
 }
@@ -272,57 +305,16 @@ cmd_play () # Play resulting file with mplayer
 	x exec mplayer "$@" "$f"
 }
 
-cmd_move () # Move final file to a new location (and name)
-{
-	case $# in 1) ;; *) usage '<destfile>'; esac
-	f="$dir"/m2vmp2cut-work/out.mpg
-	test -f "$f" || die "'$f' does not exist"
-	x mv "$f" "$1"
-}
-
-cmd_getyuv () # Get selected parts of mpeg2 video as yuv(4mpeg) frames
+cmd_getyuv () # Get selected parts of mpeg2 video as yuv(4mpeg) frames (tbm)
 {
 	case "${1-}" in examp*) dir=examples; esac
 	x exec $M2VMP2CUT_CMD_PATH/getyuv.pl "$dir"
 }
 
-cmd_getmp2 () # Get selected parts of mp2 audio
+cmd_getmp2 () # Get selected parts of mp2 audio (to be moved, like above)
 {
 	case "${1-}" in examp*) dir=examples; esac
 	x exec $M2VMP2CUT_CMD_PATH/getmp2.sh "$dir"
-}
-
-cmd_x () # Additional tools, encoding scripts etc...
-{
-	M2VMP2CUT_CMD_DIRNAME=`exec dirname "$M2VMP2CUT_CMD_PATH"`
-	M2VMP2CUT_X_PATH=$M2VMP2CUT_CMD_DIRNAME/xbin
-	export M2VMP2CUT_X_PATH
-	case ${1-} in '')
-		echo
-		echo Append one of these to your command line to continue.
-		echo The choice can be abbreviated to any unambiguous prefix.
-		echo
-		cd $M2VMP2CUT_X_PATH
-		ls -1 | while read line
-		do
-			case $line in *~) continue; esac
-			sed -n '3 { s/./ '"$line"'                    /
-				    s/\(.\{15\}\) */\1/p; q; }' $line
-		done
-		echo; exit 0
-	esac
-	fp= ff=
-	for f in `exec ls -1 $M2VMP2CUT_X_PATH`
-	do
-		case $f in *~) continue ;;
-		    $1) fp= ff=$1 fm=$1 break ;;
-		    $1*) fp=$ff; ff="$f $ff"; fm=$f ;;
-		esac
-	done
-	case $ff in '') die "'$1': not found." ;; esac
-	case $fp in '') ;; *) die "x: ambiquous match: $ff." ;; esac
-	shift
-	x exec $M2VMP2CUT_X_PATH/$fm "$@"
 }
 
 cmd_help () # Help of all or some of the commands above
@@ -505,11 +497,6 @@ exit
 #h play: This command runs mplayer for the file created with cut command
 #h play:
 
-#h move: move <destfile>
-#h move:
-#h move: Moves final output file to a new destination.
-#h move:
-
 #h getyuv: getyuv [examples]
 #h getyuv:
 #h getyuv: Decodes selected mpeg2 frames as a stream of yuv4mpeg pictures.
@@ -524,7 +511,7 @@ exit
 #h getmp2: If examples argument is given this command provides example output.
 #h getmp2:
 
-#h x: x
-#h x:
-#h x: Additional tools. Encoding scripts etc...
-#h x:
+#h pp: pp
+#h pp:
+#h pp: The best post-processing tools m2vmp2cut can offer
+#h pp:

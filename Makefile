@@ -7,7 +7,8 @@
 all: ALWAYS
 	make -C src all
 #	# symlinks for inplace testing #
-	cd _build/bin; for f in ../../bin/*; do ln -sf $$f .; done
+	@cd _build/bin; for f in ../../bin/*; do ln -sfv $$f .; done
+	@test -d _build/ppbin || ln -sfv ../ppbin _build
 	@echo; echo Build done.; echo
 
 # From command line to subproceses...
