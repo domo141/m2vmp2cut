@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Sun Sep 05 11:12:24 EEST 2004 too
-# Last modified: Sun 04 May 2014 22:03:40 +0300 too
+# Last modified: Wed 18 Feb 2015 17:15:04 +0200 too
 #
 # This program is licensed under the GPL v2. See file COPYING for details.
 
@@ -282,7 +282,7 @@ _m2vtoyuv () { \"$m2vtoyuv\" "\$@"; }
 _catfiltered () { \"$catfiltered\" "\$@"; }
 
 # mpeg2enc comes also from mjpegtools
-hash mplex 2>/dev/null ||
+command -v mplex >/dev/null ||
 	die "'mplex' does not exist; please install mjpegtools."
 
 test -d "$wd" || die "Directory '$wd' does not exist (changed working directory?)."
@@ -306,7 +306,7 @@ print SH << "EOF";
 
 rtwd=$RUNTIME_DIR/m2vmp2cut-$$
 
-trap 'rm -rf \$rtwd; kill -USR1 0' 0
+trap 'rm -rf \$rtwd; kill -USR1 0' 0 INT HUP TERM
 rm -rf \$rtwd; mkdir \$rtwd;
 
 '$m2vmp2cut_sh' . vermatch 6 \\\n\t|| die 'Tool version mismatch. Rerun!';
@@ -596,7 +596,7 @@ EOF
 # Final lines.
 #
 
-print SH "\n", "wait\n", "rm -rf \$rtwd; trap - 0\n";
+print SH "\n", "wait\n", "rm -rf \$rtwd; trap - 0 INT HUP TERM\n";
 
 unless ($author)
 {

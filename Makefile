@@ -7,7 +7,8 @@
 all: ALWAYS
 	make -C src all
 #	# symlinks for inplace testing #
-	@cd _build/bin; for f in ../../bin/*; do ln -sfv $$f .; done
+	@cd _build/bin; for f in ../../bin/*; \
+		do test $$f -ef $${f##*/} || ln -sfv $$f .; done
 	@test -d _build/ppbin || ln -sfv ../ppbin _build
 	@echo; echo Build done.; echo
 
@@ -52,6 +53,6 @@ diffa:
 
 clean: ALWAYS
 	rm -f *~
-	cd src; make $(MAKECMDGOALS)
+	make -C src $(MAKECMDGOALS)
 
 distclean: clean

@@ -237,7 +237,9 @@ exit
 #msg1:  Try something like 'make install PREFIX=/usr/local [PJXJAR=...]'
 #msg1:                 or  'make install PREFIX=$HOME'
 #msg1:
-#msg1:  Content written to $PREFIX/bin/m2vmp2cut and $PREFIX/lib/m2vmp2cut/...
+#msg1:  m2vmp2cut goes to $PREFIX/bin and other files to $PREFIX/lib/m2vmp2cut
+#msg1:  or $PREFIX/libexec/m2vmp2cut (by some hairy heuristic based on /usr...),
+#msg1:  PREFIX being $HOME: $HOME/.local/share/m2vmp2cut (or $XDG_DATA_HOME...)
 #msg1:
 
 #msg2:

@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Tue 17 Feb 2015 18:22:20 +0200 too
+# Last modified: Wed 18 Feb 2015 17:19:55 +0200 too
 
 set -eu
 
@@ -296,6 +296,14 @@ cmd_pp () # The new post-processing tools (with various quality)
 cmd_cut () # The old cut using m2vmp2cut.pl for the work...
 {
 	x exec $M2VMP2CUT_CMD_PATH/m2vmp2cut.pl --dir="$dir" "$@"
+}
+
+cmd_move () ## Move final file to a new location (and name) (now hidden)
+{
+	test $# = 1 || usage '{destfile}'
+	f="$dir"/m2vmp2cut-work/out.mpg
+	test -f "$f" || die "'$f' does not exist"
+	x mv "$f" "$1"
 }
 
 cmd_play () # Play resulting file with mplayer

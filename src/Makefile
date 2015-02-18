@@ -173,10 +173,10 @@ filelist:
 	@echo $(FILES:%=$(DIR)%)
 
 clean:
-	rm -rf *~ *.o ../_build
+	rm -rf *~ *.o ../_build/[!b]*  # not b(in/)
 
 distclean: clean
-	rm -f $(BINARIES) $(PRELOADS) libmpeg2-svn-trunk
+	rm -rf ../_build/ libmpeg2-svn-trunk
 
 # Embedded scripts follow...
 
