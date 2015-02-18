@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Wed 18 Feb 2015 17:19:55 +0200 too
+# Last modified: Wed 18 Feb 2015 20:11:19 +0200 too
 
 set -eu
 
@@ -235,7 +235,8 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 	grep -v '^[+]' 'demux.log' || :
 	echo >&8 "+ : See also $dir/in*/*_log.txt"
 	exec 8>&-
-	$noaudio || echo 'Next: select'
+	# $noaudio ||
+	echo 'Next:  pp fixbmps  or  select'
 	exit
 }
 
@@ -337,7 +338,7 @@ cmd_help () # Help of all or some of the commands above
 	: deduced from it the same way 'demux' command creates directory name.
 	:
 .
-	exit 0 ;; esac
+	exit 0; esac
 	echo
 	sed -n "s|^#h $1[^:]*:||p" "$0"
 }
@@ -498,6 +499,10 @@ exit
 #h cut: of m2vmp2cut in old versions). This command has extensive help of
 #h cut: it's own. Note that this (again) adds one third of disk usage so far
 #h cut: when this creates final output file.
+#h cut:
+#h cut: This has fallen a bit behind of newer developments; pp icut and imkvcut
+#h cut: have more options, like muxing more than one audio file and muxing
+#h cut: (blu-ray compatible?) subtitle (picture) files (imkvcut only).
 #h cut:
 
 #h play: play [options]
