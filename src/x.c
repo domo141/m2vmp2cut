@@ -7,7 +7,7 @@
  *	    All rights reserved
  *
  * Created: Sun Sep 26 09:07:06 EEST 2004 too
- * Last modified: Sun Oct 23 09:11:29 EEST 2005 too
+ * Last modified: Wed 18 Feb 2015 18:14:05 +0200 too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -20,6 +20,12 @@
 
 #define DBGS 0
 #include "x.h"
+
+#if (__GNUC__ >= 4 && ! __clang__) // compiler warning avoidance nonsense
+static inline void WUR(ssize_t x) { x = x; }
+#else
+#define WUR(x) x
+#endif
 
 /* should we use off_t here ? (functions read(2) and write(2) has size_t) */
 
@@ -86,7 +92,7 @@ void fdprintf(int fd, const char * format, ...)
   n = (unsigned int)vsnprintf(buf, sizeof buf, format, ap);
   va_end(ap);
 
-  write(fd, buf, n >= sizeof buf? sizeof buf - 1: n);
+  WUR(write(fd, buf, n >= sizeof buf? sizeof buf - 1: n));
 }
 
 void xerrf(const char * format, ...)

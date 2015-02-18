@@ -173,7 +173,7 @@ filelist:
 	@echo $(FILES:%=$(DIR)%)
 
 clean:
-	rm -rf *~ *.o ../_build/[!b]*  # not b(in/)
+	rm -rf *~ *.o ../_build/.??* ../_build/[!b]*  # not b(in/)
 
 distclean: clean
 	rm -rf ../_build/ libmpeg2-svn-trunk

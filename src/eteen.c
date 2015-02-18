@@ -19,7 +19,7 @@
  *          All rights reserved
  *
  * Created: Thu 22 Jan 2015 21:06:55 EET too
- * Last modified: Sat 14 Feb 2015 23:03:04 +0200 too
+ * Last modified: Wed 18 Feb 2015 18:16:03 +0200 too
  */
 
 #include <unistd.h>
@@ -34,6 +34,11 @@
 
 // print stderr to file / fd n -- with '+' as first arg print cmd line too
 
+#if (__GNUC__ >= 4 && ! __clang__) // compiler warning avoidance nonsense
+static inline void WUR(ssize_t x) { x = x; }
+#else
+#define WUR(x) x
+#endif
 
 void die(const char * format, ...)
 {
@@ -52,7 +57,7 @@ void die(const char * format, ...)
 int waitchild(void)
 {
     int status;
-    while(wait(&status) < 0)
+    while (wait(&status) < 0)
         sleep(1);
 
     if (WIFEXITED(status))
@@ -85,7 +90,7 @@ void printcmdline(char ** args)
         *p++ = ' ';
     }
     *p++ = '\n';
-    write(2, buf, p - buf);
+    WUR(write(2, buf, p - buf));
 }
 
 int getfd(char * arg)
@@ -138,8 +143,8 @@ int main(int argc, char * argv[])
     while (1) {
         int l = read(pipefd[0], buf, sizeof buf);
         if (l > 0) {
-            write(fd, buf, l);
-            write(2, buf, l);
+            WUR(write(fd, buf, l));
+            WUR(write(2, buf, l));
             continue;
         }
         if (l < 0)

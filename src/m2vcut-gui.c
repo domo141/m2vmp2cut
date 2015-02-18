@@ -23,7 +23,7 @@
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Mon 16 Feb 2015 21:01:04 +0200 too
+ * Last modified: Wed 18 Feb 2015 18:10:50 +0200 too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
@@ -132,8 +132,16 @@ static inline unsigned int i2u(int i) { return (unsigned int)i; }
 //#define MAX(a, b) ((a) > (b)? (a): (b)) // defined in gmacros.h
 //#define MIN(a, b) ((a) > (b)? (b): (a)) // defined in gmacros.h
 
+#if (__GNUC__ >= 4 && ! __clang__) // compiler warning avoidance nonsense
+static inline void WUR(ssize_t x) { x = x; }
+#else
+#define WUR(x) x
+#endif
+
 /* write constant string */
-#define WriteCS(f, s) write(f, s, sizeof s - 1)
+# define WriteCS(f, s) WUR(write(f, s, sizeof s - 1))
+
+
 
 //static inline char * str_unconst(const char * p) { return p; } // like GNU mc
 
@@ -440,9 +448,9 @@ void die(const char * fmt, ...)
     if (fmt[strlen(fmt) - 1] == ':')
 	snprintf(p, l, " %s", strerror(e));
 
-    write(2, "\nFatal error: ", 14);
-    write(2, M.buffer, i + strlen(p));
-    write(2, "\n\n", 2);
+    WriteCS(2, "\nFatal error: ");
+    WUR(write(2, M.buffer, i + strlen(p)));
+    WriteCS(2, "\n\n");
 
     // kill(G.childpid);
     G.childpid = 0; // force!

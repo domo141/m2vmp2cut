@@ -12,7 +12,7 @@
  *	    All rights reserved
  *
  * Created: Thu Oct 20 19:32:21 EEST 2005 too
- * Last modified: Mon 12 Jan 2015 21:32:46 +0200 too
+ * Last modified: Wed 18 Feb 2015 18:15:26 +0200 too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -31,6 +31,12 @@
 #define DBGS 0
 #include "x.h"
 #include "bufwrite.h"
+
+#if (__GNUC__ >= 4 && ! __clang__) // compiler warning avoidance nonsense
+static inline void WUR(ssize_t x) { x = x; }
+#else
+#define WUR(x) x
+#endif
 
 /*                     ((1 << (8 * sizeof (v) - 1)) - 1) */
 #define MAXINTVAL(v) ((((1 << (8 * sizeof (v) - 2)) - 1) << 1) | 1)
@@ -331,7 +337,7 @@ static void update_frame_levels(struct frame_levels_state * fls,
 	    if (fls->nybblebit++ & 1) {
 		fls->buf[fls->bufi++] |= (val << 4);
 		if (fls->bufi == sizeof fls->buf - 4) {
-		    write(fls->fd, fls->buf, fls->bufi);
+		    WUR(write(fls->fd, fls->buf, fls->bufi));
 		    fls->bufi = 0;
 		}
 	    }
@@ -355,7 +361,7 @@ static void finish_frame_levels(struct frame_levels_state * fls)
 	    fls->buf[fls->bufi++] = (val | 0x10); // after end 0x12:s are used.
     }
     if (fls->bufi)
-	write(fls->fd, fls->buf, fls->bufi);
+	WUR(write(fls->fd, fls->buf, fls->bufi));
 }
 
 /* stuff derived, then modified from kjmp_* */

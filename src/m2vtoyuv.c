@@ -21,7 +21,7 @@
  *	    All rights reserved
  *
  * Created: Fri Feb 08 17:16:45 EET 2008 too
- * Last modified: Mon 16 Feb 2015 19:08:29 +0200 too
+ * Last modified: Wed 18 Feb 2015 18:13:27 +0200 too
  */
 
 /* this program is originally based on:
@@ -80,6 +80,12 @@
 #define d0(x) do {} while (0)
 
 #include <sys/uio.h>
+
+#if (__GNUC__ >= 4 && ! __clang__) // compiler warning avoidance nonsense
+static inline void WUR(ssize_t x) { x = x; }
+#else
+#define WUR(x) x
+#endif
 
 /* http://en.wikipedia.org/wiki/YCbCr */
 
@@ -140,7 +146,7 @@ static void output_yuv4mpeg(const mpeg2_sequence_t * sequence,
     iov[2].iov_len  = octets / 4;
     iov[3].iov_base = buf[2];
     iov[3].iov_len  = octets / 4;
-    writev(1, iov, 4);
+    WUR(writev(1, iov, 4));
 }
 
 typedef struct {
