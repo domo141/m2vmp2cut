@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Fri 26 Oct 2012 18:55:56 EEST too
-# Last modified: Sun 15 Feb 2015 20:26:11 +0200 too
+# Last modified: Wed 18 Feb 2015 17:44:27 +0200 too
 
 # FIXME: quite a few duplicate lines with icut.pl (unify or something)...
 
@@ -34,6 +34,8 @@ if (@ARGV > 0 and (@ARGV > 1 or ($ARGV[0] ne '4:3' and $ARGV[0] ne '16:9'))) {
  i.e. end selection must be one-after the last included frame.
 \n";
 }
+
+needcmd 'mkvmerge';
 
 my $dir = $ENV{M2VMP2CUT_MEDIA_DIRECTORY};
 my $bindir = $ENV{M2VMP2CUT_CMD_PATH};
@@ -111,48 +113,51 @@ unless (@cpargs) {
 \n";
 }
 
+chdir $dir or die "chdir $dir: $!\n";
+print "Continuing in '$dir/'\n";
+
 # XXX add printing of asr counts...
 my $asr = (@ARGV == 1? ($ARGV[0] eq '4:3'? 2: 3): ($asrs[2] > $asrs[3]? 2: 3));
 
 if (@sfiles) {
-    system "$bindir/supcut.pl", $dir;  # this will do *.suptime -> *.supcut
+    system "$bindir/supcut.pl", '.';  # this will do *.suptime -> *.supcut
     foreach (@sfiles) {
 	my $fmtx = $_->[0]; $fmtx =~ s/.suptime//;
-	my $of = $_->[0]; $of =~ s/time$//; $of = $dir .'/'. $of;
+	my $of = $_->[0]; $of =~ s/time$//;
 	print "Creating $of\n";
 	# XXX fixed size (720x576)
 	my $cf = $of . 'cut';
 	die "Subtitle definition file '$cf' not found.\n",
-	  "The probable cause is that none of the subtitles were in the\n",
+	  "The probable cause is that some of the subtitles were in the\n",
 	  "cut range in that file. Redo 'select', disable corresponding\n",
 	  "subtitle and then try again.\n\n" unless -f $cf;
 	system "$bindir/pgssupout", qw/720 576/, $cf,
-		"$dir/in1/$fmtx-%05d.bmp", $of;
+		"in1/$fmtx-%05d.bmp", $of;
 	die "exit code $?\n" if $?;
 	$_->[0] = $of;
     }
 }
 
-
 # mkvmerge cannot take input from fifos, so in this case just write
 # temporary video and audio files which are to be deleted at the end.
 # investigate whether ffmpeg can be used in the future...)
 
-eval "END { unlink <$dir/audio*.mp2c>, '$dir/video.m2vc' }";
+eval "END { unlink <audio*.mp2c>, 'video.m2vc' }";
 
 unless (xfork) {
     foreach (@afiles) {
-	warn "Executing getmp2.sh $dir/$_->[0] ...\n";
-	my $of = $dir .'/'. $_->[0] .'c';
+	warn "Executing getmp2.sh $_->[0] ...\n";
+	my $of = $_->[0].'c';
 	open STDOUT, '>', $of or die $!;
-	system "$bindir/getmp2.sh", "$dir/$_->[0]";
+	system "$bindir/getmp2.sh", $_->[0];
 	if ($?) {
 	    exit ($? >> 8) unless ($? & 0xff);
 	    exit $?;
 	}
     }
+    $videofile =~ s-.*/--;
     warn "Executing m2vstream $asr $videofile @cpargs ...\n";
-    open STDOUT, '>', "$dir/video.m2vc" or die $!;
+    open STDOUT, '>', "video.m2vc" or die $!;
     exec "$bindir/m2vstream", $asr, $videofile, @cpargs;
 }
 while (1) {
@@ -160,9 +165,9 @@ while (1) {
     die "exit code $?\n" if $?;
 }
 
-my @args = ( qw/mkvmerge -o out.mkv/, "$dir/video.m2vc" );
+my @args = ( qw/mkvmerge -o out.mkv video.m2vc/ );
 foreach (@afiles) {
-    push @args, '--language', '0:' . $_->[1], $dir .'/'. $_->[0] .'c';
+    push @args, '--language', '0:' . $_->[1], $_->[0].'c';
 }
 foreach (@sfiles) {
     my $of = $_->[0]; $of =~ s/time$//;
@@ -171,3 +176,4 @@ foreach (@sfiles) {
 $" = ' ';
 print "Executing @args\n";
 system @args;
+print "Result (if any) in '$dir/out.mkv'\n";

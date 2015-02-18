@@ -8,7 +8,7 @@
 #	    All rights reserved
 #
 # Created: Fri 26 Oct 2012 18:55:56 EEST too
-# Last modified: Sun 15 Feb 2015 20:26:19 +0200 too
+# Last modified: Wed 18 Feb 2015 17:44:33 +0200 too
 
 # FIXME: quite a few duplicate lines with imkvcut.pl (unify or something)...
 
@@ -34,6 +34,8 @@ if (@ARGV > 0 and (@ARGV > 1 or ($ARGV[0] ne '4:3' and $ARGV[0] ne '16:9'))) {
  i.e. end selection must be one-after the last included frame.
 \n";
 }
+
+needcmd 'mplex';
 
 my $dir = $ENV{M2VMP2CUT_MEDIA_DIRECTORY};
 my $bindir = $ENV{M2VMP2CUT_CMD_PATH};
@@ -114,6 +116,9 @@ unless (@cpargs) {
 \n";
 }
 
+chdir $dir or die "chdir $dir: $!\n";
+print "Continuing in '$dir/'\n";
+
 my $RUNTIME_DIR = $ENV{XDG_RUNTIME_DIR} || 0;
 unless ($RUNTIME_DIR and -d $RUNTIME_DIR
 	and -x $RUNTIME_DIR and $RUNTIME_DIR !~ /\s/) {
@@ -140,7 +145,7 @@ foreach (@afiles) {
     my $fifo = shift @aft;
     unless (xfork) {
 	open STDOUT, '>', $fifo or die $!;
-	exec "$bindir/getmp2.sh", $dir .'/'. $_->[0];
+	exec "$bindir/getmp2.sh", $_->[0];
     }
 }
 
@@ -148,9 +153,11 @@ foreach (@afiles) {
 my $asr = (@ARGV == 1? ($ARGV[0] eq '4:3'? 2: 3): ($asrs[2] > $asrs[3]? 2: 3));
 
 unless (xfork) {
+    $videofile =~ s-.*/--;
     warn "Executing m2vstream $asr $videofile @cpargs\n";
     open STDOUT, '>', $videofifo or die $!;
     exec "$bindir/m2vstream", $asr, $videofile, @cpargs;
 }
 
 system qw/mplex -f 8 -o out.mpg/, $videofifo, @audiofifos;
+print "Result (if any) in '$dir/out.mpg'\n";

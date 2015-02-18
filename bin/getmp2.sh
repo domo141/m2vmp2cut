@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Mon Aug 04 20:39:55 EEST 2008 too
-# Last modified: Sat 14 Feb 2015 10:20:50 +0200 too
+# Last modified: Wed 18 Feb 2015 17:35:27 +0200 too
 
 set -eu
 
@@ -38,7 +38,9 @@ then
 else
 	setfile audiofile "$1"
 	setfile scanfile "${1%.mp2}.scan"
-	setfile cutpoints "${1%/*}/cutpoints"
+	case $1 in */*) setfile cutpoints "${1%/*}/cutpoints"
+		;; *)	setfile cutpoints "cutpoints"
+	esac
 fi
 
 sync=0

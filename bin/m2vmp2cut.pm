@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Sun Aug 03 20:12:37 EEST 2008 too
-# Last modified: Fri 26 Oct 2012 19:16:02 EEST too
+# Last modified: Wed 18 Feb 2015 17:40:03 +0200 too
 #
 
 use strict;
@@ -15,6 +15,14 @@ use warnings;
 sub needfile($)
 {
     die "'$_[0]': no such file\n" unless -f $_[0];
+}
+
+sub needcmd($)
+{
+    foreach (split /:/, $ENV{PATH}) {
+	return if -x $_.'/'.$_[0];
+    }
+    die "Required command '$_[0]' is missing. Please install.\n";
 }
 
 sub openI($)
