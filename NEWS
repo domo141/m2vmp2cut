@@ -1,5 +1,31 @@
-m2vmp2cut 0.87-wip (20xx-xx-xx)
+m2vmp2cut 0.87-wip (unreleased)
 ===============================
+
+* m2vcut-gui: When selecting "end" cutpoint of a part the selection is
+   inclusive. This makes selecting I or P frame for that more explicit.
+
+* contrib has been renamed to pp; the most advanced tools (icut & imkvcut)
+   are there. E.g. pp imkvcut can create .mkv file containing one video
+   track accompanied with multible audio and subtitle (of pictures) tracks.
+
+* m2vcut-gui: Changed pgup/pgdown keybindings to do 2 min jumps, but after
+   first direction change, halve jump in each step.
+
+* m2vcut-gui: Added 6 second jumps to shift+left/right arrow and 1 minute
+   jumps to shift+up/down arrow keys.
+
+* m2vcut-gui: The space showing audio levels of current frame now has either
+   greenish(frame in) or reddish(frame out) background.
+
+* contrib/icut: Support for cutting without re-encoding anything added to
+   various places in source code. Sections starting in I-frame and ending
+   in I/P-frame can be cut without re-encoding.
+
+* Some general code improvements and minor behaviour changes done.
+* Fine-tuned some build system details.
+
+* ... and probably many things not known until git logs and diff to 0.86
+  examimed...
 
 m2vmp2cut 0.86 (2012-10-18)
 ===========================

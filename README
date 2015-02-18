@@ -1,13 +1,15 @@
 
-m2vmp2cut 0.86
+m2vmp2cut 0.87-wip
 
 m2vmp2cut is command-line driven frame accurate (currently PAL) mpeg2
 video (m2v file) with accompanied mp2 audio (mp2 file) cutter.
 A GUI tool is used for selecting the cutpoints.
 
-Frame accuracy is achieved by re-encoding video around cutpoints.
+Frame accuracy is achieved by re-encoding video around cutpoints -- or
+sacrifice a bit of selection choices to get output video without any
+re-encoding required.
 
-Audio is cut from separate mp2 file at positions that keep a/v sync as
+Audio is cut from separate mp2 files at positions that keep a/v sync as
 good as possible (maximum sync difference is around 10-15 milliseconds).
 
 This program is licensed under the GPL v2. See file COPYING for details.
@@ -15,31 +17,56 @@ This program is licensed under the GPL v2. See file COPYING for details.
 
 BASIC WORKFLOW:
 
-Note that 'm2vmp2cut' has pretty good help built-in. Executing 'm2vmp2cut'
-or 'm2vmp2cut . help' will get to it...
+Note that 'm2vmp2cut' used to have pretty good help built-in. Executing
+'m2vmp2cut' or 'm2vmp2cut . help' will get to it...
 
-First run:
+First run
 
 $ m2vmp2cut <mpeg2 file> demux <more mpeg2 files or other ProjectX opts>
 
-to demultiplex the source mpeg2, then execute GUI for cutpoint hunt:
+to demultiplex the source mpeg2.
+
+Now, if you suspect there may be broken subtitle image files (the output
+of demux will hint you for this), run
+
+$ m2vmp2cut <mpeg2 file/demux outputdir> pp fixbmps
+
+to verify (and fix) the files.
+
+Next execute GUI for cutpoint hunt:
 
 $ m2vmp2cut <mpeg2 file/demux outputdir> select
 
-<demux outdir> is derived from original mpeg2 file by removing latest suffix
-after dot (.) and replacing that with '.d'.
+<demux outputdir> is derived from the original mpeg2 file by removing latest
+suffix after dot (.) and replacing that with '.d' (now it also works without
+the trailing 'd' (for user convenience, common prefix for tab completion)).
 
-In order to 'select' to work the directory where m2v & mp2 files were demuxed
-must have 'video.m2v' symlinked to the video and 'audio.mp2' to the video;
-if those exist, the 'select' tool can be used to continue with content demuxed
-by something else than m2vmp2cut.
+Select will first show gui window where you can choose what audio and subtitle
+files to mux after select. Note that currently these apply to icut & imkvcut
+only (the old 'cut' uses only the first audio file chosen by this tool).
+When this is done, the graphical content selection tool will start.
 
-After selection of cutpoints are done, the 'cut' command will create new
-mpeg2 file from the selected contents, re-encoding some video frames to
-achieve frame accuracy. Audio frames don't require any re-encoding.
-Additionally, there are some scripts in 'xbon' directory which can e.g.
-re-encode the selected material to other formats. The 'x' command
-will show available additional scripts.
+When selecting cutpoints it is always good habit to test how the end of
+previous part and start of next part will "glue" together. Just press 't'
+when at either of these cutpoints to get a test play around these cutpoints
+to happen. Also remember 'h' command to see keybindings (and forget mouse
+for the time being).
+
+After selection of the cutpoints are done, there are a few options to
+continue: The old m2vmp2cut 'cut' command will create new mpeg2 file from
+the selected contents, re-encoding some video frames to achieve frame
+accuracy. Audio frames don't require any re-encoding.
+
+But latest development has gone to 'pp icut' and 'pp imkvcut' commands.
+These 2 require that in each part the start frame is 'I' frame and end
+frame is either 'I' frame or 'P' frame. From these selections new video
+track can be constructed without re-encoding anything. The imkvcut command
+uses all of the audio and subtitle options in the pre-select gui. icut
+can only use audio and language info is not used there.
+
+Last, there are other tools in 'pp' which can create content (and in the
+future this may even improve) and also m2vmp2cut 'getyuv' and 'getmp2'
+may be used in other tools...
 
 
 REQUIREMENTS:
@@ -47,6 +74,7 @@ REQUIREMENTS:
 gtk2            -- gui library used by m2vcut
 libmpeg2        -- for decoding mpeg2 pictures
 Mjpegtools      -- for mpeg2enc and mplex tools
+Mkvtoolnix      -- for mkvmerge
 ProjecX (project-x.sourceforge.net) -- to demux source mpeg files
 Java runtime    -- to run ProjectX (many non-sun vm:s work also)
 
@@ -55,12 +83,12 @@ Python          -- some m2vmp2cut utilities are written in python
 "Modern" Shell  -- /bin/sh which has modern shell capabilities
                    (not just Bourne) (this is usually the case)
 
-C compiler      -- there are some C utilities that needs to be compiled
+'C' compiler    -- there are some C utilities that needs to be compiled
 Java compiler   -- if you need to compile ProjectX
 
-RECOMMENDED:
+SUGGESTED:
 
-Transcode       -- for requantize option
+Transcode       -- for requantize option (if you really need it)
 
 
 (Other than ProjecX) Demux Tools (: (not used here (anymore))
@@ -72,7 +100,7 @@ mplayer (dumpaudio/dumpvideo?)
 
 USAGE:
 
-Run 'm2vmp2cut help' to get more usage information.
+Run 'm2vmp2cut . help' to get more usage information.
 
 
 CONTRIBUTORS:
