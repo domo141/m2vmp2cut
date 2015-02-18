@@ -6,10 +6,11 @@
 #	    All rights reserved
 #
 # Created: Sun Sep 05 11:12:24 EEST 2004 too
-# Last modified: Wed 18 Feb 2015 17:15:04 +0200 too
+# Last modified: Thu 19 Feb 2015 12:13:00 +0200 too
 #
 # This program is licensed under the GPL v2. See file COPYING for details.
 
+use 5.8.1;
 use strict;
 use warnings;
 
@@ -224,12 +225,12 @@ rename "$wd",   "$wd.1";
 
 mkdir "$wd", 0755; # XXX rotate these (instead of content)
 
-open STDERR, "| tee $wd/m2vmp2cut.log"
+open STDERR, '|-', 'tee', "$wd/m2vmp2cut.log"
   || die "STDERR redirection failed !!!: $! !!!\n";
 
 open STDIN, ">&STDOUT" || die "0>&1 redirection failed: $! !!!\n";
 
-print STDERR "--- Opened $wd/m2vmp2cut.log for output.\n";
+print STDERR "--- Opened '$wd/m2vmp2cut.log' for output.\n";
 #  "--- Note that do.sh logs here only when run via this driver.\n";
 
 open I, '<', $ifile || die "Can not open index file $ifile: $!\n";
@@ -639,7 +640,8 @@ print STDERR "Running work script '$wd/do.sh'...\n";
 
 #system 'script', '-c', "$wd/do.sh", "$wd/do.sh-out";
 $SIG{'USR1'} = 'IGNORE';
-if (system("$wd/do.sh") != 0)
+my @cmd = ("$wd/do.sh", ''); # XXX added useless arg to lure perl not use sh...
+if (system(@cmd) != 0)
 {
     print "\n$wd/do.sh was partly unsuccessful. exiting.\n";
     select undef, undef, undef, 0.25;
