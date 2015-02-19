@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Wed 18 Feb 2015 20:11:19 +0200 too
+# Last modified: Thu 19 Feb 2015 13:23:56 +0200 too
 
 set -eu
 
@@ -294,7 +294,7 @@ cmd_pp () # The new post-processing tools (with various quality)
 	x exec $M2VMP2CUT_PP_PATH/$fm "$@"
 }
 
-cmd_cut () # The old cut using m2vmp2cut.pl for the work...
+cmd_cut () # The old cut using m2vmp2cut.pl to do the work...
 {
 	x exec $M2VMP2CUT_CMD_PATH/m2vmp2cut.pl --dir="$dir" "$@"
 }
@@ -309,9 +309,12 @@ cmd_move () ## Move final file to a new location (and name) (now hidden)
 
 cmd_play () # Play resulting file with mplayer
 {
-	f="$dir"/m2vmp2cut-work/out.mpg
-	test -f "$f" || die "'$f' does not exist"
-	x exec mplayer "$@" "$f"
+	files='out.mkv out.mpg m2vmp2cut-work/out.mpg'
+	for f in $files
+	do
+		test ! -f "$dir"/$f || x exec mplayer "$@" "$dir"/$f
+	done
+	die "Cannot find any of $files in '$dir'"
 }
 
 cmd_getyuv () # Get selected parts of mpeg2 video as yuv(4mpeg) frames (tbm)
@@ -328,16 +331,16 @@ cmd_getmp2 () # Get selected parts of mp2 audio (to be moved, like above)
 
 cmd_help () # Help of all or some of the commands above
 {
-	case ${1-} in '') cut -d: -f 2- <<.
-	:
-	: Enter help <command-name> or '.' to see help of all commands at once.
-	:
-	: The <file>/<directory> argument is given before the command so
-	: that commands can easily changed at the command line. If <file>
-	: argument is given when <directory> is expected, the directory is
-	: deduced from it the same way 'demux' command creates directory name.
-	:
-.
+	case ${1-} in '') echo "
+ Enter . help {command-name} (or '.' to see help of all commands at once).
+
+ The  {file}/{directory} argument is given before the command so that
+ commands can easily changed at the command line.  If {file} argument
+ is given when {directory} is expected, the directory is deduced from
+ it the same way 'demux' command creates directory name (the trailing
+ 'd' of the directory name can be omitted for user command line tab
+ completion convenience).
+"
 	exit 0; esac
 	echo
 	sed -n "s|^#h $1[^:]*:||p" "$0"
@@ -345,29 +348,27 @@ cmd_help () # Help of all or some of the commands above
 
 cmd_example () # Simple example commands
 {
-	cut -d: -f 2- >&2 <<.
-	:
-	: Simple example commands. In select/cut/play the '<dir>' where demuxed
-	: can also be given instead of original <file> name.
-	:
-	: m2vmp2cut <file> demux
-	: m2vmp2cut <file/dir> select
-	: m2vmp2cut <file/dir> cut
-	: m2vmp2cut <file/dir> play
-	:
-	: In above, there was basic workflow. 'select' gui provides a test
-	: option -- but if you want to re-test, run these.
-	:
-	: m2vmp2cut <file/dir> cut --test=200
-	: m2vmp2cut <file/dir> play
-	:
-	: getyuv and getmp2 have their own examples. Enter 'example' to their
-	: command lines to see those.
-	:
-.
+	echo "
+ Simple example commands. In select/cut/play the '{dir}' where demuxed
+ can also be given instead of original {file} name.
+
+ m2vmp2cut {file} demux
+ m2vmp2cut {file/dir} select
+ m2vmp2cut {file/dir} cut (well, use m2vmp2cut {file/dir} pp imkvcut instead!)
+ m2vmp2cut {file/dir} play
+
+ In above, there was basic workflow. 'select' gui provides a test
+ option -- but if you want to re-test, run these.
+
+ m2vmp2cut {file/dir} cut --test=200
+ m2vmp2cut {file/dir} play
+
+ getyuv and getmp2 have their own examples. Enter 'example' to their
+ command lines to see those.
+"
 }
 
-cmd_source () # check source of given '$0' command or function
+cmd_source () # Check source of given '$0' command or function
 {
 	set +x
 	case ${1-} in '') die $0 $cmd cmd-prefix ;; esac
@@ -416,7 +417,7 @@ esac
 case ${1-} in '')
 	bn=`exec basename "$0" .sh`
 	echo
-	echo Usage: $bn '[-batch] (file|directory) <command> [args]'
+	echo Usage: $bn '[-batch] (file|directory) {command} [args]'
 	echo
 	echo $bn commands available:
 	echo
@@ -489,8 +490,8 @@ exit
 
 #h select: select
 #h select:
-#h select: This command uses new m2vcut-gui graphical utility for searching
-#h select: cutpoints. This work is done frame-accurately.
+#h select: This command uses m2vcut-gui graphical utility for searching
+#h select: cutpoints.
 #h select:
 
 #h cut: cut [options] ...
@@ -505,7 +506,7 @@ exit
 #h cut: (blu-ray compatible?) subtitle (picture) files (imkvcut only).
 #h cut:
 
-#h play: play [options]
+#h play: play [mplayer options]
 #h play:
 #h play: This command runs mplayer for the file created with cut command
 #h play:
@@ -526,5 +527,5 @@ exit
 
 #h pp: pp
 #h pp:
-#h pp: The best post-processing tools m2vmp2cut can offer
+#h pp: The best post-processing tools m2vmp2cut can offer !
 #h pp:

@@ -75,6 +75,8 @@ gtk2            -- gui library used by m2vcut
 libmpeg2        -- for decoding mpeg2 pictures
 Mjpegtools      -- for mpeg2enc and mplex tools
 Mkvtoolnix      -- for mkvmerge
+feh             -- for viewing subtitle pictures
+mplayer         -- for viewing test cuts and playing audio options
 ProjecX (project-x.sourceforge.net) -- to demux source mpeg files
 Java runtime    -- to run ProjectX (many non-sun vm:s work also)
 
@@ -86,15 +88,18 @@ Python          -- some m2vmp2cut utilities are written in python
 'C' compiler    -- there are some C utilities that needs to be compiled
 Java compiler   -- if you need to compile ProjectX
 
-SUGGESTED:
+(C quoted to avoid file(1) recognize this file as 'FORTRAN program,' ;)
 
-Transcode       -- for requantize option (if you really need it)
+Suggested:
+
+Transcode       -- for requantize option (e.g. to fit large image on dvd)
 
 
 (Other than ProjecX) Demux Tools (: (not used here (anymore))
 mpgtx
 replex
 tcextract
+ffmpeg
 mplayer (dumpaudio/dumpvideo?)
 
 
@@ -134,5 +139,6 @@ Tools that helped to find out required information (Thanks to the authors!):
 gopchop mpegcat tool
 bbtool17-2-linux
 dvb-mpegtools analyze
+BDSup2Sub
 google searches: `mpeghdrs.html' (video) and `mpeghdr.htm' (audio)
 google search: `python_mpeg'

@@ -55,6 +55,13 @@ gitwipsuffix ()
 		sed 's/..//; s/-\(..\)-/\1/'
 }
 
+gitwipsuffix_dateonly ()
+{
+	git log -1 --abbrev=7 --format=format:'%cd' --date=short |
+		sed 's/-\(..\)-/\1/'
+}
+
+
 cmd_install ()
 {
 	getversion
@@ -91,8 +98,8 @@ cmd_install ()
 		then
 			VERSION=$VERSION-`gitwipsuffix`
 		else
-			x=`expr "$PWD" : '.*\(-[0-9]*-g[0-9a-f]*\)$' || :`
-			case $x in '') ;; *) VERSION=${VERSION}$x ;; esac
+			x=${PWD#*/m2vmp2cut-*[0-9]-wip-}
+			case $x in "$PWD") ;; *) VERSION=${VERSION}-$x ;; esac
 		fi
 	esac
 
@@ -182,7 +189,7 @@ cmd_snapshot ()
 	test -d .git || die "Snapshotting only from git working copies"
 	VERSION=`sed 's/^m2vmp2cut *//; s/ .*//; q' NEWS`
 	case $VERSION in 'wip') VERSION=`date +"snap-%Y%m%d-%H"` ;;
-		*-wip) VERSION=$VERSION-`gitwipsuffix` ;;
+		*-wip) VERSION=$VERSION-`gitwipsuffix_dateonly` ;;
 		*) die "Snapshotting only 'wip' versions"
 	esac
 	makedist

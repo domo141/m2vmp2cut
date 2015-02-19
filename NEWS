@@ -1,8 +1,13 @@
-m2vmp2cut 0.87-wip (unreleased)
-===============================
+m2vmp2cut 0.87-wip (unreleased) (Cutting Iron)
+==============================================
+
+(2015-02-19)
 
 * m2vcut-gui: When selecting "end" cutpoint of a part the selection is
    inclusive. This makes selecting I or P frame for that more explicit.
+
+* assel-gui: New program to choose audio and subtitle streams; run before
+   m2vcut-gui when 'select' command is used.
 
 * contrib has been renamed to pp; the most advanced tools (icut & imkvcut)
    are there. E.g. pp imkvcut can create .mkv file containing one video
@@ -17,9 +22,12 @@ m2vmp2cut 0.87-wip (unreleased)
 * m2vcut-gui: The space showing audio levels of current frame now has either
    greenish(frame in) or reddish(frame out) background.
 
-* contrib/icut: Support for cutting without re-encoding anything added to
+* pp/icut: Support for cutting without re-encoding anything added to
    various places in source code. Sections starting in I-frame and ending
    in I/P-frame can be cut without re-encoding.
+
+* pp/imkvcut: Like icut above, additionally subtitle tracks can be "merged"
+   to final file. Also language codes (set by assel-gui) are effective here.
 
 * Some general code improvements and minor behaviour changes done.
 * Fine-tuned some build system details.
@@ -127,8 +135,8 @@ m2vmp2cut 0.58 (2005-10-23) (Wrecking Stars)
   encoder left, though).
 * Some (a little less significant) improvements
 
-m2vmp2cut 0.56 (Fifty-Sixty)
-============================
+m2vmp2cut 0.56 (2005-03-04) (Fifty-Sixty)
+=========================================
 
 * New option: --aonly (cut audio only (video to be re-encoded or so)).
 * New option: --evbr (other way to prepare video for re-encoding...).
@@ -140,8 +148,8 @@ m2vmp2cut 0.56 (Fifty-Sixty)
 * Internal workings changes.
 * Bug fixes.
 
-m2vmp2cut 0.54 (Constit on monet)
-=================================
+m2vmp2cut 0.54 (2004-11-03) (Constit on monet)
+==============================================
 
 * --sync option bugfix: negative numbers were taken as positive.
 * --test option bugfix: was no-op in 0.42
@@ -150,7 +158,7 @@ m2vmp2cut 0.54 (Constit on monet)
 * Added `misc' dir containing external stuff.
 * Internal workings changes.
 
-m2vmp2cut 0.42 (Infinite Improbabilities)
-=========================================
+m2vmp2cut 0.42 (2004-10-21) (Infinite Improbabilities)
+======================================================
 
 * First release.
