@@ -174,7 +174,8 @@ dodemux ()
 	x $pjx -ini "$dir"/X.ini -out "$dir/$1" -name "$1" -demux "$2"
 	x $M2VMP2CUT_CMD_PATH/demux-pp.pl "$dir" "$1"
 	for f in "$dir/$1"/*.sup
-	do	b=${f%.sup}; b=st${b##*/sp}
+	do	case $f in *'*'* | '') continue; esac
+		b=${f%.sup}; b=st${b##*/sp}
 		x $M2VMP2CUT_CMD_PATH/pxsuptime.py "$f" "$1/$b" \
 		  > "$dir"/$b.suptime
 	done
@@ -244,7 +245,7 @@ cmd_select () # Select parts from video with a graphical tool
 {
 	test -f "$dir/video1.m2v" || die "'$dir/video1.m2v' does not exist"
 	# xxx "$dir/in1/audio1-2.mp2" does not check audio2-2.mp2 in case...
-	if test -f "$dir/in1/sp1-1.sup" || test -f "$dir/in1/audio1-2.mp2"
+	if test -f "$dir/in1/sp1-1.sup" || test -f "$dir/audio.mp2"
 	then
 		x $M2VMP2CUT_CMD_PATH/assel-gui "$dir"
 		x $M2VMP2CUT_CMD_PATH/assel.pl "$dir" linkfirstaudio || :
