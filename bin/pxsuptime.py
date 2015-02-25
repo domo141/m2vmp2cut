@@ -45,7 +45,7 @@ def pxsuptime(supfile, base):
 
             while True:
                 cmd = ord(ctrl.read(1))
-                if cmd == 0x00:	# force display:
+                if cmd == 0x00: # force display:
                     continue
                 if cmd == 0x01: # start date (read above)
                     start = date # XXX + previous

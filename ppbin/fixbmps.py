@@ -4,11 +4,11 @@
 #
 # Author: Tomi Ollila -- too ät iki piste fi
 #
-#	Copyright (c) 2015 Tomi Ollila
-#	    All rights reserved
+#       Copyright (c) 2015 Tomi Ollila
+#           All rights reserved
 #
 # Created: Wed 28 Jan 2015 18:01:46 EET too
-# Last modified: Sat 14 Feb 2015 12:51:28 +0200 too
+# Last modified: Thu 26 Feb 2015 00:11:19 +0200 too
 
 import os
 import sys

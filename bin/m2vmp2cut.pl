@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Sun Sep 05 11:12:24 EEST 2004 too
-# Last modified: Thu 19 Feb 2015 12:13:00 +0200 too
+# Last modified: Thu 26 Feb 2015 00:07:41 +0200 too
 #
 # This program is licensed under the GPL v2. See file COPYING for details.
 
@@ -579,14 +579,14 @@ if ($author)
     print XML  <<"EOF";
     <dvdauthor dest=\"$wd/dvd\">
       <vmgm />
-        <titleset>
-          <titles>
-            <pgc>
+	<titleset>
+	  <titles>
+	    <pgc>
 	    # XXX this is now borken -- \$rtwd cannot be fed there...
-              <vob file=\"mplex $mplexopts -o /dev/stdout \$rtwd/fifo-video \$rtwd/fifo-audio |\"/>
-            </pgc>
-          </titles>
-        </titleset>
+	      <vob file=\"mplex $mplexopts -o /dev/stdout \$rtwd/fifo-video \$rtwd/fifo-audio |\"/>
+	    </pgc>
+	  </titles>
+	</titleset>
     </dvdauthor>
 EOF
 

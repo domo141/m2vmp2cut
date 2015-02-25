@@ -12,7 +12,7 @@
  *	    All rights reserved
  *
  * Created: Thu Oct 20 19:32:21 EEST 2005 too
- * Last modified: Wed 18 Feb 2015 18:15:26 +0200 too
+ * Last modified: Thu 26 Feb 2015 00:18:12 +0200 too
  *
  * This program is licensed under the GPL v2. See file COPYING for details.
  */
@@ -886,8 +886,8 @@ static int get_bits(int bit_count) {
     S_bit_window = (S_bit_window << bit_count) & 0xFFFFFF;
     S_bits_in_window -= bit_count;
     while (S_bits_in_window < 16) {
-        S_bit_window |= (*S_frame_pos++) << (16 - S_bits_in_window);
-        S_bits_in_window += 8;
+	S_bit_window |= (*S_frame_pos++) << (16 - S_bits_in_window);
+	S_bits_in_window += 8;
     }
     return result;
 }
@@ -929,38 +929,38 @@ static void read_samples(const struct quantizer_spec *q,
     int idx, adj;
     register int val;
     if (!q) {
-        // no bits allocated for this subband
-        sample[0] = sample[1] = sample[2] = 0;
-        return;
+	// no bits allocated for this subband
+	sample[0] = sample[1] = sample[2] = 0;
+	return;
     }
     // resolve scalefactor
-        scalefactor = scf_value[scalefactor];
+	scalefactor = scf_value[scalefactor];
 
     // decode samples
     adj = q->nlevels;
     if (q->grouping) {
-        // decode grouped samples
-        val = get_bits(q->cw_bits);
-        sample[0] = val % adj;
-        val /= adj;
-        sample[1] = val % adj;
-        sample[2] = val / adj;
+	// decode grouped samples
+	val = get_bits(q->cw_bits);
+	sample[0] = val % adj;
+	val /= adj;
+	sample[1] = val % adj;
+	sample[2] = val / adj;
     } else {
-        // decode direct samples
-        for(idx = 0;  idx < 3;  ++idx)
-            sample[idx] = get_bits(q->cw_bits);
+	// decode direct samples
+	for(idx = 0;  idx < 3;  ++idx)
+	    sample[idx] = get_bits(q->cw_bits);
     }
 
     // postmultiply samples
     adj = ((adj + 1) >> 1) - 1;
     for (idx = 0;  idx < 3;  ++idx) {
-        // step 1: renormalization to [-1..1]
-        val = adj - sample[idx];
-        val = (val * q->Smul) + (val / q->Sdiv);
-        // step 2: apply scalefactor
-        sample[idx] = ( val * (scalefactor >> 12)                  // upper part
-                    + ((val * (scalefactor & 4095) + 2048) >> 12)) // lower part
-                    >> 12;  // scale adjust
+	// step 1: renormalization to [-1..1]
+	val = adj - sample[idx];
+	val = (val * q->Smul) + (val / q->Sdiv);
+	// step 2: apply scalefactor
+	sample[idx] = ( val * (scalefactor >> 12)                  // upper part
+		    + ((val * (scalefactor & 4095) + 2048) >> 12)) // lower part
+		    >> 12;  // scale adjust
     }
 }
 
@@ -990,11 +990,11 @@ static void mp2_decode_frame(struct mp2_ctx_t * mp2,
 
     // general sanity check
     if (!initialized || !mp2 || (mp2->id != KJMP2_MAGIC) || !frame)
-        return 0;
+	return 0;
 
     // check for valid header: syncword OK, MPEG-Audio Layer 2
     if ((frame[0] != 0xFF) || ((frame[1] & 0xFE) != 0xFC))
-        return 0;
+	return 0;
 
     // set up the bitstream reader
     bit_window = frame[2] << 16;
@@ -1004,32 +1004,32 @@ static void mp2_decode_frame(struct mp2_ctx_t * mp2,
     // read the rest of the header
     bit_rate_index_minus1 = get_bits(4) - 1;
     if (bit_rate_index_minus1 > 13)
-        return 0;  // invalid bit rate or 'free format'
+	return 0;  // invalid bit rate or 'free format'
     sampling_frequency = get_bits(2);
     if (sampling_frequency == 3)
-        return 0;
+	return 0;
     padding_bit = get_bits(1);
     get_bits(1);  // discard private_bit
     mode = get_bits(2);
 
     // parse the mode_extension, set up the stereo bound
     if (mode == JOINT_STEREO) {
-        bound = (get_bits(2) + 1) << 2;
+	bound = (get_bits(2) + 1) << 2;
     } else {
-        get_bits(2);
-        bound = (mode == MONO) ? 0 : 32;
+	get_bits(2);
+	bound = (mode == MONO) ? 0 : 32;
     }
 
     // discard the last 4 bits of the header and the CRC value, if present
     get_bits(4);
     if ((frame[1] & 1) == 0)
-        get_bits(16);
+	get_bits(16);
 
     // compute the frame size
     frame_size = (144000 * bitrates[bit_rate_index_minus1]
-               / sample_rates[sampling_frequency]) + padding_bit;
+	       / sample_rates[sampling_frequency]) + padding_bit;
     if (!pcm)
-        return frame_size;  // no decoding
+	return frame_size;  // no decoding
 #endif
 
     //unsigned long frame_size;
@@ -1040,9 +1040,9 @@ static void mp2_decode_frame(struct mp2_ctx_t * mp2,
     //frame_size = 144000 * m2i->bitrate / m2i->samplerate + m2i->pad;
     unsigned mode = m2i->mode;
     if (m2i->mode == JOINT_STEREO)
-        bound = (m2i->mex + 1) << 2;
+	bound = (m2i->mex + 1) << 2;
     else
-        bound = (mode == MONO) ? 0 : 32;
+	bound = (mode == MONO) ? 0 : 32;
 
     S_frame_pos = m2i->frame;
     S_bit_window = (*S_frame_pos++) << 16;
@@ -1055,105 +1055,105 @@ static void mp2_decode_frame(struct mp2_ctx_t * mp2,
     sblimit = table_idx & 63;
     table_idx >>= 6;
     if (bound > sblimit)
-        bound = sblimit;
+	bound = sblimit;
 
     // read the allocation information
     for (sb = 0;  sb < bound;  ++sb)
-        for (ch = 0;  ch < 2;  ++ch)
-            allocation[ch][sb] = read_allocation(sb, table_idx);
+	for (ch = 0;  ch < 2;  ++ch)
+	    allocation[ch][sb] = read_allocation(sb, table_idx);
     for (sb = bound;  sb < sblimit;  ++sb)
-        allocation[0][sb] = allocation[1][sb] = read_allocation(sb, table_idx);
+	allocation[0][sb] = allocation[1][sb] = read_allocation(sb, table_idx);
 
     // read scale factor selector information
     nch = (mode == MONO) ? 1 : 2;
     for (sb = 0;  sb < sblimit;  ++sb) {
-        for (ch = 0;  ch < nch;  ++ch)
-            if (allocation[ch][sb])
-                scfsi[ch][sb] = get_bits(2);
-        if (mode == MONO)
-            scfsi[1][sb] = scfsi[0][sb];
+	for (ch = 0;  ch < nch;  ++ch)
+	    if (allocation[ch][sb])
+		scfsi[ch][sb] = get_bits(2);
+	if (mode == MONO)
+	    scfsi[1][sb] = scfsi[0][sb];
     }
 
     // read scale factors
     for (sb = 0;  sb < sblimit;  ++sb) {
-        for (ch = 0;  ch < nch;  ++ch)
-            if (allocation[ch][sb]) {
-                switch (scfsi[ch][sb]) {
-                    case 0: scalefactor[ch][sb][0] = get_bits(6);
-                            scalefactor[ch][sb][1] = get_bits(6);
-                            scalefactor[ch][sb][2] = get_bits(6);
-                            break;
-                    case 1: scalefactor[ch][sb][0] =
-                            scalefactor[ch][sb][1] = get_bits(6);
-                            scalefactor[ch][sb][2] = get_bits(6);
-                            break;
-                    case 2: scalefactor[ch][sb][0] =
-                            scalefactor[ch][sb][1] =
-                            scalefactor[ch][sb][2] = get_bits(6);
-                            break;
-                    case 3: scalefactor[ch][sb][0] = get_bits(6);
-                            scalefactor[ch][sb][1] =
-                            scalefactor[ch][sb][2] = get_bits(6);
-                            break;
-                }
-            }
-        if (mode == MONO)
-            for (part = 0;  part < 3;  ++part)
-                scalefactor[1][sb][part] = scalefactor[0][sb][part];
+	for (ch = 0;  ch < nch;  ++ch)
+	    if (allocation[ch][sb]) {
+		switch (scfsi[ch][sb]) {
+		    case 0: scalefactor[ch][sb][0] = get_bits(6);
+			    scalefactor[ch][sb][1] = get_bits(6);
+			    scalefactor[ch][sb][2] = get_bits(6);
+			    break;
+		    case 1: scalefactor[ch][sb][0] =
+			    scalefactor[ch][sb][1] = get_bits(6);
+			    scalefactor[ch][sb][2] = get_bits(6);
+			    break;
+		    case 2: scalefactor[ch][sb][0] =
+			    scalefactor[ch][sb][1] =
+			    scalefactor[ch][sb][2] = get_bits(6);
+			    break;
+		    case 3: scalefactor[ch][sb][0] = get_bits(6);
+			    scalefactor[ch][sb][1] =
+			    scalefactor[ch][sb][2] = get_bits(6);
+			    break;
+		}
+	    }
+	if (mode == MONO)
+	    for (part = 0;  part < 3;  ++part)
+		scalefactor[1][sb][part] = scalefactor[0][sb][part];
     }
 
     // coefficient input and reconstruction
     for (part = 0;  part < 3;  ++part)
-        for (gr = 0;  gr < 4;  ++gr) {
+	for (gr = 0;  gr < 4;  ++gr) {
 
-            // read the samples
-            for (sb = 0;  sb < bound;  ++sb)
-                for (ch = 0;  ch < 2;  ++ch)
-                    read_samples(allocation[ch][sb], scalefactor[ch][sb][part], &sample[ch][sb][0]);
-            for (sb = bound;  sb < sblimit;  ++sb) {
-                read_samples(allocation[0][sb], scalefactor[0][sb][part], &sample[0][sb][0]);
-                for (idx = 0;  idx < 3;  ++idx)
-                    sample[1][sb][idx] = sample[0][sb][idx];
-            }
-            for (ch = 0;  ch < 2;  ++ch)
-               for (sb = sblimit;  sb < 32;  ++sb)
-                    for (idx = 0;  idx < 3;  ++idx)
-                        sample[ch][sb][idx] = 0;
+	    // read the samples
+	    for (sb = 0;  sb < bound;  ++sb)
+		for (ch = 0;  ch < 2;  ++ch)
+		    read_samples(allocation[ch][sb], scalefactor[ch][sb][part], &sample[ch][sb][0]);
+	    for (sb = bound;  sb < sblimit;  ++sb) {
+		read_samples(allocation[0][sb], scalefactor[0][sb][part], &sample[0][sb][0]);
+		for (idx = 0;  idx < 3;  ++idx)
+		    sample[1][sb][idx] = sample[0][sb][idx];
+	    }
+	    for (ch = 0;  ch < 2;  ++ch)
+	       for (sb = sblimit;  sb < 32;  ++sb)
+		    for (idx = 0;  idx < 3;  ++idx)
+			sample[ch][sb][idx] = 0;
 
-            // synthesis loop
-            for (idx = 0;  idx < 3;  ++idx) {
-                // shifting step
-                mp2->Voffs = table_idx = (mp2->Voffs - 64) & 1023;
+	    // synthesis loop
+	    for (idx = 0;  idx < 3;  ++idx) {
+		// shifting step
+		mp2->Voffs = table_idx = (mp2->Voffs - 64) & 1023;
 
-                for (ch = 0;  ch < 2;  ++ch) {
-                    // matrixing
-                    for (i = 0;  i < 64;  ++i) {
-                        sum = 0;
-                        for (j = 0;  j < 32;  ++j)
-                            sum += N[i][j] * sample[ch][j][idx];  // 8b*15b=23b
-                        // intermediate value is 28 bit (23 + 5), clamp to 14b
-                        mp2->V[ch][table_idx + i] = (sum + 8192) >> 14;
-                    }
+		for (ch = 0;  ch < 2;  ++ch) {
+		    // matrixing
+		    for (i = 0;  i < 64;  ++i) {
+			sum = 0;
+			for (j = 0;  j < 32;  ++j)
+			    sum += N[i][j] * sample[ch][j][idx];  // 8b*15b=23b
+			// intermediate value is 28 bit (23 + 5), clamp to 14b
+			mp2->V[ch][table_idx + i] = (sum + 8192) >> 14;
+		    }
 
-                    // construction of U
-                    for (i = 0;  i < 8;  ++i)
-                        for (j = 0;  j < 32;  ++j) {
-                            U[(i << 6) + j]      = mp2->V[ch][(table_idx + (i << 7) + j     ) & 1023];
-                            U[(i << 6) + j + 32] = mp2->V[ch][(table_idx + (i << 7) + j + 96) & 1023];
-                        }
+		    // construction of U
+		    for (i = 0;  i < 8;  ++i)
+			for (j = 0;  j < 32;  ++j) {
+			    U[(i << 6) + j]      = mp2->V[ch][(table_idx + (i << 7) + j     ) & 1023];
+			    U[(i << 6) + j + 32] = mp2->V[ch][(table_idx + (i << 7) + j + 96) & 1023];
+			}
 
-                    // apply window
-                    for (i = 0;  i < 512;  ++i)
-                        U[i] = (U[i] * D[i] + 32) >> 6;
+		    // apply window
+		    for (i = 0;  i < 512;  ++i)
+			U[i] = (U[i] * D[i] + 32) >> 6;
 
-                    // output samples
-                    for (j = 0;  j < 32;  ++j) {
-                        sum = 0;
-                        for (i = 0;  i < 16;  ++i)
-                            sum -= U[(i << 5) + j];
-                        sum = (sum + 8) >> 4;
-                        if (sum < 0) sum = -sum;
-                        if (sum > 32767) sum = 32767;
+		    // output samples
+		    for (j = 0;  j < 32;  ++j) {
+			sum = 0;
+			for (i = 0;  i < 16;  ++i)
+			    sum -= U[(i << 5) + j];
+			sum = (sum + 8) >> 4;
+			if (sum < 0) sum = -sum;
+			if (sum > 32767) sum = 32767;
 			int ix = (idx << 5) | j;
 			if (ch == 1) {
 			  if (xmonopcm[ix] < (int16_t)sum)
@@ -1161,14 +1161,14 @@ static void mp2_decode_frame(struct mp2_ctx_t * mp2,
 			}
 			else
 			  xmonopcm[ix] = (int16_t) sum;
-                    }
-                } // end of synthesis channel loop
-            } // end of synthesis sub-block loop
+		    }
+		} // end of synthesis channel loop
+	    } // end of synthesis sub-block loop
 
-            // adjust PCM output pointer: decoded 3 * 32 = 96 samples
-            xmonopcm += 96;
+	    // adjust PCM output pointer: decoded 3 * 32 = 96 samples
+	    xmonopcm += 96;
 
-        } // decoding of the granule finished
+	} // decoding of the granule finished
 }
 
 

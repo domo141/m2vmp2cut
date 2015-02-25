@@ -3,11 +3,11 @@
 #
 # Author: Tomi Ollila -- too ät iki piste fi
 #
-#	Copyright (c) 2004 Tomi Ollila
-#	    All rights reserved
+#       Copyright (c) 2004 Tomi Ollila
+#           All rights reserved
 #
 # Created: Sun Sep 19 08:07:37 EEST 2004 too
-# Last modified: Fri May 09 18:22:24 EEST 2008 too
+# Last modified: Thu 26 Feb 2015 00:13:19 +0200 too
 #
 # This program is released under GNU GPL. Check
 # http://www.fsf.org/licenses/licenses.html
@@ -81,11 +81,11 @@ class G:
     frames = 0
     fcount = 0
 
-def f_picture(G, buf):		G.fcount += 1; return True
-def f_user_data(G, buf):	return True
-def f_seq_error(G, buf):	return True
-def f_seq_end(G, buf):		return False
-def f_gop(G, buf):		return True
+def f_picture(G, buf):    G.fcount += 1; return True
+def f_user_data(G, buf):  return True
+def f_seq_error(G, buf):  return True
+def f_seq_end(G, buf):    return False
+def f_gop(G, buf):        return True
 
 def f_seq_header(G, buf):
 

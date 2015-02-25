@@ -3,11 +3,11 @@
 #
 # Author: Tomi Ollila -- too ät iki piste fi
 #
-#	Copyright (c) 2004 Tomi Ollila
-#	    All rights reserved
+#       Copyright (c) 2004 Tomi Ollila
+#           All rights reserved
 #
 # Created: Wed Sep 15 22:06:57 EEST 2004 too
-# Last modified: Mon Feb 09 20:52:10 EET 2009 too
+# Last modified: Thu 26 Feb 2015 00:13:02 +0200 too
 #
 # This program is released under GNU GPL. Check
 # http://www.fsf.org/licenses/licenses.html
@@ -116,11 +116,11 @@ class G:
     dispext_hdr = 0
     intra_dc_prec = 0
 
-def f_picture(G, buf):		pass
-def f_user_data(G, buf):	pass
-def f_seq_error(G, buf):	pass
-def f_seq_end(G, buf):		pass
-def f_gop(G, buf):		pass
+def f_picture(G, buf):    pass
+def f_user_data(G, buf):  pass
+def f_seq_error(G, buf):  pass
+def f_seq_end(G, buf):    pass
+def f_gop(G, buf):        pass
 
 def f_seq_header(G, buf):
     if G.intra or G.non_intra:

@@ -19,7 +19,7 @@
  *	    All rights reserved
  *
  * Created: Sun 28 Oct 2012 09:58:21 EET too
- * Last modified: Sat 14 Feb 2015 23:03:36 +0200 too
+ * Last modified: Thu 26 Feb 2015 00:05:36 +0200 too
  */
 
 #include <unistd.h>
@@ -433,7 +433,7 @@ int main(int argc, char * argv[])
 }
 
 static void rgb2yuv(uint8_t r,   uint8_t    g, uint8_t   b,
-                    uint8_t * y, uint8_t * cr, uint8_t * cb)
+		    uint8_t * y, uint8_t * cr, uint8_t * cb)
 {
     /* from dvdauthor... */
     *y  = ( 257 * r + 504 * g +  98 * b +  16500) / 1000;

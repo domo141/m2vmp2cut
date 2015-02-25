@@ -32,4 +32,4 @@
     --requant=n.n  requantize by given (float) value. This reduces video
                    size (and quality). Accepted range 1.0 - 5.9.
                    Value 1.0 gives 5-10% size reduction.
-
+.

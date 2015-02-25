@@ -8,12 +8,11 @@
 #	    All rights reserved
 #
 # Created: Mon Aug 18 18:54:24 EEST 2008 too
-# Last modified: Tue 17 Feb 2015 18:19:13 +0200 too
+# Last modified: Thu 26 Feb 2015 00:21:25 +0200 too
 
 
 case $1 in
-	4:3) a=2 ;; 16:9) a=3 ;; '') cat <<.
-
+	4:3) a=2 ;; 16:9) a=3 ;; '') echo '
  re-encode to mpeg2. used to reduce bitrates with possibly better quality
  than with requantisation (with aid of filtering). cropping and rescaling
  can give aspect ratio changes (4:3 -> 16:9).
@@ -23,12 +22,11 @@ case $1 in
  current options: (4:3|16:9)
 
  currently fixed bitrate: 2000 kb/s
+'
+# future options: denoise and deinterlace filters. bitrate option.
+#                 cropping, padding, aspect ratio changes.
+#                 quantisation matrix selection (kvcd, tmpgenc, hi-res)
 
- future options: denoise and deinterlace filters. bitrate option.
-                 cropping, padding, aspect ratio changes.
-                 quantisation matrix selection (kvcd, tmpgenc, hi-res)
-
-.
 exit 0 ;; esac
 
 saved_IFS=$IFS
