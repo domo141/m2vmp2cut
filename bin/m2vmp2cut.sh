@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Thu 19 Feb 2015 13:23:56 +0200 too
+# Last modified: Tue 31 Mar 2015 21:34:03 +0300 too
 
 set -eu
 
@@ -303,9 +303,12 @@ cmd_cut () # The old cut using m2vmp2cut.pl to do the work...
 cmd_move () ## Move final file to a new location (and name) (now hidden)
 {
 	test $# = 1 || usage '{destfile}'
-	f="$dir"/m2vmp2cut-work/out.mpg
-	test -f "$f" || die "'$f' does not exist"
-	x mv "$f" "$1"
+	files='out.mkv out.mpg m2vmp2cut-work/out.mpg'
+	for f in $files
+	do
+		test ! -f "$dir"/$f || x exec mv "$dir"/$f "$1"
+	done
+	die "Cannot find any of $files in '$dir'"
 }
 
 cmd_play () # Play resulting file with mplayer
@@ -438,9 +441,9 @@ esac
 
 cm=$1; shift
 
-# case $cm in
-# 	d) cm=diff ;;
-# esac
+case $cm in
+	mv) cm=move
+esac
 
 cc= cp=
 for m in `exec sed -n 's/^cmd_\([a-z0-9_]*\) (.*/\1/p' "$0"`
