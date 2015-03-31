@@ -23,7 +23,7 @@
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Wed 18 Feb 2015 18:10:50 +0200 too
+ * Last modified: Wed 01 Apr 2015 01:02:07 +0300 too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
@@ -91,7 +91,7 @@ typedef unsigned int u_int; // c99 blocks this definition in <sys/types.h>
 #endif
 
 #if 0
-#define d2(x) do { printf("%d ", __LINE__); printf x; printf("\n"); } while (0)
+#define d2(x) do { printf("%d: ",__LINE__); printf x; printf("\n"); } while (0)
 #else
 #define d2(x) do {} while (0)
 #endif
@@ -1793,21 +1793,29 @@ static void test_cutpoint0(char framearg1[20], char framearg2[20])
 
     int fn0 = G.cutpoint[ccp].frameno;
 
-    if ( (ccp & 1) && G.currentframe == fn0) {
-	ccp--; // "hack" currentframe on green cutpoint -> show prev too
-	fn0 = G.cutpoint[ccp].frameno;
+    if (ccp & 1) { // "hack" when currentframe on green, but show other too
+	if ( G.currentframe == fn0) {
+	    ccp--; // on first green at cutpoint
+	    fn0 = G.cutpoint[ccp].frameno;
+	}
+	else if (G.currentframe + 1 == G.cutpoint[ccp + 1].frameno) {
+	    ccp++; // on last green before cutpoint
+	    fn0 = G.cutpoint[ccp].frameno;
+	}
     }
     int fn1 = G.cutpoint[ccp + 1].frameno;
 
-    if ((ccp & 1) == 0) { // on red area
+    d0(("%d %d %d %d %d\n", fn0, fn1, ccp, G.currentframe, G.cutpoints));
+
+    if ((ccp & 1) == 0) { // on red area (or ccp-- or ccp++ ...)
 	if (ccp > 0)
 	    sprintf(framearg1, "%d", fn0);
-	if (ccp != G.cutpoints - 2)
+	if (ccp < G.cutpoints - 2)
 	    sprintf(framearg2, "%d", fn1);
 	return;
     }
     // on green area
-    if (ccp == G.cutpoints - 2) fn1--;
+    if (ccp >= G.cutpoints - 2) fn1--; // used to compare == no diff. should be
     int dist1 = G.currentframe - fn0;
     int dist2 = fn1 - G.currentframe;
 
