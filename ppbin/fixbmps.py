@@ -8,7 +8,10 @@
 #           All rights reserved
 #
 # Created: Wed 28 Jan 2015 18:01:46 EET too
-# Last modified: Thu 26 Feb 2015 00:11:19 +0200 too
+# Last modified: Wed 06 May 2015 23:16:21 +0300 too
+
+from __future__ import print_function
+
 
 import os
 import sys
@@ -18,9 +21,7 @@ import struct
 # Die as exception class is just for emacs indentation (as extra 'pass'es).
 class Die(Exception):
     def __init__(self, *_list):
-        print >> sys.stderr
-        print >> sys.stderr, _list[0] % _list[1:]
-        print >> sys.stderr
+        print('\n', _list[0] % _list[1:], '\n', sep='', file=sys.stderr)
         raise SystemExit(1)
     pass
 
@@ -30,10 +31,9 @@ class Skip(Exception):
         if _list[0] is not None:
             global skip_pfx
             if len(skip_pfx):
-                print >> sys.stderr, skip_pfx,
+                print(skip_pfx, file=sys.stderr)
                 skip_pfx = ''
-                print >> sys.stderr, _list[0] % _list[1:],
-                print >> sys.stderr, "Skipping."
+                print(_list[0] % _list[1:], "Skipping.", file=sys.stderr)
                 pass
             pass
         pass
@@ -46,7 +46,7 @@ def pread(f, l, n):
     return d
 
 def dobmp(infile, outfile):
-    f = file(infile)
+    f = open(infile, 'rb')
     l = list()
 
     global skip_pfx
@@ -56,7 +56,7 @@ def dobmp(infile, outfile):
 
     ## Bitmap file header
 
-    if pread(f, l, 2) != 'BM':
+    if pread(f, l, 2) != b'BM':
         raise Skip("BM header missing.")
 
     file_size = struct.unpack('<L', pread(f, l, 4))[0]
@@ -82,7 +82,7 @@ def dobmp(infile, outfile):
         raise Skip("# of color planes is not 1.")
     bits_per_pixel = struct.unpack('<H', pread(f, l, 2))[0]
 
-    #print bitmap_width, bitmap_height, bits_per_pixel
+    #print(bitmap_width, bitmap_height, bits_per_pixel)
 
     if bits_per_pixel != 8:
         raise Skip("bits per pixel '%d' not 8", bits_per_pixel)
@@ -108,10 +108,10 @@ def dobmp(infile, outfile):
     else:
         raise Skip("Programmer error. '%d' not odd width.", bitmap_width)
 
-    print "File '%s' has odd width (%d). Writing '%s'" % \
-        (infile, bitmap_width, outfile)
+    print("File '%s' has odd width (%d). Writing '%s'" % \
+          (infile, bitmap_width, outfile))
 
-    o = file(outfile, "w")
+    o = open(outfile, "wb")
     o.writelines(l)
     del l
 
@@ -124,7 +124,7 @@ def dobmp(infile, outfile):
                 o.write(line[:-2])
             else:
                 o.write(line)
-                o.write("\000\000")
+                o.write(b"\000\000")
             pass
         pass
     except EOFError:
@@ -133,17 +133,18 @@ def dobmp(infile, outfile):
     return bitmap_width, bitmap_height
 
 def visrename(old, new):
-    print "Renaming '{}' to '{}'".format(old, new)
+    print("Renaming '{}' to '{}'".format(old, new))
     os.rename(old, new)
     pass
 
 def yesno(text):
     while True:
         sys.stdout.write(text + " (yes/no)? ")
+        sys.stdout.flush() # for python3
         ans = sys.stdin.readline()
         if ans.lower() == "yes\n": return 1
         if ans.lower() == "no\n": return 0
-        print "Please answer 'yes' or 'no'\n"
+        print("Please answer 'yes' or 'no'\n")
         pass
     pass
 
@@ -165,7 +166,7 @@ if __name__ == '__main__':
     os.chdir(sys.argv[1])
     for fn in glob.iglob("*.bmp"):
         if fn.endswith("-mod.bmp") or fn.endswith("-old.bmp"):
-            if not feh: print "Skipping '%s'" % fn
+            if not feh: print("Skipping '%s'" % fn)
             continue
         try:
             nfn = fn.replace(".bmp", "-mod.bmp")
