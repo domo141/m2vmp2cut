@@ -22,7 +22,7 @@
  *	    All rights reserved
  *
  * Created: Sat 03 Nov 2012 13:32:07 EET too
- * Last modified: Sat 16 Apr 2016 15:31:52 +0300 too
+ * Last modified: Wed 27 Apr 2016 21:36:30 +0300 too
  */
 
 #define _DEFAULT_SOURCE
@@ -507,7 +507,7 @@ void save_and_quit_0(GtkWidget * w, void * evp)
     char * p = buf;
     for (int i = 0; i < G.audiofc; i++) {
 	snprintf(p, len, "%s %s %d", G.adata[i].name,
-		 gtk_entry_get_text(GTK_ENTRY(G.adata[i].lang)),
+		 gtk_label_get_text(GTK_LABEL(G.adata[i].lang)),
 		 gtk_toggle_button_get_active
 		 /**/ (GTK_TOGGLE_BUTTON(G.adata[i].enabled))? 1: 0);
 	av[ac++] = p;
@@ -518,7 +518,7 @@ void save_and_quit_0(GtkWidget * w, void * evp)
     }
     for (int i = 0; i < G.subtfc; i++) {
 	snprintf(p, len, "%s %s %d", G.sdata[i].name,
-		 gtk_entry_get_text(GTK_ENTRY(G.sdata[i].lang)),
+		 gtk_label_get_text(GTK_LABEL(G.sdata[i].lang)),
 		 gtk_toggle_button_get_active
 		 /**/ (GTK_TOGGLE_BUTTON(G.sdata[i].enabled))? 1: 0);
 	av[ac++] = p;
