@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Tue 31 Mar 2015 21:34:03 +0300 too
+# Last modified: Sun 01 May 2016 22:44:57 +0300 too
 
 set -eu
 
@@ -399,12 +399,14 @@ case $# in 0)
 	if test -f "$1"
 	then
 		file=$1
-		dir=`basename "$file" | sed 's/\.[^.]*$//'`.d
+		dir=${file##*/} # basename, $file cannot end with '/'
+		dir=${dir%.*} # remove .suffix (if any)
+		dir=$dir.d
 		shift
 	elif test -d "$1"
 	then
 		file=
-		dir=$1
+		dir=${1%/} # w/o trailing '/' if one
 		shift
 	elif test -d "$1"d
 	then
@@ -419,7 +421,7 @@ esac
 # ---
 
 case ${1-} in '')
-	bn=`exec basename "$0" .sh`
+	bn=${0##*/}; bn=${bn%.sh}
 	echo
 	echo Usage: $bn '[-batch] (file|directory) {command} [args]'
 	echo
