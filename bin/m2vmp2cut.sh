@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Sun 01 May 2016 22:44:57 +0300 too
+# Last modified: Sat 14 May 2016 11:37:21 +0300 too
 
 set -eu
 
@@ -24,10 +24,10 @@ case ${BASH_VERSION-} in *.*) shopt -s xpg_echo; esac
 case ${ZSH_VERSION-} in *.*) emulate zsh; set -eu; esac
 
 warn () { echo "$@" >&2; }
-die ()  { echo; echo "$@"; echo; exit 1; } >&2
+die ()  { for l; do echo "$l"; done; exit 1; } >&2
 
 usage () {
-	warn; die Usage: m2vmp2cut '(file|directory)' $cmd "$@"
+	die '' "Usage: m2vmp2cut (file|directory) $cmd $*" ''
 }
 
 x () { echo + "$@" >&2; "$@"; }
@@ -35,7 +35,7 @@ xcd () { echo + cd "$1" >&2; cd "$1"; }
 
 M2VMP2CUT_CMD_PATH=`case $0 in */*) cd "${0%/*}"; esac; pwd`
 case $M2VMP2CUT_CMD_PATH in
-	*["$IFS"]*) die "Path '$M2VMP2CUT_CMD_PATH' contains spaces!"
+	*["$IFS"]*) die '' "Path '$M2VMP2CUT_CMD_PATH' contains spaces!" ''
 esac
 export M2VMP2CUT_CMD_PATH
 
@@ -51,7 +51,7 @@ cmd_lvev6frames () ## Legacy m2vmp2cut support; dig cutpoints from ~/.lve/*
 {
 	case ${1-} in '!') ;; *)
 		warn; warn "'lvev6frames' command is deprecated"
-		die "to use this add '!' to the command line"
+		die "to use this add '!' to the command line" ''
 	esac
 	$M2VMP2CUT_CMD_PATH/lvev6frames.pl
 }
@@ -118,7 +118,7 @@ needcmd ()
 {
 	command -v "$1" >/dev/null || {
 		c=$1; shift
-		die "Command '$c' missing ($*)"
+		die '' "Command '$c' missing ($*)" ''
 	}
 }
 
@@ -157,7 +157,7 @@ chkpjx ()
 	then 	pjx=projectx
 		return 0
 	fi
-	die "Cannot find 'projectx' tool"
+	die '' "Cannot find 'projectx' tool" ''
 }
 
 
@@ -184,15 +184,15 @@ dodemux ()
 
 cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 {
-	case $file in '') die "demux reguires 'file' argument."; esac
+	case $file in '') die '' "demux reguires 'file' argument." ''; esac
 	for f in "$file" "$@"
-	do	test -f "$f" || die "'$f': no such file"
+	do	test -f "$f" || die '' "'$f': no such file" ''
 	done
 	chkpjx
 	#needcmd mplex needed after cutting when multiplexing final image
 
 	if test -d "$dir"
-	then	die "Directory '$dir' is on the way (demuxed already)?"
+	then	die '' "Directory '$dir' is on the way (demuxed already)?" ''
 	fi
 
 	x () {
@@ -243,7 +243,8 @@ cmd_demux () # Demux mpeg2 file[s] with ProjectX for further editing...
 
 cmd_select () # Select parts from video with a graphical tool
 {
-	test -f "$dir/video1.m2v" || die "'$dir/video1.m2v' does not exist"
+	test -f "$dir/video1.m2v" ||
+		die '' "'$dir/video1.m2v' does not exist" ''
 	# xxx "$dir/in1/audio1-2.mp2" does not check audio2-2.mp2 in case...
 	if test -f "$dir/in1/sp1-1.sup" || test -f "$dir/audio.mp2"
 	then
@@ -289,36 +290,52 @@ cmd_pp () # The new post-processing tools (with various quality)
 		    $1*) fp=$ff; ff="$f $ff"; fm=$f ;;
 		esac
 	done
-	case $ff in '') die "'$1': not found." ;; esac
-	case $fp in '') ;; *) die "x: ambiquous match: $ff." ;; esac
+	case $ff in '') die '' "'$1': not found." '' ;; esac
+	case $fp in '') ;; *) die '' "x: ambiquous match: $ff." '' ;; esac
 	shift
 	x exec $M2VMP2CUT_PP_PATH/$fm "$@"
 }
 
 cmd_cut () # The old cut using m2vmp2cut.pl to do the work...
 {
+	eval last_arg=\$$# # $0 being last is ok in this case
+	case ${last_arg-} in '!') ;; *)
+		set_bn0
+		warn
+		warn "Suggest doing  $bn0 '$dir' pp icut"
+		warn "or  $bn0 '$dir' pp imkvcut  instead."
+		warn "If these does not work, execute (with trailing '!')"
+		die '' "  $bn0 '$dir' cut${1+ $*} !" ''
+	esac
+	test $# = 0 || { # drop last arg (!)
+		arg=$1; shift
+		for na; do set x "$@" $arg; shift 2; arg=$na; done
+	}
 	x exec $M2VMP2CUT_CMD_PATH/m2vmp2cut.pl --dir="$dir" "$@"
 }
 
-cmd_move () ## Move final file to a new location (and name) (now hidden)
+cmd_move () # Move final file to a new location (and name)
 {
-	test $# = 1 || usage '{destfile}'
-	files='out.mkv out.mpg m2vmp2cut-work/out.mpg'
+	test $# = 1 || usage '{destfile, without .(mpg|mkv) suffix}'
+	files='out.mkv, out.mpg or m2vmp2cut-work/out.mpg'
 	for f in $files
 	do
-		test ! -f "$dir"/$f || x exec mv "$dir"/$f "$1"
+		test "$f" != or || continue; f=${f%,}
+		sfx=${f##*.}
+		test ! -f "$dir"/$f || x exec mv "$dir"/$f "$1.$sfx"
 	done
-	die "Cannot find any of $files in '$dir'"
+	die '' "Cannot find any of $files in directory" "  '$dir'" ''
 }
 
 cmd_play () # Play resulting file with mplayer
 {
-	files='out.mkv out.mpg m2vmp2cut-work/out.mpg'
+	files='out.mkv, out.mpg or m2vmp2cut-work/out.mpg'
 	for f in $files
 	do
+		test "$f" != or || continue; f=${f%,}
 		test ! -f "$dir"/$f || x exec mplayer "$@" "$dir"/$f
 	done
-	die "Cannot find any of $files in '$dir'"
+	die '' "Cannot find any of $files in directory" "  '$dir'" ''
 }
 
 cmd_getyuv () # Get selected parts of mpeg2 video as yuv(4mpeg) frames (tbm)
@@ -375,7 +392,7 @@ cmd_example () # Simple example commands
 cmd_source () # Check source of given '$0' command or function
 {
 	set +x
-	case ${1-} in '') die $0 $cmd cmd-prefix ;; esac
+	case ${1-} in '') die '' "$0 $cmd cmd-prefix" '' ;; esac
 	echo
 	exec sed -n "/^cmd_$1/,/^}/p; /^$1/,/^}/p" "$0"
 	#exec sed -n "/cmd_$1.*(/,/^}/p" "$0"
@@ -414,29 +431,33 @@ case $# in 0)
 		dir=${1}d
 		shift
 	else
-		warn; die "'$1': no such file or directory."
+		die '' "'$1': no such file or directory." ''
 	fi
 esac
 
 # ---
 
+set_bn0 () {
+	bn0=${0##*/}; bn0=${bn0%.sh}
+}
+
 case ${1-} in '')
-	bn=${0##*/}; bn=${bn%.sh}
+	set_bn0
 	echo
-	echo Usage: $bn '[-batch] (file|directory) {command} [args]'
+	echo Usage: $bn0 '[-batch] (file|directory) {command} [args]'
 	echo
-	echo $bn commands available:
+	echo $bn0 commands available:
 	echo
 	sed -n '/^cmd_[a-z0-9_].*() *#[^#]/ { s/cmd_/ /;
 		s/ () [ -#]*/                   /
-		s/$0/'"$bn"'/; s/\(.\{14\}\) */\1/p; }' "$0"
+		s/$0/'"$bn0"'/; s/\(.\{14\}\) */\1/p; }' "$0"
 	echo
 	echo Command can be abbreviated to any unambiguous prefix.
 	echo
 	case ${2-} in one)
-	 warn "$bn requires 2 arguments, 'file/directory' and 'command'."
+	 warn "$bn0 requires 2 arguments, 'file/directory' and 'command'."
 	 warn "Enter '.' as file/directory argument in case it is irrelevant."
-	 warn "For example: $bn . help"
+	 warn "For example: $bn0 . help"
 	esac
 	exit 0
 esac
@@ -500,7 +521,7 @@ exit
 #h select: cutpoints.
 #h select:
 
-#h cut: cut [options] ...
+#h cut: cut [options] ... !
 #h cut:
 #h cut: This command is wrapper to m2vmp2cut.pl (which used to be the frontend
 #h cut: of m2vmp2cut in old versions). This command has extensive help of
