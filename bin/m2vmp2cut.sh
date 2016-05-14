@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Sat 14 May 2016 11:37:21 +0300 too
+# Last modified: Sat 14 May 2016 12:10:07 +0300 too
 
 set -eu
 
@@ -320,9 +320,14 @@ cmd_move () # Move final file to a new location (and name)
 	files='out.mkv, out.mpg or m2vmp2cut-work/out.mpg'
 	for f in $files
 	do
-		test "$f" != or || continue; f=${f%,}
+		test $f != 'or' || continue; f=${f%,}
 		sfx=${f##*.}
-		test ! -f "$dir"/$f || x exec mv "$dir"/$f "$1.$sfx"
+		if test -f "$dir"/$f
+		then
+			if test -f "$1.$sfx"
+			then die '' "Destination file '$1.$sfx' exists" ''; fi
+			x exec mv "$dir"/$f "$1.$sfx"
+		fi
 	done
 	die '' "Cannot find any of $files in directory" "  '$dir'" ''
 }
