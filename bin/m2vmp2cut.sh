@@ -7,7 +7,7 @@
 #	    All rights reserved
 #
 # Created: Wed Apr 23 21:40:17 EEST 2008 too
-# Last modified: Sat 14 May 2016 12:10:07 +0300 too
+# Last modified: Sat 31 Dec 2016 14:34:51 +0200 too
 
 set -eu
 
@@ -285,13 +285,14 @@ cmd_pp () # The new post-processing tools (with various quality)
 	fp= ff=
 	for f in `exec ls -1 $M2VMP2CUT_PP_PATH`
 	do
-		case $f in *~) continue ;;
-		    $1) fp= ff=$1 fm=$1 break ;;
-		    $1*) fp=$ff; ff="$f $ff"; fm=$f ;;
+		case $f in *~) continue
+			;; $1) fp= ff=$1 fm=$1; break
+			;; $1.*) fp= ff=$f fm=$f; break
+			;; $1*) fp=$ff; ff="$f $ff"; fm=$f
 		esac
 	done
 	case $ff in '') die '' "'$1': not found." '' ;; esac
-	case $fp in '') ;; *) die '' "x: ambiquous match: $ff." '' ;; esac
+	case $fp in '') ;; *) die '' "pp: ambiquous match: $ff" '' ;; esac
 	shift
 	x exec $M2VMP2CUT_PP_PATH/$fm "$@"
 }
