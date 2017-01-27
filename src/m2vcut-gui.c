@@ -2242,7 +2242,7 @@ int init_W(void)
 			W.i = gtk_image_new(), false, false, 0,
 			null));
 
-    W.fd = pango_font_description_from_string("Monospace bold 10");
+    W.fd = pango_font_description_from_string("Monospace bold 8");
     gtk_widget_modify_font(W.l, W.fd);
     make_layout_etc(W.da->window);
 
