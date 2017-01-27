@@ -7,12 +7,13 @@
 #           All rights reserved
 #
 # Created: Wed Sep 15 22:06:57 EEST 2004 too
-# Last modified: Thu 26 Feb 2015 00:13:02 +0200 too
+# Last modified: Wed 06 May 2015 22:44:15 +0300 too
 #
 # This program is released under GNU GPL. Check
 # http://www.fsf.org/licenses/licenses.html
 # to get your own copy of the GPL license.
 
+from __future__ import print_function
 
 import sys
 import struct
@@ -33,7 +34,7 @@ class m2vbuf:
         while True:
             self.fillbuf(self.len - 0)
             try:
-                self.pos = self.buf.index('\000\000\001', 0, self.len)
+                self.pos = self.buf.index(b'\000\000\001', 0, self.len)
                 return
             except ValueError:
                 pass
@@ -63,7 +64,7 @@ class m2vbuf:
         self.offset = self.pos
         while True:
             try:
-                self.pos = self.buf.index('\000\000\001', \
+                self.pos = self.buf.index(b'\000\000\001',
                                           self.offset + 3, self.len)
                 return self.buf[self.offset:self.pos]
             except ValueError:
@@ -105,7 +106,7 @@ def unzigzag(array):
     return m
 
 def print_matrix(ofile, m):
-    ofile.write('\n'.join(map(','.join,map(lambda x: map(str,x),m)))+'\n')
+    ofile.write('\n'.join(map(','.join, map(lambda x: map(str,x),m)))+'\n')
 
 ##### end of copy+edit. #####
 
@@ -175,7 +176,7 @@ def f_seq_header(G, buf):
 
     nimatrix = unzigzag(non_intra)
 
-    ofile = file(sys.argv[3], 'w')
+    ofile = open(sys.argv[3], 'w')
     print_matrix(ofile, imatrix)
     print_matrix(ofile, nimatrix)
 
@@ -196,7 +197,9 @@ def f_ext_start(G, buf):
         return
 
     if ext_id == 0x80: # picture coding extension
-        G.intra_dc_prec = ((ord(buf[6]) & 0x0c) >> 2) + 8
+        b = buf[6]
+        if type(b) is not int: b = ord(b) # python 2 compatibility
+        G.intra_dc_prec = ((b & 0x0c) >> 2) + 8
         return
 
 scode_actions = {
@@ -221,12 +224,13 @@ while True:
     try:
         buf = f.next()
     except EOFError:
-        print 'progressive:', G.progressive, 'intra_matrix:', G.intra,\
-              'non_intra_matrix:', G.non_intra,\
-              'disp_ext_hdr:', G.dispext_hdr, "intra_dc_prec:", G.intra_dc_prec
+        print('progressive:', G.progressive, 'intra_matrix:', G.intra,
+              'non_intra_matrix:', G.non_intra,
+              'disp_ext_hdr:', G.dispext_hdr, "intra_dc_prec:", G.intra_dc_prec)
         sys.exit(0)
 
-    a = ord(buf[3])
+    a = buf[3]
+    if type(a) is not int: a = ord(a) # python 2 compatibility
 
     try:
         scode_actions[a](G, buf)
@@ -235,6 +239,6 @@ while True:
             # slice, ignoring for now.
             pass
         else:
-            print >> sys.stderr, "File contains mpeg header 0x%02x." % a
-            print >> sys.stderr, "Did you demultiplex your source?";
+            print("File contains mpeg header 0x%02x." % a, file=sys.stderr)
+            print("Did you demultiplex your source?", file=sys.stderr)
             sys.exit(1)

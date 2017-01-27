@@ -1,13 +1,13 @@
 #if 0 /* -*- mode: c; c-file-style: "stroustrup"; tab-width: 8; -*-
- set -eu; case $1 in -o) trg=$2; shift 2
+ set -eu; case ${1-} in -o) trg=$2; shift 2
 	;;	*) trg=`exec basename "$0" .c` ;; esac; rm -f "$trg"
  WARN="-Wall -Wstrict-prototypes -pedantic -Wno-long-long"
  WARN="$WARN -Wcast-align -Wpointer-arith " # -Wfloat-equal #-Werror
  WARN="$WARN -W -Wwrite-strings -Wcast-qual -Wshadow" # -Wconversion
  xo=`pkg-config --cflags --libs gtk+-2.0 | sed 's/-I/-isystem /g'`
  xo="$xo -lutil -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE"
- case $1 in '') set x -ggdb
- #case $1 in '') set x -O2
+ case ${1-} in '') set x -ggdb
+ #case ${1-} in '') set x -O2
 	shift; esac
  set -x; exec ${CC:-gcc} -std=c99 $WARN "$@" -o "$trg" "$0" $xo
  exit 0
@@ -22,7 +22,7 @@
  *	    All rights reserved
  *
  * Created: Sat 03 Nov 2012 13:32:07 EET too
- * Last modified: Mon 16 Feb 2015 19:06:29 +0200 too
+ * Last modified: Wed 27 Apr 2016 21:36:30 +0300 too
  */
 
 #define _DEFAULT_SOURCE
@@ -102,6 +102,7 @@ struct {
     pid_t childpid;
     char * assel_pl;
     int audiofc;
+    GtkWidget * btable;
     struct {
 	char * name;
 	GtkWidget * lw;
@@ -268,16 +269,14 @@ void swap_contents(char ** n1, GtkWidget * l1, GtkWidget * b1, GtkWidget * e1,
 		   char ** n2, GtkWidget * l2, GtkWidget * b2, GtkWidget * e2)
 {
     int enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b1));
-    char * etxt = strdup(gtk_entry_get_text(GTK_ENTRY(e1)));
 
     swap_labels(l1, l2);
+    swap_labels(e1, e2);
+
     gtk_toggle_button_set_active
 	(GTK_TOGGLE_BUTTON(b1),
 	 gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(b2)));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b2), enabled);
-    gtk_entry_set_text(GTK_ENTRY(e1), gtk_entry_get_text(GTK_ENTRY(e2)));
-    gtk_entry_set_text(GTK_ENTRY(e2), etxt);
-    g_free(etxt);
 
     char * p = *n1; *n1 = *n2; *n2 = p;
 }
@@ -315,7 +314,6 @@ void up_atable(GtkWidget * w, void * p)
     swap_labels(G.adata[h].sw, G.adata[i].sw);
 }
 
-
 void up_stable(GtkWidget * w, void * p)
 {
     (void)w;
@@ -327,6 +325,48 @@ void up_stable(GtkWidget * w, void * p)
     swap_contents(hnp, G.sdata[h].lw, G.sdata[h].enabled, G.sdata[h].lang,
 		  inp, G.sdata[i].lw, G.sdata[i].enabled, G.sdata[i].lang);
 }
+
+// ++ 2016-04-16 ++ //
+
+void close_langtable(void)
+{
+    if (G.btable) {
+	gtk_widget_destroy(G.btable);
+	G.btable = null;
+    }
+}
+
+void langchosen(GtkWidget * b, GtkWidget * l)
+{
+    GtkWidget * sl = gtk_bin_get_child(GTK_BIN(b));
+    gtk_label_set_text(GTK_LABEL(l), gtk_label_get_text(GTK_LABEL(sl)));
+    close_langtable();
+}
+
+void langtable(GtkWidget * label)
+{
+    if (G.btable)
+	return;
+    GtkWidget * window = G.btable = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_container_set_border_width(GTK_CONTAINER (window), 4);
+    gtk_window_set_title(GTK_WINDOW(window), "Select language");
+    g_signal_connect(G_OBJECT(window), "delete_event",
+		     G_CALLBACK(close_langtable), null);
+    int i = 0;
+    GtkTable * table = GTK_TABLE(gtk_table_new(22, 22, true));
+    for (int r = 0; r < 22; r++) {
+	for (int c = 0; c < 22; c++) {
+	    GtkWidget *button = gtk_button_new_with_label(iso639_2_codes[i++]);
+	    g_signal_connect(G_OBJECT(button), "clicked",
+			     G_CALLBACK(langchosen), label);
+	    gtk_table_attach_defaults(table, button, c,c+1, r,r+1);
+	}
+    }
+    gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(table));
+    gtk_widget_show_all(window);
+}
+
+// -- 2016-04-16 -- //
 
 GtkWidget * aLabel(const char * label)
 {
@@ -368,31 +408,24 @@ GtkWidget * anEntry(const char * text)
     return GTK_WIDGET(entry);
 }
 
-GtkWidget * aLabeledEntry(const char * label, const char * text,
-			  GtkWidget ** entryp)
+GtkWidget * aLabeledButton(const char * label, const char * text,
+			   GtkWidget ** entryp)
 {
     GtkBox * box = GTK_BOX(gtk_hbox_new(false, 1));
     gtk_box_pack_start(box, aLabel(label), true, true, 0);
-    GtkWidget * entry = anEntry(text);
-    gtk_box_pack_start(box, entry, true, true, 0);
-    *entryp = entry;
+    GtkWidget * lw = aLabel(text);
+    GtkWidget * button = gtk_button_new();
+    g_signal_connect_swapped(G_OBJECT(button), "clicked",
+			     G_CALLBACK(langtable), lw);
+    gtk_container_add(GTK_CONTAINER(button), lw);
+    gtk_box_pack_start(box, button, true, true, 0);
+    *entryp = lw;
     return GTK_WIDGET(box);
 }
 
 GtkWidget * aCheckButton(const char * text)
 {
     return gtk_check_button_new_with_label(text);
-}
-
-gboolean check_lang_code(GtkEntry * ew)
-{
-    const char * text = gtk_entry_get_text(ew);
-    for (int i = 0; i < iso639_2_codes_size; i++)
-	if (strcmp(text, iso639_2_codes[i]) == 0)
-	    return false;
-
-    gtk_entry_set_text(ew, "und");
-    return false;
 }
 
 void read_info(void)
@@ -420,9 +453,7 @@ void read_info(void)
 	    if (i >= isizeof G.adata / isizeof G.adata[0])
 		continue;
 	    G.adata[i].name = strdup(f);
-	    G.adata[i].tw = aLabeledEntry("  lang:", l, &G.adata[i].lang);
-	    g_signal_connect(G_OBJECT(G.adata[i].lang), "focus-out-event",
-			     G_CALLBACK(check_lang_code), null);
+	    G.adata[i].tw = aLabeledButton("  lang:", l, &G.adata[i].lang);
 	    G.adata[i].enabled = aCheckButton("mux");
 	    if (*e != '0')
 		gtk_toggle_button_set_active
@@ -434,9 +465,7 @@ void read_info(void)
 	    if (i >= isizeof G.sdata / isizeof G.sdata[0])
 		continue;
 	    G.sdata[i].name = strdup(f);
-	    G.sdata[i].tw = aLabeledEntry("  lang:", l, &G.sdata[i].lang);
-	    g_signal_connect(G_OBJECT(G.sdata[i].lang), "focus-out-event",
-			     G_CALLBACK(check_lang_code), null);
+	    G.sdata[i].tw = aLabeledButton("  lang:", l, &G.sdata[i].lang);
 	    G.sdata[i].enabled = aCheckButton("mux");
 	    if (*e != '0')
 		gtk_toggle_button_set_active
@@ -478,7 +507,7 @@ void save_and_quit_0(GtkWidget * w, void * evp)
     char * p = buf;
     for (int i = 0; i < G.audiofc; i++) {
 	snprintf(p, len, "%s %s %d", G.adata[i].name,
-		 gtk_entry_get_text(GTK_ENTRY(G.adata[i].lang)),
+		 gtk_label_get_text(GTK_LABEL(G.adata[i].lang)),
 		 gtk_toggle_button_get_active
 		 /**/ (GTK_TOGGLE_BUTTON(G.adata[i].enabled))? 1: 0);
 	av[ac++] = p;
@@ -489,7 +518,7 @@ void save_and_quit_0(GtkWidget * w, void * evp)
     }
     for (int i = 0; i < G.subtfc; i++) {
 	snprintf(p, len, "%s %s %d", G.sdata[i].name,
-		 gtk_entry_get_text(GTK_ENTRY(G.sdata[i].lang)),
+		 gtk_label_get_text(GTK_LABEL(G.sdata[i].lang)),
 		 gtk_toggle_button_get_active
 		 /**/ (GTK_TOGGLE_BUTTON(G.sdata[i].enabled))? 1: 0);
 	av[ac++] = p;
@@ -628,6 +657,10 @@ const char * helptext =
 
 int main(int argc, char * argv[])
 {
+    if (iso639_2_codes_size != 484)
+	die("internal error: iso639_2_codes_size ('%d') is not 484)",
+	    iso639_2_codes_size);
+
     gtk_init(&argc, &argv);
 
     if (argc != 2)

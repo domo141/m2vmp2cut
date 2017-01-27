@@ -4,7 +4,19 @@
 # Project X sup timing (taken from pxsup2dast.py -- with fixes).
 # too ät iki piste fi
 
-import sys, struct, cStringIO
+from __future__ import print_function
+
+import sys, struct
+try:
+    import cStringIO.StringIO as StringIO
+except ImportError:
+    from io import BytesIO as StringIO
+    pass
+
+def xord(c): # for python3 (while keeping python2 portability)
+    if type(c) is int:
+        return c
+    return ord(c)
 
 def pts2ts(pts):
     h = pts / (3600 * 90000)
@@ -19,10 +31,10 @@ def pxsuptime(supfile, base):
     # Here thanks go to ProjetcX source, http://www.via.ecp.fr/~sam/doc/dvd/
     # and gtkspu program in gopchop distribution
 
-    f = file(supfile)
+    f = open(supfile, 'rb')
 
-    if f.read(2) != 'SP':
-        raise Exception, "Syncword missing. XXX bailing out."
+    if f.read(2) != b'SP':
+        raise Exception("Syncword missing. XXX bailing out.")
 
     image=1 # 1-based for feh(1) file number counting compatibility
     while True:
@@ -34,7 +46,7 @@ def pxsuptime(supfile, base):
         #print pts / 90, 'ms.', size, pack
 
         data = f.read(pack - 4)
-        ctrl = cStringIO.StringIO(f.read(size - pack))
+        ctrl = StringIO(f.read(size - pack))
 
         # parsing control info
 
@@ -61,10 +73,10 @@ def pxsuptime(supfile, base):
                     continue
                 if cmd == 0x05: # coordinates
                     coords = ctrl.read(6)
-                    x1 = (ord(coords[0]) << 4) + (ord(coords[1]) >> 4)
-                    x2 = ((ord(coords[1]) & 0xf) << 8) + ord(coords[2])
-                    y1 = (ord(coords[3]) << 4) + (ord(coords[4]) >> 4)
-                    y2 = ((ord(coords[4]) & 0xf) << 8) + ord(coords[5])
+                    x1 = (xord(coords[0]) << 4) + (xord(coords[1]) >> 4)
+                    x2 = ((xord(coords[1]) & 0xf) << 8) + xord(coords[2])
+                    y1 = (xord(coords[3]) << 4) + (xord(coords[4]) >> 4)
+                    y2 = ((xord(coords[4]) & 0xf) << 8) + xord(coords[5])
                     continue
                 if cmd == 0x06: # rle offsets
                     top_field,bottom_field = struct.unpack('>HH', ctrl.read(4))
@@ -72,7 +84,7 @@ def pxsuptime(supfile, base):
                 if cmd == 0xff: # end command
                     break
                 else:
-                    raise Execption, "%d: Unknown control sequence" % cmd
+                    raise Execption("%d: Unknown control sequence" % cmd)
             if prev == next:
                 break
             prev = next
@@ -84,20 +96,20 @@ def pxsuptime(supfile, base):
 
         width = x2 - x1 + 1
         if width % 2 != 0:
-            print >> sys.stderr, \
-                "Image %d width (%d) is not divisible by 2." % (image, width),
-            print >> sys.stderr, "Check %s-%05d.bmp" % (base, image)
-        print "image='%d' start='%s' end='%s' x='%d' y='%d' w='%d' h='%d'" % \
-            (image, sptstr, pts2ts(endpts), x1, y1, width, y2 - y1 + 1)
+            print("Image %d width (%d) is not divisible by 2." % (image, width),
+                  file=sys.stderr, end=' ')
+            print("Check %s-%05d.bmp" % (base, image), file=sys.stderr)
+        print("image='%d' start='%s' end='%s' x='%d' y='%d' w='%d' h='%d'" %
+              (image, sptstr, pts2ts(endpts), x1, y1, width, y2 - y1 + 1))
         image = image + 1
 
-        if f.read(2) != 'SP':
+        if f.read(2) != b'SP':
             if len(f.read(1)) == 0: return # EOF
-            raise Exception, "Syncword missing. XXX bailing out."
+            raise Exception("Syncword missing. XXX bailing out.")
 
 def main():
     if len(sys.argv) < 2:
-        print >> sys.stderr, "\nUsage: %s supfile [base]" % sys.argv[0]
+        print("\nUsage: %s supfile [base]" % sys.argv[0], file=sys.stderr)
         sys.exit(1)
 
     base = sys.argv[2] if len(sys.argv) > 2 else 'in*'

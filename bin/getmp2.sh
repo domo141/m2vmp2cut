@@ -6,7 +6,7 @@
 #	    All rights reserved
 #
 # Created: Mon Aug 04 20:39:55 EEST 2008 too
-# Last modified: Wed 18 Feb 2015 17:35:27 +0200 too
+# Last modified: Sat 14 May 2016 17:33:44 +0300 too
 
 set -eu
 
@@ -19,15 +19,17 @@ case $M2VMP2CUT_CMD_PATH in
 esac
 export M2VMP2CUT_CMD_PATH
 
-case $# in 1) ;; *) die Usage: $0 '(directory | file)' ;; esac
+case ${1-} in --list-only) list_only=true; shift ;; *) list_only=false ;; esac
 
-case $1 in examp*) test -d examples || \
-	exec sed '1,/^# -- examples /d; s/^/ /' "$0"
-esac
+test $# = 1 || die Usage: $0 '[--list-only] (directory | file)'
+
+#case $1 in examp*) test -d examples || \
+#	exec sed '1,/^# -- examples /d; s/^/ /' "$0"
+#esac
 
 setfile () {
 	test -f "$2" || die "'"$2"'": no such file
-	eval $1='$2'
+	eval $1='$'2
 }
 
 if test -d "$1"
@@ -54,11 +56,20 @@ case $timecodes in '') exit 1; esac
 mp2cutpoints=$M2VMP2CUT_CMD_PATH/mp2cutpoints
 cutsfile=${audiofile%.mp2}.cuts
 cutpos=`exec $mp2cutpoints "$timecodes" "$audiofile" "$cutsfile" "$scanfile"`
+
+if $list_only
+then
+	echo $audiofile: $cutpos
+	exit
+fi
+if test -t 1
+then	die 'Will not output to a tty; please pipe output';
+fi
 exec $M2VMP2CUT_CMD_PATH/fileparts "$cutpos" $audiofile
 die not reached
 
 #!perl
-# line 60
+# line 73
 
 use strict;
 use warnings;
@@ -66,8 +77,6 @@ use warnings;
 use File::Basename;
 use lib dirname($0);
 use m2vmp2cut;
-
-die "Will not output to a tty; please pipe output\n" if -t STDIN;
 
 my $sync = $ARGV[1] + 0;
 

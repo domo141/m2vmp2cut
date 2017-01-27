@@ -4,15 +4,15 @@
 set -eu
 #set -x
 
-LANG=en_US.utf8 LC_ALL=en_US.utf8; export LANG LC_ALL
+LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8; export LANG LC_ALL
 
 case ~ in '~') exec >&2; echo
 	echo "Shell '/bin/sh' lacks some required modern shell functionality."
 	echo; exit 1
 esac
 
-case ${BASH_VERSION-} in *.*) PATH= shopt -s xpg_echo; esac
-case ${ZSH_VERSION-} in *.*) PATH= emulate ksh; set -eu; esac
+case ${BASH_VERSION-} in *.*) PATH=/ shopt -s xpg_echo; esac
+case ${ZSH_VERSION-} in *.*) PATH=/ emulate ksh; set -eu; esac
 
 warn () { echo "$@" >&2; }
 disable_die () { die () { return 1; }; }
