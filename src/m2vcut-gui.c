@@ -1975,52 +1975,83 @@ gboolean on_key_press(GtkWidget * w, GdkEventKey * k,
     // ( .../#GdkEventKey to the above )
 
     int shift = k->state & GDK_SHIFT_MASK; // XXX undocumented.
+    int ctrl = k->state & GDK_CONTROL_MASK; // XXX undocumented.
+    int alt = k->state & GDK_MOD1_MASK; // XXX undocumented.
+    int i = 0, keycount = 0;
 
     switch (k->keyval)
     {
-    case GDK_Right: shift? next_gop(11): next_frame(); break;
-    case GDK_Left:  shift? previous_gop(11): previous_frame(); break;
+    case GDK_Right: 
+	if (ctrl) {
+	    next_gop(3);
+	} else if (shift) {
+	    next_gop(1);
+	} else if (alt) {
+	    next_frame();
+	} else {
+	    for (i = 0; i < 3; i++)
+		next_frame();
+	}
+	break;
 
-    case GDK_Up:   next_gop(shift? 122: 1); break;
-    case GDK_Down: previous_gop(shift? 122: 1); break;
+    case GDK_Left:
+	if (ctrl) {
+	    previous_gop(3);
+	} else if (shift) {
+	    previous_gop(1);
+	} else if (alt) {
+	    previous_frame();
+	} else {
+	    for (i = 0; i < 3; i++)
+		previous_frame();
+	}
+	break;
+
+    case GDK_Up:
+	if (ctrl)
+	    next_gop(1240);
+	else if (shift)
+	    next_gop(124);
+	else if (alt) 
+	    next_gop(10);
+	else
+	    next_gop(24);
+	break;
+
+    case GDK_Down:
+	if (ctrl)
+	    previous_gop(1240);
+	else if (shift)
+	    previous_gop(124);
+	else if (alt) 
+	    previous_gop(10);
+	else
+	    previous_gop(24);
+	break;
 
     case GDK_Page_Up:
-	if (shift) {
-	    next_gop(1240);
-	    pagestep = 256;
+	if (prevkey == GDK_Page_Up) {
+	    keycount++;
+	    next_gop(keycount > 20? 25: 5);
 	    break;
 	}
-	if (prevkey == GDK_Page_Up && pagestep == 256) {
-	    next_gop(256);
-	    break;
+	else if (prevkey == GDK_Page_Down && keycount > 20) {
+	    keycount += 10 * 1000 * 1000;
+	    if (keycount < 20 * 1000 * 1000) { next_gop(25); break; }
 	}
-	if (prevkey == GDK_Page_Up || prevkey == GDK_Page_Down) {
-	    if (pagestep > 1)
-		pagestep /= 2;
-	    next_gop(pagestep);
-	    break;
-	}
-	next_gop(pagestep = 256);
-	break;
+	keycount = 0; next_gop(5); break;
 
     case GDK_Page_Down:
-	if (shift) {
-	    previous_gop(1240);
-	    pagestep = 256;
+	if (prevkey == GDK_Page_Down) {
+	    keycount++;
+	    previous_gop(keycount > 20? 25: 5);
 	    break;
 	}
-	if (prevkey == GDK_Page_Down && pagestep == 256) {
-	    previous_gop(256);
-	    break;
+	else if (prevkey == GDK_Page_Up && keycount > 20) {
+	    keycount += 10 * 1000 * 1000;
+	    if (keycount < 20 * 1000 * 1000) { previous_gop(25); break; }
 	}
-	if (prevkey == GDK_Page_Up || prevkey == GDK_Page_Down) {
-	    if (pagestep > 1)
-		pagestep /= 2;
-	    previous_gop(pagestep);
-	    break;
-	}
-	previous_gop(pagestep = 256);
-	break;
+	keycount = 0; previous_gop(5); break;
 
     case '.': next_cutpoint(); break;
     case ',': previous_cutpoint(); break;
@@ -2211,7 +2242,7 @@ int init_W(void)
 			W.i = gtk_image_new(), false, false, 0,
 			null));
 
-    W.fd = pango_font_description_from_string("Monospace bold 12");
+    W.fd = pango_font_description_from_string("Monospace bold 8");
     gtk_widget_modify_font(W.l, W.fd);
     make_layout_etc(W.da->window);
 
