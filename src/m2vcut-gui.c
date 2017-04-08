@@ -23,7 +23,7 @@
  *	    All rights reserved
  *
  * Created: Sun Dec 30 14:17:12 EET 2007 too
- * Last modified: Wed 01 Apr 2015 01:02:07 +0300 too
+ * Last modified: Sun 09 Apr 2017 00:42:42 +0300 too
  */
 
 // later (maybe?) test, undo, append-cut/merge to file (w/htonl()))
@@ -2212,6 +2212,7 @@ int init_W(void)
 			null));
 
     W.fd = pango_font_description_from_string("Monospace bold 12");
+    pango_font_description_set_absolute_size(W.fd, 16.0 * PANGO_SCALE);
     gtk_widget_modify_font(W.l, W.fd);
     make_layout_etc(W.da->window);
 
